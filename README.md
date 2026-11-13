@@ -51,6 +51,8 @@ uv run pytest -q        # tests
 
 ### Actualizaciones
 
+> **¿Lo tenías instalado como `gia`?** Los comandos se llaman ahora `musa` y `musa-mcp`. Actualiza una última vez con `gia update` (o `uv tool install --force git+https://github.com/CongrooDevs/Musa-Image.git`): después `gia` desaparece y se usa `musa`. Cambia también tu configuración MCP de `"command": "gia-mcp"` a `"command": "musa-mcp"` y reinicia el agente. Tus datos (`~/.gemini-image-api`, `~/Pictures/gemini-image-api`) y las variables `GIA_*` no cambian.
+
 - **Aviso automático:** Musa y `musa update --check` comparan tu versión con el último commit de `main` en GitHub (como mucho una consulta cada 24 h, guardada en `<state_dir>/update_check.json`). Si hay una versión nueva, Musa muestra la píldora **«Actualización»** en la barra superior.
 - **Instalar la nueva versión:** `musa update` (equivale a `uv tool install --force git+https://github.com/CongrooDevs/Musa-Image.git`). Después, cierra y vuelve a abrir Musa (`musa app`) y reinicia tu agente si usa `musa-mcp`.
 - La actualización **no es silenciosa**: siempre la lanzas tú. Tus imágenes, estilos, prompts, colecciones, animaciones, composiciones y cookies viven en `~/.gemini-image-api` y `~/Pictures/gemini-image-api`, y no se tocan al actualizar.
