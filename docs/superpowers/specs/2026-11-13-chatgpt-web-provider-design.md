@@ -29,7 +29,7 @@ Musa genera y edita imágenes también con **ChatGPT**, usando la sesión web de
   - `resolve_model_name("chatgpt-web")` devuelve `"chatgpt-web"`; los demás nombres van a Gemini.
   - Gems (`create/update/delete_gem`, `gem_exists`): siempre Gemini.
   - `status()`: el de Gemini más `"chatgpt": {"session": bool, "image_gen": {"remaining", "reset_after", "checked_at"} | None}`. **Nunca lanza Chrome**, porque la webapp consulta `status()` cada 60 s: `session` sale de la base de cookies (§6, leída de una copia) e `image_gen` es la última cuota guardada en `state_dir/chatgpt_quota.json`, que se escribe en cada llamada a ChatGPT.
-  - `quota()`: la de Gemini, sin cambios (la usa el quota guard del servicio). ChatGPT controla su propia cuota en §5.
+  - `quota()`: la de Gemini, sin cambios. **El quota guard del servicio (`ImageService._guard`) se salta para las llamadas a ChatGPT**: en una generación con `model == "chatgpt-web"` y en una edición cuya conversación tiene `rec.model == "chatgpt-web"`. Si no, el uso de Gemini bloquearía a ChatGPT. Para ChatGPT, la única barrera previa es su `remaining == 0` (§5.1, paso 3).
   - `aclose()`: cierra los dos.
 - **Gem con ChatGPT:** si `generate`/`edit` de ChatGPT recibe `gem_id`, no lo usa y devuelve `warning = {"code": "gem_ignored", …}` con el mensaje «ChatGPT no usa Gems; el estilo se aplicó solo como texto». El servicio ya envía el `append` y la imagen del estilo. **No se usa `gem_missing`:** `service.py:263-266` borra la entrada del Gem del estilo cuando recibe `GEM_MISSING` con su `gem_id`. `gem_ignored` es un código de aviso, no de error (los 29 códigos de error no cambian).
 - **`jobs.py`:** `MODEL_LABELS["chatgpt-web"] = "ChatGPT (web)"`.
