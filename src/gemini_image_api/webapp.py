@@ -344,7 +344,7 @@ def _collection_json(ctx: _Ctx, c, idx: dict) -> dict:
 # -- pages & files ---------------------------------------------------------
 
 class _NoCacheStatic(StaticFiles):
-    """Code and styles revalidate on every load (ETag -> 304), so a `gia update` is never masked by a stale browser copy."""
+    """Code and styles revalidate on every load (ETag -> 304), so a `musa update` is never masked by a stale browser copy."""
     async def get_response(self, path, scope):
         resp = await super().get_response(path, scope)
         if path.endswith((".js", ".css", ".html", ".json")):
@@ -1108,20 +1108,20 @@ async def get_quota(request: Request):
     except Exception as e:
         log.warning("quota status failed: %s", e)
         return _quota_unavailable("quota status unavailable",
-                                  "Check the session with `gia auth`, then retry.", code="auth_expired")
+                                  "Check the session with `musa auth`, then retry.", code="auth_expired")
     st = st if isinstance(st, dict) else {}
     cookie_present = bool(st.get("cookie_present"))
     if not cookie_present:
         return _quota_unavailable("no session cookie",
-                                  "Run `gia login` to sign in, then retry.", cookie_present, code="auth_expired")
+                                  "Run `musa auth` to sign in, then retry.", cookie_present, code="auth_expired")
     if not st.get("valid"):
         return _quota_unavailable(st.get("message") or "session is not valid",
-                                  "Run `gia login` to sign in again, then retry.", cookie_present, code="auth_expired")
+                                  "Run `musa auth` to sign in again, then retry.", cookie_present, code="auth_expired")
     q = st.get("quota") or {}
     body = {f: q.get(f) for f in QUOTA_FIELDS}
     if all(body[f] is None for f in QUOTA_FIELDS):
         return _quota_unavailable("quota data not available",
-                                  "Wait a moment and retry, or check the session with `gia auth`.",
+                                  "Wait a moment and retry, or check the session with `musa auth`.",
                                   cookie_present)
     body["account_status"] = st.get("account_status")
     body["cookie_present"] = True

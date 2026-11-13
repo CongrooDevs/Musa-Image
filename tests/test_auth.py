@@ -94,7 +94,7 @@ def test_read_jar_wrong_shape_is_auth_expired(settings, content):
     settings.cookie_file.write_text(content)
     with pytest.raises(GIAError) as e:
         read_cookie_jar(settings.cookie_file)
-    assert e.value.code == "auth_expired" and e.value.details["hint"] == "run: gia auth"
+    assert e.value.code == "auth_expired" and e.value.details["hint"] == "run: musa auth"
 
 
 async def test_ensure_client_passes_auto_close_and_closes_on_guest(settings):

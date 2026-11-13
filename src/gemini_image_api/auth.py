@@ -21,10 +21,10 @@ def read_cookie_jar(path: Path) -> list[dict]:
     try:
         data = json.loads(p.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, UnicodeDecodeError) as e:
-        raise GIAError(AUTH_EXPIRED, f"cookie file is corrupt: {e}", hint="run: gia auth") from e
+        raise GIAError(AUTH_EXPIRED, f"cookie file is corrupt: {e}", hint="run: musa auth") from e
     if not isinstance(data, list) or not all(isinstance(c, dict) and "name" in c and "value" in c for c in data):
         raise GIAError(AUTH_EXPIRED, "cookie file is corrupt: expected a list of {name, value, domain}",
-                       hint="run: gia auth")
+                       hint="run: musa auth")
     return data
 
 
@@ -59,7 +59,7 @@ async def ensure_client(settings: Settings, client_cls, auto_close: bool = False
     jar = read_cookie_jar(settings.cookie_file)
     cookies = _cookies_dict(jar)
     if not cookies.get("__Secure-1PSID"):
-        raise GIAError(AUTH_EXPIRED, "no saved cookies found", hint="run: gia auth")
+        raise GIAError(AUTH_EXPIRED, "no saved cookies found", hint="run: musa auth")
     if not cookies.get("__Secure-1PSIDTS") and settings.upstream_cache_dir.exists():
         cache_files = list(settings.upstream_cache_dir.glob("*.json")) + list(settings.upstream_cache_dir.glob(".*.json"))
         for cache_file in cache_files:
@@ -90,7 +90,7 @@ async def ensure_client(settings: Settings, client_cls, auto_close: bool = False
         raise GIAError(
             AUTH_EXPIRED,
             "session is in guest mode (only flash-lite available)",
-            hint="run: gia auth",
+            hint="run: musa auth",
         )
     return client
 
@@ -175,7 +175,7 @@ def login_guided(settings: Settings, launcher=None, closer=None) -> list[dict]:
         deadline = time.monotonic() + LOGIN_TIMEOUT_S
         while not _has_session(read_firefox_cookies(profile)):
             if time.monotonic() >= deadline:
-                raise GIAError(AUTH_EXPIRED, "login timeout", hint="run: gia auth")
+                raise GIAError(AUTH_EXPIRED, "login timeout", hint="run: musa auth")
             time.sleep(LOGIN_POLL_S)
         time.sleep(LOGIN_POLL_S)  # let the companion cookies (__Secure-1PSIDTS, SIDCC...) land
         jar = read_firefox_cookies(profile)

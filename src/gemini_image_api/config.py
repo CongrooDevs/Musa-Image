@@ -27,9 +27,9 @@ class Settings(BaseSettings):
     min_delay_s: float = 2.0
     default_model: str = "gemini-flash"
     thumb_size: int = 512
-    firefox_path: str | None = None     # real (non-automated) Firefox binary used by `gia auth`
+    firefox_path: str | None = None     # real (non-automated) Firefox binary used by `musa auth`
     app_port: int = 8765                # Musa web app port (GIA_APP_PORT)
-    app_with_mcp: bool = False          # gia-mcp also starts Musa (GIA_APP_WITH_MCP)
+    app_with_mcp: bool = False          # musa-mcp also starts Musa (GIA_APP_WITH_MCP)
     temp_chats: bool = True              # generate in temporary chats: they never appear in the Gemini chat history (GIA_TEMP_CHATS)
     @classmethod
     def settings_customise_sources(

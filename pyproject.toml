@@ -28,8 +28,8 @@ dependencies = [
 test = ["pytest>=8", "pytest-asyncio>=0.23", "respx>=0.21"]
 
 [project.scripts]
-gia = "gemini_image_api.cli:main"
-gia-mcp = "gemini_image_api.mcp_server:main"
+musa = "gemini_image_api.cli:main"
+musa-mcp = "gemini_image_api.mcp_server:main"
 
 [build-system]
 requires = ["hatchling"]

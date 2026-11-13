@@ -608,7 +608,7 @@ def test_quota_without_cookie_reports_cookie_present_false(env):
     b.cookie_present = False
     u = c.get("/api/quota", params={"refresh": "1"}, headers=H).json()
     assert u["available"] is False and u["cookie_present"] is False
-    assert u["next_action"] == "Run `gia login` to sign in, then retry."
+    assert u["next_action"] == "Run `musa auth` to sign in, then retry."
 
 
 def test_sse_emits_jobs_event(env):

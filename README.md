@@ -3,19 +3,19 @@
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)]()
 
-Servidor **MCP (stdio)** y CLI **`gia`** para generar y editar imágenes con **tu propia sesión web de Gemini** (cookies del navegador), sin API key de pago. Incluye **Musa**, una app web local para organizar y generar: galería, estilos con imagen de referencia, colecciones y generación con cola.
+Servidor **MCP (stdio)** y CLI **`musa`** para generar y editar imágenes con **tu propia sesión web de Gemini** (cookies del navegador), sin API key de pago. Incluye **Musa**, una app web local para organizar y generar: galería, estilos con imagen de referencia, colecciones y generación con cola.
 
 ![Musa, la galería local](docs/screenshots/musa-galeria.jpg)
 
 **Características**
 
-- 🤖 MCP con 37 tools (`generate_image`, `edit_image`, `list_generations`, colecciones, Gems de estilo, prompts guardados, animaciones y composiciones…) y CLI `gia` equivalente.
+- 🤖 MCP con 37 tools (`generate_image`, `edit_image`, `list_generations`, colecciones, Gems de estilo, prompts guardados, animaciones y composiciones…) y CLI `musa` equivalente.
 - 🖼️ Referencias locales/URL/`gen:<id>` (hasta 10, 20 MB, validadas por magic bytes y anti-SSRF), estilos con imagen de referencia, plantillas con variables, 10 proporciones.
-- 🗂️ **Musa** (`gia app`): app local en `127.0.0.1` con clave por arranque — galería, generación con cola, colecciones, estilos, Gems y pantalla de cuota real.
+- 🗂️ **Musa** (`musa app`): app local en `127.0.0.1` con clave por arranque — galería, generación con cola, colecciones, estilos, Gems y pantalla de cuota real.
 - 🧠 **Gems de estilo**: cada estilo puede usar un Gem de tu cuenta de Gemini para salidas más consistentes.
 - 🔒 Chats temporales por defecto (no ensucian tu historial de Gemini), logs sin secretos, estado local con permisos restrictivos.
 
-Arquitectura: `agente MCP / CLI gia → capa de servicio (refs, estilos, almacenamiento, estado) → client.py (cliente nativo interno en upstream/) → gemini.google.com`.
+Arquitectura: `agente MCP / CLI musa → capa de servicio (refs, estilos, almacenamiento, estado) → client.py (cliente nativo interno en upstream/) → gemini.google.com`.
 
 ## ⚠️ Advertencia: Términos de Servicio y estabilidad
 
@@ -26,42 +26,42 @@ Arquitectura: `agente MCP / CLI gia → capa de servicio (refs, estilos, almacen
 
 ## Instalación
 
-Requisitos: **macOS/Linux**, [uv](https://docs.astral.sh/uv/) (instala Python 3.11+ por ti si hace falta) y **Firefox** (en macOS, `/Applications/Firefox.app`; en otro sitio, `GIA_FIREFOX_PATH`). `gia auth` abre Firefox como un navegador normal con un perfil propio en `<state_dir>/firefox-profile`: Google rechaza el inicio de sesión en navegadores automatizados ("This browser or app may not be secure"), y Chromium no sirve por las cookies de sesión ligadas al dispositivo.
+Requisitos: **macOS/Linux**, [uv](https://docs.astral.sh/uv/) (instala Python 3.11+ por ti si hace falta) y **Firefox** (en macOS, `/Applications/Firefox.app`; en otro sitio, `GIA_FIREFOX_PATH`). `musa auth` abre Firefox como un navegador normal con un perfil propio en `<state_dir>/firefox-profile`: Google rechaza el inicio de sesión en navegadores automatizados ("This browser or app may not be secure"), y Chromium no sirve por las cookies de sesión ligadas al dispositivo.
 
 ### Para usarlo (recomendado)
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh                          # 1. instala uv (si no lo tienes)
-uv tool install git+https://github.com/CongrooDevs/Musa-Image.git        # 2. instala gia, gia-mcp y Musa
-gia auth                                                                 # 3. inicia sesión en Gemini (abre Firefox)
-gia app                                                                  # 4. abre Musa en el navegador
+uv tool install git+https://github.com/CongrooDevs/Musa-Image.git        # 2. instala musa, musa-mcp y Musa
+musa auth                                                                 # 3. inicia sesión en Gemini (abre Firefox)
+musa app                                                                  # 4. abre Musa en el navegador
 ```
 
-Quedan instalados los comandos `gia` (CLI y Musa) y `gia-mcp` (servidor MCP) en `~/.local/bin`. Si tu terminal no los encuentra, ejecuta `uv tool update-shell` y abre otra terminal.
+Quedan instalados los comandos `musa` (CLI y Musa) y `musa-mcp` (servidor MCP) en `~/.local/bin`. Si tu terminal no los encuentra, ejecuta `uv tool update-shell` y abre otra terminal.
 
 ### Para desarrollar
 
 ```bash
 git clone https://github.com/CongrooDevs/Musa-Image.git && cd Musa-Image
 uv sync --extra test
-uv run gia auth
-uv run gia app          # Musa con el código del repositorio
+uv run musa auth
+uv run musa app          # Musa con el código del repositorio
 uv run pytest -q        # tests
 ```
 
 ### Actualizaciones
 
-- **Aviso automático:** Musa y `gia update --check` comparan tu versión con el último commit de `main` en GitHub (como mucho una consulta cada 24 h, guardada en `<state_dir>/update_check.json`). Si hay una versión nueva, Musa muestra la píldora **«Actualización»** en la barra superior.
-- **Instalar la nueva versión:** `gia update` (equivale a `uv tool install --force git+https://github.com/CongrooDevs/Musa-Image.git`). Después, cierra y vuelve a abrir Musa (`gia app`) y reinicia tu agente si usa `gia-mcp`.
+- **Aviso automático:** Musa y `musa update --check` comparan tu versión con el último commit de `main` en GitHub (como mucho una consulta cada 24 h, guardada en `<state_dir>/update_check.json`). Si hay una versión nueva, Musa muestra la píldora **«Actualización»** en la barra superior.
+- **Instalar la nueva versión:** `musa update` (equivale a `uv tool install --force git+https://github.com/CongrooDevs/Musa-Image.git`). Después, cierra y vuelve a abrir Musa (`musa app`) y reinicia tu agente si usa `musa-mcp`.
 - La actualización **no es silenciosa**: siempre la lanzas tú. Tus imágenes, estilos, prompts, colecciones, animaciones, composiciones y cookies viven en `~/.gemini-image-api` y `~/Pictures/gemini-image-api`, y no se tocan al actualizar.
-- El aviso solo funciona en instalaciones hechas con `uv tool install git+…` (que guardan el commit instalado) o en un clon del repositorio; en otros casos `gia update --check` no puede saber tu versión.
+- El aviso solo funciona en instalaciones hechas con `uv tool install git+…` (que guardan el commit instalado) o en un clon del repositorio; en otros casos `musa update --check` no puede saber tu versión.
 
 ## Primer uso
 
 ```bash
-gia auth                        # abre Firefox: inicia sesión en gemini.google.com; se cierra solo al detectar la cookie (o a los 5 min)
-gia gen "un gato astronauta"    # genera una imagen
-gia auth --status               # comprueba la sesión
+musa auth                        # abre Firefox: inicia sesión en gemini.google.com; se cierra solo al detectar la cookie (o a los 5 min)
+musa gen "un gato astronauta"    # genera una imagen
+musa auth --status               # comprueba la sesión
 ```
 
 (Desde un clon del repositorio, antepón `uv run`.) Las cookies quedan en `<state_dir>/cookies/` con permisos `0600` (`<state_dir>` es `~/.gemini-image-api` por defecto; configurable con `GIA_STATE_DIR`).
@@ -75,16 +75,16 @@ El mismo bloque sirve para **omp**, **Claude Code**, **Claude Desktop** y **Curs
   "mcpServers": {
     "gemini-image-api": {
       "command": "/ruta/absoluta/a/uv",
-      "args": ["run", "--project", "<ruta-al-repo>", "gia-mcp"]
+      "args": ["run", "--project", "<ruta-al-repo>", "musa-mcp"]
     }
   }
 }
 ```
 
-Se usa `--project` y no `--directory` para que el servidor arranque siempre sobre el repo, pero **sin cambiar el directorio de trabajo del agente**: ese cwd es el "directorio de trabajo" que usa la allowlist de refs y `copy_to`. El `command` lleva la ruta absoluta de `uv` porque los agentes MCP no siempre tienen el PATH del usuario. Si `gia-mcp` está en el PATH, basta `"command": "gia-mcp"` sin `args`. Para imprimir este JSON con las rutas reales:
+Se usa `--project` y no `--directory` para que el servidor arranque siempre sobre el repo, pero **sin cambiar el directorio de trabajo del agente**: ese cwd es el "directorio de trabajo" que usa la allowlist de refs y `copy_to`. El `command` lleva la ruta absoluta de `uv` porque los agentes MCP no siempre tienen el PATH del usuario. Si `musa-mcp` está en el PATH, basta `"command": "musa-mcp"` sin `args`. Para imprimir este JSON con las rutas reales:
 
 ```bash
-uv run gia mcp-config
+uv run musa mcp-config
 ```
 
 ## Tools MCP
@@ -137,41 +137,41 @@ En `update_prompt` y `delete_prompt`, `prompt` es el id (`pr_xxxxxxxx`) o el nom
 
 `refs[]` admite rutas locales (dentro de `output_root` o del directorio de trabajo), URLs http/https públicas, o `gen:<id>[#index]` de `list_generations` (máx. 10). `copy_to` es una ruta opcional (directorio o archivo) dentro de `output_root` o del directorio de trabajo donde también se copia el resultado.
 
-`aspect_hint` admite exactamente `1:1`, `4:5`, `3:4`, `2:3`, `9:16`, `5:4`, `4:3`, `3:2`, `16:9` y `21:9` (se traduce a texto en el prompt; Gemini lo trata como **pista** y no lo garantiza). Los mismos 10 valores valen en `--aspect` de la CLI (`gia gen`/`gia edit`). Cualquier otro valor devuelve error `invalid_aspect` (con `details.valid`).
+`aspect_hint` admite exactamente `1:1`, `4:5`, `3:4`, `2:3`, `9:16`, `5:4`, `4:3`, `3:2`, `16:9` y `21:9` (se traduce a texto en el prompt; Gemini lo trata como **pista** y no lo garantiza). Los mismos 10 valores valen en `--aspect` de la CLI (`musa gen`/`musa edit`). Cualquier otro valor devuelve error `invalid_aspect` (con `details.valid`).
 
 ## Comandos CLI
 
 | Comando | Descripción |
 |---|---|
-| `gia gen PROMPT` | Genera imagen (chat nuevo). Opciones: `-r/--ref` (repetible), `--style`, `--style-text`, `--template`, `-v/--var k=v` (repetible), `--aspect`, `--project`, `--subdir`, `--copy-to`, `--collection`, `--model` |
-| `gia edit CONVERSATION_ID PROMPT` | Edita la imagen de una conversación existente (mismas opciones que `gen`, incluidos `--copy-to` y `--collection`) |
-| `gia auth [--status]` | Login guiado (Firefox) o comprobación de sesión |
-| `gia styles` | Lista estilos y plantillas |
-| `gia styles gems` | Lista los Gems de estilo activos: `[{style, gem_id, name, custom}]` |
-| `gia styles gem ESTILO on\|off [--instructions TEXTO]` | Activa (`on`) o desactiva (`off`) el Gem de un estilo (ver «Gem de estilo»); `--instructions` fija instrucciones personalizadas (cadena vacía: restaura la plantilla) |
-| `gia styles add NOMBRE --instructions TEXTO [--description TEXTO] [--family GRUPO] [--image REF]` | Crea un estilo propio; `--family` por defecto `otros`; `--image` admite ruta permitida, URL https o `gen:<id>[#index]` |
-| `gia styles edit ESTILO [--name] [--instructions] [--description] [--family] [--image] [--remove-image]` | Edita un estilo propio; los campos omitidos se mantienen |
-| `gia styles rm ESTILO` | Borra un estilo propio (y su Gem) |
-| `gia styles show ESTILO [--prompt TEXTO]` | Muestra el estilo y el prompt exacto que enviaría (sin llamar a Gemini) |
-| `gia history` | Generaciones pasadas (más reciente primero); sus id sirven como refs `gen:<id>[#index]`. Opciones: `--query`, `--project`, `--since`, `--status`, `--collection`, `--model` (id de modelo exacto), `--limit` (20), `--offset` |
-| `gia models` | Modelos de chat disponibles en tu cuenta |
-| `gia prompts` | Lista los prompts guardados (los más usados primero) |
-| `gia prompts add NOMBRE TEXTO` | Guarda un prompt con nombre único; un texto que empiece por `-` necesita `--` antes: `gia prompts add -- nombre "-v texto"` |
-| `gia prompts edit PROMPT [--name NOMBRE] [--text TEXTO]` | Renombra y/o cambia el texto; `PROMPT` es el id (`pr_xxxxxxxx`) o el nombre |
-| `gia prompts rm PROMPT` | Borra un prompt guardado |
-| `gia prompts use PROMPT` | Imprime **solo el texto** del prompt (cuenta como un uso), apto para scripts: `p=$(gia prompts use cat) && gia gen "$p"`. Si falla, el error JSON va a stderr y sale con código 1 |
-| `gia retry-download CONVERSATION_ID IMAGE_INDEX` | Reintenta solo la descarga |
-| `gia delete CONVERSATION_ID` | Borra la conversación en Gemini y en el historial local |
-| `gia mcp-config` | Imprime el JSON para registrar el MCP |
-| `gia app` | Abre Musa, la galería local (ver "Musa: galería local"). Opciones: `--port`, `--no-open` |
-| `gia collections [add IMAGE COLLECTION]` | Lista colecciones (etiquetas) con sus conteos, o añade una imagen (`gen:<id>[#index]`) a una colección (se crea si no existe) |
-| `gia collections rename COLECCIÓN NOMBRE [--description TEXTO]` | Renombra una colección (nombre o id) y opcionalmente cambia su descripción |
-| `gia collections rm COLECCIÓN` | Borra una colección; sus imágenes se conservan |
-| `gia collections remove IMAGE COLLECTION` | Quita una imagen de una colección (la imagen se conserva) |
-| `gia fav IMAGE [--off]` | Marca una imagen (`gen:<id>[#index]`) como favorita; `--off` la desmarca |
-| `gia rm IMAGE` | Borra el archivo local y la miniatura de una imagen (`gen:<id>[#index]`); la copia en Gemini no se toca |
-| `gia update [--check]` | Comprueba o instala la última versión de gia y Musa directamente desde GitHub |
-| `gia serve` | Ejecuta el servidor MCP por stdio |
+| `musa gen PROMPT` | Genera imagen (chat nuevo). Opciones: `-r/--ref` (repetible), `--style`, `--style-text`, `--template`, `-v/--var k=v` (repetible), `--aspect`, `--project`, `--subdir`, `--copy-to`, `--collection`, `--model` |
+| `musa edit CONVERSATION_ID PROMPT` | Edita la imagen de una conversación existente (mismas opciones que `gen`, incluidos `--copy-to` y `--collection`) |
+| `musa auth [--status]` | Login guiado (Firefox) o comprobación de sesión |
+| `musa styles` | Lista estilos y plantillas |
+| `musa styles gems` | Lista los Gems de estilo activos: `[{style, gem_id, name, custom}]` |
+| `musa styles gem ESTILO on\|off [--instructions TEXTO]` | Activa (`on`) o desactiva (`off`) el Gem de un estilo (ver «Gem de estilo»); `--instructions` fija instrucciones personalizadas (cadena vacía: restaura la plantilla) |
+| `musa styles add NOMBRE --instructions TEXTO [--description TEXTO] [--family GRUPO] [--image REF]` | Crea un estilo propio; `--family` por defecto `otros`; `--image` admite ruta permitida, URL https o `gen:<id>[#index]` |
+| `musa styles edit ESTILO [--name] [--instructions] [--description] [--family] [--image] [--remove-image]` | Edita un estilo propio; los campos omitidos se mantienen |
+| `musa styles rm ESTILO` | Borra un estilo propio (y su Gem) |
+| `musa styles show ESTILO [--prompt TEXTO]` | Muestra el estilo y el prompt exacto que enviaría (sin llamar a Gemini) |
+| `musa history` | Generaciones pasadas (más reciente primero); sus id sirven como refs `gen:<id>[#index]`. Opciones: `--query`, `--project`, `--since`, `--status`, `--collection`, `--model` (id de modelo exacto), `--limit` (20), `--offset` |
+| `musa models` | Modelos de chat disponibles en tu cuenta |
+| `musa prompts` | Lista los prompts guardados (los más usados primero) |
+| `musa prompts add NOMBRE TEXTO` | Guarda un prompt con nombre único; un texto que empiece por `-` necesita `--` antes: `musa prompts add -- nombre "-v texto"` |
+| `musa prompts edit PROMPT [--name NOMBRE] [--text TEXTO]` | Renombra y/o cambia el texto; `PROMPT` es el id (`pr_xxxxxxxx`) o el nombre |
+| `musa prompts rm PROMPT` | Borra un prompt guardado |
+| `musa prompts use PROMPT` | Imprime **solo el texto** del prompt (cuenta como un uso), apto para scripts: `p=$(musa prompts use cat) && musa gen "$p"`. Si falla, el error JSON va a stderr y sale con código 1 |
+| `musa retry-download CONVERSATION_ID IMAGE_INDEX` | Reintenta solo la descarga |
+| `musa delete CONVERSATION_ID` | Borra la conversación en Gemini y en el historial local |
+| `musa mcp-config` | Imprime el JSON para registrar el MCP |
+| `musa app` | Abre Musa, la galería local (ver "Musa: galería local"). Opciones: `--port`, `--no-open` |
+| `musa collections [add IMAGE COLLECTION]` | Lista colecciones (etiquetas) con sus conteos, o añade una imagen (`gen:<id>[#index]`) a una colección (se crea si no existe) |
+| `musa collections rename COLECCIÓN NOMBRE [--description TEXTO]` | Renombra una colección (nombre o id) y opcionalmente cambia su descripción |
+| `musa collections rm COLECCIÓN` | Borra una colección; sus imágenes se conservan |
+| `musa collections remove IMAGE COLLECTION` | Quita una imagen de una colección (la imagen se conserva) |
+| `musa fav IMAGE [--off]` | Marca una imagen (`gen:<id>[#index]`) como favorita; `--off` la desmarca |
+| `musa rm IMAGE` | Borra el archivo local y la miniatura de una imagen (`gen:<id>[#index]`); la copia en Gemini no se toca |
+| `musa update [--check]` | Comprueba o instala la última versión de Musa directamente desde GitHub |
+| `musa serve` | Ejecuta el servidor MCP por stdio |
 
 ## Modelos
 
@@ -191,19 +191,19 @@ Además de las rutas descritas arriba (todas bajo la clave por arranque):
 
 ## Para el equipo
 
-- Instalación y actualización: ver «Instalación» (`uv tool install …` una vez; luego `gia update` cuando Musa muestre «Actualización»).
-- Cada persona ejecuta su propio `gia auth` con **su** cuenta de Gemini.
+- Instalación y actualización: ver «Instalación» (`uv tool install …` una vez; luego `musa update` cuando Musa muestre «Actualización»).
+- Cada persona ejecuta su propio `musa auth` con **su** cuenta de Gemini.
 - Las cookies viven en `~/.gemini-image-api` y **nunca se comparten ni se suben** al repositorio.
 - Los estilos y prompts propios son **locales de cada usuario**.
-- Configuración MCP sin rutas absolutas: `{"mcpServers": {"gemini-image-api": {"command": "gia-mcp"}}}`.
+- Configuración MCP sin rutas absolutas: `{"mcpServers": {"gemini-image-api": {"command": "musa-mcp"}}}`.
 
 ## Musa: galería local
 
 **Musa** es una pequeña app web local para ver, organizar y reutilizar tus imágenes generadas: galería en mosaico, estilos con imagen de referencia y colecciones (etiquetas).
 
 ```bash
-uv run gia app              # abre el navegador en la URL de Musa
-uv run gia app --port 9000 --no-open   # puerto propio, sin abrir el navegador
+uv run musa app              # abre el navegador en la URL de Musa
+uv run musa app --port 9000 --no-open   # puerto propio, sin abrir el navegador
 ```
 
 La app escucha **solo en `127.0.0.1`** (nunca se expone a la red) y la URL lleva una **clave secreta** (`http://127.0.0.1:<port>/?key=...`): al entrar con la clave en la URL se fija como cookie `gia_key` (httponly, samesite=strict) y toda petición sin ella devuelve 401; las peticiones que modifican datos exigen además la cabecera `Origin` correcta. La URL completa se imprime en stderr y queda registrada en `<state_dir>/app.json` (con `url`, `port`, `pid`); `auth_status` la devuelve como `app_url`.
@@ -212,7 +212,7 @@ La app escucha **solo en `127.0.0.1`** (nunca se expone a la red) y la URL lleva
 - **En Safari (macOS Sonoma+):** *Archivo → Añadir al Dock...*
 - **En Chrome / Edge / Brave:** Clic en el icono *«Instalar Musa»* que aparece en la barra de direcciones.
 
-Con `GIA_APP_WITH_MCP=true`, el servidor MCP (`gia-mcp`) arranca Musa en el mismo proceso (en `GIA_APP_PORT`, 8765 por defecto, sin abrir navegador; stdout se mantiene puro JSON-RPC). Si ya hay una instancia corriendo o el puerto está ocupado, el MCP sigue sin ella.
+Con `GIA_APP_WITH_MCP=true`, el servidor MCP (`musa-mcp`) arranca Musa en el mismo proceso (en `GIA_APP_PORT`, 8765 por defecto, sin abrir navegador; stdout se mantiene puro JSON-RPC). Si ya hay una instancia corriendo o el puerto está ocupado, el MCP sigue sin ella.
 
 Pantallas:
 
@@ -255,7 +255,7 @@ Los botones y controles son compactos (32 px en escritorio) y pasan a 44 px en p
 
 **Plantillas** incluidas: `anuncio_producto`, `post_redes` (1:1), `banner_web` (16:9) y `ficha_producto`; salen en `list_templates` (MCP) y en la CLI.
 
-**Colecciones (etiquetas)**: organizan las imágenes sin mover los archivos. Desde la app se crean, renombran, borran y se añaden imágenes; desde el agente: `collection=` en `generate_image`/`edit_image` (se crea si no existe), `collection` como filtro en `list_generations`, y las tools `list_collections`, `add_to_collection`, `remove_from_collection`, `rename_collection` y `delete_collection`. Por CLI: `--collection` en `gia gen`/`gia edit` y `gia collections` (`add`, `rename`, `rm`, `remove`; ver «Comandos CLI»).
+**Colecciones (etiquetas)**: organizan las imágenes sin mover los archivos. Desde la app se crean, renombran, borran y se añaden imágenes; desde el agente: `collection=` en `generate_image`/`edit_image` (se crea si no existe), `collection` como filtro en `list_generations`, y las tools `list_collections`, `add_to_collection`, `remove_from_collection`, `rename_collection` y `delete_collection`. Por CLI: `--collection` en `musa gen`/`musa edit` y `musa collections` (`add`, `rename`, `rm`, `remove`; ver «Comandos CLI»).
 
 ## Animaciones (sprite sheets)
 
@@ -356,8 +356,8 @@ templates:
 ```
 
 ```bash
-uv run gia styles
-uv run gia gen "" --template post_redes -v tema="lanzamiento de producto" -v estilo="fotorealista"
+uv run musa styles
+uv run musa gen "" --template post_redes -v tema="lanzamiento de producto" -v estilo="fotorealista"
 ```
 
 ## Gem de estilo
@@ -366,7 +366,7 @@ Cualquier estilo (del catálogo o tuyo) puede tener un **Gem** asociado en tu cu
 
 - Desde **Musa**: el interruptor «Usar Gem» de cada tarjeta de estilo; al activarlo se crea el Gem y al desactivarlo se borra. La insignia «Gem» y el enlace «Instrucciones» abren un diálogo para editarlas.
 - Desde el **agente MCP**: `style_gem(style, enabled, instructions?)` para activar/desactivar/editar y `list_style_gems()` para listarlos.
-- Por **CLI**: `gia styles gem <estilo> on|off [--instructions TEXTO]` y `gia styles gems`.
+- Por **CLI**: `musa styles gem <estilo> on|off [--instructions TEXTO]` y `musa styles gems`.
 
 El Gem se crea con el nombre **«Musa · <nombre del estilo»** (60 caracteres como máximo) y con una plantilla de instrucciones fija (en inglés) rellenada con la descripción y las reglas visuales del estilo. Si editas las instrucciones, se guardan como personalizadas (`custom: true`) y dejan de regenerarse a partir del estilo; pasar una cadena vacía restaura la plantilla. Los Gems activos se guardan en `<state_dir>/gems.json`.
 
@@ -388,18 +388,18 @@ Archivo opcional `~/.config/gemini-image-api/config.yaml`; las variables de ento
 | `GIA_WRITE_SIDECAR` | `false` | Escribe un `.json` junto a cada imagen |
 | `GIA_DEFAULT_MODEL` | `gemini-flash` | Modelo de chat por defecto |
 | `GIA_STYLES_FILE` | ninguno | Archivo de estilos alternativo; si no se define se sigue el orden de búsqueda de la sección "Estilos y plantillas" |
-| `GIA_APP_PORT` | `8765` | Puerto de Musa, la app web local (`gia app`, `GIA_APP_WITH_MCP`) |
-| `GIA_APP_WITH_MCP` | `false` | Si es `true`, `gia-mcp` arranca también Musa en el mismo proceso |
+| `GIA_APP_PORT` | `8765` | Puerto de Musa, la app web local (`musa app`, `GIA_APP_WITH_MCP`) |
+| `GIA_APP_WITH_MCP` | `false` | Si es `true`, `musa-mcp` arranca también Musa en el mismo proceso |
 | `GIA_TEMP_CHATS` | `true` | Genera en chats temporales de Gemini: no quedan en el historial de chats de gemini.google.com (el `edit` sigue funcionando). `false` para dejarlos visibles |
 
-Otras: `GIA_MAX_REF_BYTES`, `GIA_MIN_DELAY_S`, `GIA_THUMB_SIZE`, `GIA_FIREFOX_PATH` (binario de Firefox para `gia auth`).
+Otras: `GIA_MAX_REF_BYTES`, `GIA_MIN_DELAY_S`, `GIA_THUMB_SIZE`, `GIA_FIREFOX_PATH` (binario de Firefox para `musa auth`).
 
 ## Salida y estado
 
 - Imágenes en `<output_root>/<project>/<subdir>/` con nombre `YYYYMMDD-HHMMSS_slug_index.ext` (`<output_root>` es `~/Pictures/gemini-image-api` por defecto).
 - Con `return_image` se crea una miniatura JPEG (`GIA_THUMB_SIZE`, 512 px por defecto) que viaja como bloque de imagen MCP; los PNG llevan metadatos `tEXt` (prompt, modelo, conversation_id, hashes de refs).
 - Sidecar `.json` opcional (`GIA_WRITE_SIDECAR=true`).
-- Historial en `<state_dir>/generations.jsonl` (por defecto `~/.gemini-image-api/generations.jsonl`): de ahí sale el `conversation_id` para `gia edit`, `retry-download` y `delete`, y los id para refs `gen:<id>` (`gia history` / `list_generations`).
+- Historial en `<state_dir>/generations.jsonl` (por defecto `~/.gemini-image-api/generations.jsonl`): de ahí sale el `conversation_id` para `musa edit`, `retry-download` y `delete`, y los id para refs `gen:<id>` (`musa history` / `list_generations`).
 - Logs en `<state_dir>/logs/gia.log` (rotativo) y en stderr, con los secretos de sesión (`__Secure-*`, `SAPISID*`, `Cookie:`, ruta de caché de cookies) redactados. La caché de cookies refrescadas de `gemini-webapi` se guarda en `<state_dir>/cookies/upstream_cache/` (no en `$TMPDIR`): se escribe al terminar cada comando CLI y cuando el cliente del servidor MCP se cierra solo tras 15 min de inactividad. Los logs de upstream van a `<state_dir>/logs/upstream.log` (nivel WARNING, rotación 1 MB, retención 3 archivos), también redactados.
 
 ## Seguridad
@@ -417,7 +417,7 @@ Todas las respuestas de error incluyen `code`, `message`, `details`, `retryable`
 
 | `code` | `retryable` | Significado / qué hacer |
 |---|---|---|
-| `auth_expired` | no | Sesión caducada (o modo invitado detectado): ejecuta `gia auth` / `auth_login` y reintenta |
+| `auth_expired` | no | Sesión caducada (o modo invitado detectado): ejecuta `musa auth` / `auth_login` y reintenta |
 | `usage_limit` | no | Límite de uso de la cuenta alcanzado: para y espera a que se reinicie la ventana de cuota |
 | `temporarily_blocked` | sí | Bloqueo temporal de Google: espera varios minutos; no reintentes en bucle |
 | `no_image` | no | Gemini respondió sin imagen: lee `gemini_text` y reformula el prompt |
@@ -437,10 +437,10 @@ Todas las respuestas de error incluyen `code`, `message`, `details`, `retryable`
 | `path_not_allowed` | no | `copy_to` debe apuntar dentro de `output_root` o del directorio de trabajo |
 | `invalid_aspect` | no | `aspect_hint` inválido: usa uno de `details.valid` (`1:1`, `4:5`, `3:4`, `2:3`, `9:16`, `5:4`, `4:3`, `3:2`, `16:9`, `21:9`) |
 | `invalid_collection` | no | Nombre de colección vacío o ya existente: elige otro nombre o usa la existente |
-| `unknown_collection` | no | Colección desconocida: usa `list_collections` / `gia collections` (`details.valid`) |
+| `unknown_collection` | no | Colección desconocida: usa `list_collections` / `musa collections` (`details.valid`) |
 | `invalid_style` | no | Estilo inválido: falta el nombre o la imagen subida no es png/jpeg/webp/gif/svg de menos de 20 MB (el SVG se convierte a PNG) |
 | `invalid_prompt` | no | Prompt guardado inválido: nombre (máx. 80, único sin distinguir mayúsculas) y texto (máx. 4000) no vacíos; máximo 200 prompts guardados (ver `message`) |
-| `unknown_prompt` | no | Prompt guardado desconocido: usa `list_prompts` (o `gia prompts`) y un id o nombre de esa lista |
+| `unknown_prompt` | no | Prompt guardado desconocido: usa `list_prompts` (o `musa prompts`) y un id o nombre de esa lista |
 | `invalid_query` | no | Argumentos inválidos: revisa `message` (p. ej. `since` debe ser fecha/hora ISO como `2026-11-09`; `limit` debe ser un entero positivo) |
 | `invalid_animation` | no | Animación inválida: revisa la rejilla (cols×rows, 2–36 frames), el modo (`sprite`/`scene`), el color de fondo (`green`/`magenta`), la tolerancia (5–80), los fps (2–30) y la repetición (`loop`/`pingpong`) |
 | `unknown_animation` | no | La imagen no tiene animación: créala con `set_animation` (MCP) o «Convertir en animación» (Musa) |
@@ -452,9 +452,9 @@ Todas las respuestas de error incluyen `code`, `message`, `details`, `retryable`
 Nunca se ejecuta en los tests (no hay red). Tras cambiar la versión pinneada:
 
 ```bash
-uv run gia auth                                   # login y cookies
-uv run gia gen "un gato astronauta"               # anota el conversation_id
-uv run gia edit <conversation_id> "ponle un casco rojo"
+uv run musa auth                                   # login y cookies
+uv run musa gen "un gato astronauta"               # anota el conversation_id
+uv run musa edit <conversation_id> "ponle un casco rojo"
 ```
 
 Verifica que ambas llamadas devuelven imágenes guardadas en el `output_root` (`~/Pictures/gemini-image-api` por defecto; la base probada es `2.1.1`).

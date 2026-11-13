@@ -1,4 +1,4 @@
-"""Update checking and installation routines for gia and Musa."""
+"""Update checking and installation routines for Musa."""
 import json
 import os
 import shutil
@@ -58,7 +58,7 @@ def check_update(state_dir: Path, force: bool = False) -> dict[str, Any]:
     try:
         resp = httpx.get(
             GITHUB_COMMITS_URL,
-            headers={"User-Agent": "gia-update-checker"},
+            headers={"User-Agent": "musa-update-checker"},
             timeout=3.0,
         )
         if resp.status_code != 200:
@@ -90,7 +90,7 @@ def check_update(state_dir: Path, force: bool = False) -> dict[str, Any]:
         return {"has_update": False, "error": str(e)}
 
 def run_update() -> int:
-    """Invokes uv tool install --force to update gia."""
+    """Invokes uv tool install --force to update Musa."""
     uv_path = shutil.which("uv")
     if not uv_path:
         raise RuntimeError("No se encontró el ejecutable 'uv' en el PATH del sistema.")

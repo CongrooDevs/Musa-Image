@@ -17,7 +17,7 @@ from .library import LibraryStore
 from .state import StateStore
 from .style_store import UserStyleStore
 
-app = typer.Typer(help="gia: generate/edit images with your Gemini web session (no API key)")
+app = typer.Typer(help="musa: generate/edit images with your Gemini web session (no API key)")
 _backend: Backend | None = None
 _owned = False  # True when _backend was built lazily by _bs() (as opposed to injected via set_backend)
 _settings: Settings | None = None
@@ -349,7 +349,7 @@ def prompts_list(ctx: typer.Context):
 def prompts_add(name: str, text: str):
     """Save a prompt under a unique name (case-insensitive).
 
-    A text starting with '-' needs '--' first: gia prompts add -- name "-v text"."""
+    A text starting with '-' needs '--' first: musa prompts add -- name "-v text"."""
     _bs()
     try:
         _dump(_service.save_prompt(name, text))
@@ -383,7 +383,7 @@ def prompts_rm(prompt: str = typer.Argument(..., help="Prompt id (pr_xxxxxxxx) o
 
 @prompts_app.command("use")
 def prompts_use(prompt: str = typer.Argument(..., help="Prompt id (pr_xxxxxxxx) or name")):
-    """Print a saved prompt's text (counts as one use), e.g. p=$(gia prompts use cat) && gia gen "$p".
+    """Print a saved prompt's text (counts as one use), e.g. p=$(musa prompts use cat) && musa gen "$p".
 
     Errors go to stderr as JSON (exit 1), so stdout never carries an error."""
     _bs()
@@ -449,9 +449,9 @@ def delete(conversation_id: str):
 def mcp_config_dict(repo_root: Path | None) -> dict:
     if repo_root is not None:
         server = {"command": shutil.which("uv") or "uv",
-                  "args": ["run", "--project", str(repo_root), "gia-mcp"]}
+                  "args": ["run", "--project", str(repo_root), "musa-mcp"]}
     else:
-        server = {"command": shutil.which("gia-mcp") or "gia-mcp"}
+        server = {"command": shutil.which("musa-mcp") or "musa-mcp"}
     return {"mcpServers": {"gemini-image-api": server}}
 
 
@@ -507,25 +507,25 @@ def app_cmd(port: int | None = typer.Option(None, "--port"),
 
 @app.command()
 def update(check: bool = typer.Option(False, "--check", help="Solo comprobar si hay actualizaciones disponibles")):
-    """Actualiza gia y Musa a la última versión desde GitHub."""
+    """Actualiza Musa a la última versión desde GitHub."""
     from .updates import check_update, run_update
     _, s = _bs()
     if check:
         res = check_update(s.state_dir, force=True)
         if res.get("has_update"):
             typer.echo(f"💡 Nueva versión disponible: {res.get('message')} ({res.get('latest_sha', '')[:8]})")
-            typer.echo("Ejecuta 'gia update' para instalarla.")
+            typer.echo("Ejecuta 'musa update' para instalarla.")
         else:
-            typer.echo("✅ gia está actualizado a la última versión.")
+            typer.echo("✅ Musa está actualizado a la última versión.")
         return
 
-    typer.echo("Actualizando gia desde GitHub...")
+    typer.echo("Actualizando Musa desde GitHub...")
     try:
         code = run_update()
         if code == 0:
-            typer.echo("✅ gia se ha actualizado correctamente.")
+            typer.echo("✅ Musa se ha actualizado correctamente.")
         else:
-            typer.echo("❌ Falló la actualización de gia.", err=True)
+            typer.echo("❌ Falló la actualización de Musa.", err=True)
             raise typer.Exit(code)
     except Exception as e:
         typer.echo(f"❌ Error al actualizar: {e}", err=True)

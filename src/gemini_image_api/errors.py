@@ -31,7 +31,7 @@ UNKNOWN_COMPOSITION = "unknown_composition"
 RETRYABLE = frozenset({TIMEOUT, TEMPORARILY_BLOCKED, GENERATED_NOT_SAVED, QUOTA_GUARD, UPSTREAM_ERROR})
 
 NEXT_ACTION = {
-    AUTH_EXPIRED: "Session expired: call auth_login (or run `gia auth`), then retry.",
+    AUTH_EXPIRED: "Session expired: call auth_login (or run `musa auth`), then retry.",
     USAGE_LIMIT: "Google usage limit reached: stop generating and wait for the quota window to reset.",
     TEMPORARILY_BLOCKED: "Temporarily blocked by Google: wait several minutes before retrying; do not loop.",
     NO_IMAGE: "Gemini answered without an image: read gemini_text and rephrase the prompt.",

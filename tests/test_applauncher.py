@@ -152,8 +152,8 @@ def _readline_with_timeout(stream, timeout_s: float) -> bytes:
     return stream.readline()
 
 
-def test_gia_mcp_with_app_keeps_stdout_pure_jsonrpc(tmp_path):
-    """gia-mcp with GIA_APP_WITH_MCP=true answers initialize on stdout as pure JSON-RPC.
+def test_musa_mcp_with_app_keeps_stdout_pure_jsonrpc(tmp_path):
+    """musa-mcp with GIA_APP_WITH_MCP=true answers initialize on stdout as pure JSON-RPC.
 
     Uses a temp GIA_STATE_DIR (so no real cookies are read) and a free port; no network:
     initialize never touches the backend. The subprocess is always killed (whole process
@@ -166,7 +166,7 @@ def test_gia_mcp_with_app_keeps_stdout_pure_jsonrpc(tmp_path):
            "GIA_STYLES_FILE": str(tmp_path / "none.yaml"),
            "GIA_APP_WITH_MCP": "true",
            "GIA_APP_PORT": str(_free_port())}
-    proc = subprocess.Popen(["uv", "run", "gia-mcp"], cwd=REPO, env=env,
+    proc = subprocess.Popen(["uv", "run", "musa-mcp"], cwd=REPO, env=env,
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             start_new_session=True)
     try:
