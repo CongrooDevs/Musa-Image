@@ -69,7 +69,7 @@ Musa genera y edita imágenes también con **ChatGPT**, usando la sesión web de
 1. Abrir `https://chatgpt.com/`, o `https://chatgpt.com/c/<id>` si es una edición.
 2. **Sesión:** `GET /api/auth/session`. Si no hay `accessToken`, se lanza `auth_expired`.
 3. **Cuota:** `POST /backend-api/conversation/init` con el cuerpo de §5.3. Si `image_gen.remaining == 0`, se lanza `usage_limit` con `resets_at = reset_after`.
-4. **Referencias:** si las hay, `set_input_files([...])` sobre el primer `input[type=file]` cuyo `accept` contiene `image`, todas en una sola llamada.
+4. **Referencias:** si las hay, se elige un `input[type=file]` sin atributo `capture` cuyo `accept` contenga `image` (o no tenga `accept`), preferiblemente uno con `multiple`, y se llama a `set_input_files([...])` una sola vez. Si ningún input admite `multiple`, se llama una vez por archivo.
    - **Señal de fin de subida:** se cuentan las respuestas `POST /backend-api/files/process_upload_stream` con estado 200: basta la respuesta (cabeceras) de cada una. El stream queda abierto, así que `finished()` no se usa (verificado en vivo el 2026-11-13 con 2 referencias). Cuando el contador llega al número de referencias, se continúa.
    - Límite: 90 s; si se supera, `upstream_error` («la subida de referencias no terminó»).
    - No se usa el estado del botón de enviar: solo se localizó por `aria-label="Enviar"`, que depende del idioma.
