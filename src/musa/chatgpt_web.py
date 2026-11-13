@@ -347,7 +347,7 @@ class ChatGPTPage:
         box = self._page.locator(COMPOSER).first
         await box.wait_for(state="visible", timeout=30_000)
         await box.click()
-        lines = prompt.split("\n")
+        lines = prompt.replace("\r\n", "\n").replace("\r", "\n").split("\n")
         for i, line in enumerate(lines):
             if line:
                 await self._page.keyboard.type(line, delay=TYPE_DELAY_MS)

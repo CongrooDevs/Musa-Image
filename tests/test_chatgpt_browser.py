@@ -337,3 +337,12 @@ async def test_watch_blocking_collects_only_blocking_posts():
         fake.emit(FakeResponse("https://chatgpt.com/backend-api/conversation/x", 404, method="GET"))
     assert blocked == [("https://chatgpt.com/backend-api/f/conversation", 403)]
     assert fake.handlers == []
+
+
+async def test_send_normalizes_carriage_returns():
+    fake = FakePage()
+    await _cpage(fake).send("uno\r\ndos\rtres")
+    keys = [e for e in fake.events if e[0] in ("type", "press")]
+    assert keys == [("type", "uno"), ("press", "Shift+Enter"), ("type", "dos"), ("press", "Shift+Enter"),
+                    ("type", "tres"), ("press", "Enter")]
+    assert not any("\r" in e[1] for e in keys)
