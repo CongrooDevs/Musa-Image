@@ -52,6 +52,11 @@ _UPSTREAM_FIELDS = ("cid", "rid", "rcid", "image_id", "url")
 # gem_missing is a warning code, not an agent error code (errors.py stays at 22 codes)
 GEM_MISSING = "gem_missing"
 GEM_CACHE_TTL_S = 60.0
+# gem_ignored: ChatGPT has no Gems. A different code from gem_missing on purpose: ImageService._run
+# (service.py:263-266) removes the style's Gem entry when a result carries GEM_MISSING with its gem_id.
+GEM_IGNORED = "gem_ignored"
+CHATGPT_MODEL = "chatgpt-web"
+CHATGPT_LABEL = "ChatGPT (web)"
 
 # Upstream strips `http://googleusercontent.com/image_generation_content/<n>` placeholders but its
 # pattern stops at the first digits, so the current `.../<n>_<id>` form leaves a `_<id>` line behind.
@@ -126,6 +131,18 @@ def _model_dict(m) -> dict:
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def append_record(state: StateStore, **kw) -> GenerationRecord:
+    """Append one generations.jsonl record with the defaults every backend shares."""
+    base = dict(id=StateStore.new_id("g"), ts=_now(), style=None, style_text=None, aspect_hint=None,
+                model=None, project=None, subdir=None, refs=[], images=[], status="ok", code=None,
+                gemini_text="", elapsed_s=0.0, parent_id=None, chat_metadata=None, prompt="",
+                user_prompt=None, gem_id=None)
+    base.update(kw)
+    rec = GenerationRecord(**base)
+    state.append(rec)
+    return rec
 
 
 def normalize_quota(info) -> dict | None:
@@ -419,14 +436,7 @@ class GeminiWebBackend(Backend):
         return [{"source": r.source, "path": str(r.path), "sha256": r.sha256} for r in refs]
 
     def _append(self, **kw) -> GenerationRecord:
-        base = dict(id=StateStore.new_id("g"), ts=_now(), style=None, style_text=None, aspect_hint=None,
-                    model=None, project=None, subdir=None, refs=[], images=[], status="ok", code=None,
-                    gemini_text="", elapsed_s=0.0, parent_id=None, chat_metadata=None, prompt="",
-                    user_prompt=None, gem_id=None)
-        base.update(kw)
-        rec = GenerationRecord(**base)
-        self.state.append(rec)
-        return rec
+        return append_record(self.state, **kw)
 
     async def _generate_or_edit(self, kind, conv, prompt, refs, *, model, progress, project, subdir, style,
                                 style_text, aspect_hint, rec=None, slug_source=None, gem_id=None) -> GenerateResult:

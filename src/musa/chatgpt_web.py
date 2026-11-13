@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import json
 import os
 import platform
 import re
@@ -17,7 +18,14 @@ from pathlib import Path
 
 from filelock import AsyncFileLock, Timeout as LockTimeout
 
-from .errors import AUTH_FAILED, TEMPORARILY_BLOCKED, UPSTREAM_ERROR, GIAError
+from . import auth as _auth
+from .client import (CHATGPT_LABEL, CHATGPT_MODEL, GEM_IGNORED, Backend, GenerateResult, _map_exc, _now,
+                     append_record)
+from .errors import (AUTH_EXPIRED, AUTH_FAILED, GENERATED_NOT_SAVED, NO_IMAGE, TEMPORARILY_BLOCKED, TIMEOUT,
+                     UNKNOWN_CONVERSATION, UPSTREAM_ERROR, USAGE_LIMIT, GIAError)
+from .state import StateStore
+from .storage import SavedImage, save_image
+from .styles import GENERATE_PREFIX
 
 BASE_URL = "https://chatgpt.com"
 UPLOAD_PATH = "/backend-api/files/process_upload_stream"
@@ -369,3 +377,249 @@ class ChatGPTPage:
             yield blocked
         finally:
             self._page.remove_listener("response", on_response)
+
+
+# -- backend ---------------------------------------------------------------------
+POLL_S = 4.0
+NO_IMAGE_STABLE_S = 30.0
+CONV_ID_TIMEOUT_S = 60.0
+
+
+def _gem_warning(gem_id: str | None) -> dict | None:
+    if not gem_id:
+        return None
+    return {"code": GEM_IGNORED, "gem_id": gem_id,
+            "message": "ChatGPT does not use Gems; the style was applied as text only.",
+            "next_action": "Nothing to do; pick a Gemini model to use the style's Gem."}
+
+
+def _raise_if_blocked(blocked: list[tuple[str, int]]) -> None:
+    if blocked:
+        url, status = blocked[0]
+        raise GIAError(TEMPORARILY_BLOCKED, f"ChatGPT refused the request (HTTP {status} on {url})")
+
+
+class ChatGPTWebBackend(Backend):
+    """Image generation through the user's chatgpt.com session (model 'chatgpt-web')."""
+
+    def __init__(self, settings, state: StateStore, browser: ChatGPTBrowser | None = None,
+                 page_factory=ChatGPTPage, clock=time.monotonic, sleep=asyncio.sleep):
+        self.settings, self.state = settings, state
+        self.browser = browser or ChatGPTBrowser(settings)
+        self.page_factory = page_factory
+        self._clock, self._sleep = clock, sleep
+
+    # -- session / quota -------------------------------------------------------------
+    @property
+    def _quota_file(self) -> Path:
+        return Path(self.settings.state_dir) / "chatgpt_quota.json"
+
+    def _cached_quota(self) -> dict | None:
+        try:
+            return json.loads(self._quota_file.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return None
+
+    def _store_quota(self, quota: dict | None) -> None:
+        if not quota:
+            return
+        tmp = self._quota_file.with_suffix(".tmp")
+        tmp.write_text(json.dumps({**quota, "checked_at": _now()}), encoding="utf-8")
+        os.replace(tmp, self._quota_file)
+
+    def _session_present(self) -> bool:
+        return _auth.chatgpt_session_present(self.settings.chatgpt_profile_dir)
+
+    async def status(self) -> dict:
+        """Never launches Chrome: session from the cookie store, quota as of the last ChatGPT call."""
+        return {"session": self._session_present(), "image_gen": self._cached_quota()}
+
+    async def list_models(self) -> list[dict]:
+        return [{"model_name": CHATGPT_MODEL, "display_name": CHATGPT_LABEL, "available": self._session_present()}]
+
+    async def resolve_model_name(self, name: str) -> str:
+        return name
+
+    async def aclose(self) -> None:
+        await self.browser.aclose()
+
+    # -- generate / edit -----------------------------------------------------------------
+    async def generate(self, prompt, refs, *, model, progress=None, project=None, subdir=None, style=None,
+                       style_text=None, aspect_hint=None, slug_source=None, gem_id=None) -> GenerateResult:
+        return await self._turn("generate", StateStore.new_id("c"), None, prompt, refs, progress=progress,
+                                project=project, subdir=subdir, style=style, style_text=style_text,
+                                aspect_hint=aspect_hint, slug_source=slug_source, gem_id=gem_id)
+
+    async def edit(self, conversation_id, prompt, refs, *, model, progress=None, project=None, subdir=None,
+                   style=None, style_text=None, aspect_hint=None, slug_source=None, gem_id=None) -> GenerateResult:
+        rec = self.state.conversation(conversation_id)
+        if rec is None:
+            raise GIAError(UNKNOWN_CONVERSATION, f"conversation {conversation_id} not found", hint="call generate first")
+        return await self._turn("edit", conversation_id, rec, prompt, refs, progress=progress,
+                                project=project if project is not None else rec.project,
+                                subdir=subdir if subdir is not None else rec.subdir, style=style,
+                                style_text=style_text, aspect_hint=aspect_hint, slug_source=slug_source, gem_id=gem_id)
+
+    async def _turn(self, kind, conv, rec, prompt, refs, *, progress, project, subdir, style, style_text,
+                    aspect_hint, slug_source, gem_id) -> GenerateResult:
+        t0 = self._clock()
+        warning = _gem_warning(gem_id)
+        refs_meta = [{"source": r.source, "path": str(r.path), "sha256": r.sha256} for r in refs]
+        chat_id = rec.chat_metadata[0] if rec else None
+        saved: list[SavedImage] = []
+        entries: list[dict] = []
+        errors: list[str] = []
+        try:
+            async with self.browser.page() as raw:
+                page = self.page_factory(raw)
+                await page.open(f"{BASE_URL}/c/{chat_id}" if chat_id else f"{BASE_URL}/")
+                sess = await page.session()
+                if sess.get("status") in (403, 429):  # Cloudflare challenge / rate limit, not a lost session
+                    raise GIAError(TEMPORARILY_BLOCKED, f"ChatGPT refused the session check (HTTP {sess['status']})")
+                if not sess.get("logged_in"):
+                    raise GIAError(AUTH_EXPIRED, "no ChatGPT session in Musa's Chrome profile",
+                                   hint="run: musa auth --chatgpt")
+                quota = await page.image_quota()
+                self._store_quota(quota)
+                if quota and quota.get("remaining") == 0:
+                    raise GIAError(USAGE_LIMIT, "ChatGPT image quota exhausted", resets_at=quota.get("reset_after"))
+                known: set[str] = set()
+                if chat_id:
+                    status, data = await page.api(f"/backend-api/conversation/{chat_id}")
+                    if status != 200 or not data:
+                        raise GIAError(UPSTREAM_ERROR, f"could not read the ChatGPT conversation (HTTP {status})")
+                    known = message_ids(data)
+                if progress:
+                    await progress("generating", 0.3)
+                with page.watch_blocking() as blocked:
+                    await page.attach([r.path for r in refs])
+                    await page.send(prompt)
+                    chat_id = chat_id or await self._await_conversation_id(page, blocked)
+                    images, text = await self._await_images(page, chat_id, known, blocked)
+                for i, img in enumerate(images):
+                    if progress:
+                        await progress("downloading", 0.6 + 0.4 * i / len(images))
+                    entry = {"index": i, "path": None, "cid": "", "rid": "", "rcid": "", "image_id": img.file_id,
+                             "url": ""}
+                    try:
+                        s = self._save(await page.download(chat_id, img.file_id), prompt=prompt, conv=conv,
+                                       refs_meta=refs_meta, project=project, subdir=subdir, index=i,
+                                       slug_source=slug_source)
+                        saved.append(s)
+                        entry.update(path=str(s.path), width=s.width, height=s.height, bytes=s.nbytes,
+                                     format=s.format, full_size=s.full_size)
+                    except Exception as e:
+                        errors.append(f"{type(e).__name__}: {e}")  # kept with path=None for retry_download
+                    entries.append(entry)
+                self._store_quota(await page.image_quota())
+        except Exception as e:
+            err = _map_exc(e)
+            return GenerateResult("error", err.code, conv, [], str(err), self._clock() - t0,
+                                  list(rec.chat_metadata) if rec else None, warning=warning)
+        elapsed = self._clock() - t0
+        if not entries:
+            status, code = "error", NO_IMAGE
+        elif len(saved) < len(entries):
+            status, code = "generated_not_saved", GENERATED_NOT_SAVED
+        else:
+            status, code = "ok", None
+        appended = append_record(self.state, type=kind, conversation_id=conv, chat_metadata=[chat_id], prompt=prompt,
+                                 style=style, style_text=style_text, aspect_hint=aspect_hint, model=CHATGPT_MODEL,
+                                 project=project, subdir=subdir, refs=refs_meta, images=entries, status=status,
+                                 code=code, gemini_text=text or "", elapsed_s=elapsed,
+                                 parent_id=rec.id if rec else None, user_prompt=slug_source)
+        return GenerateResult(status, code, conv, saved, text or "", elapsed, [chat_id],
+                              save_error=errors[0] if errors else None, record_id=appended.id, warning=warning)
+
+    async def _await_conversation_id(self, page, blocked) -> str:
+        deadline = self._clock() + CONV_ID_TIMEOUT_S
+        while True:
+            _raise_if_blocked(blocked)
+            cid = conversation_id_from_url(page.url)
+            if cid:
+                return cid
+            if self._clock() >= deadline:
+                raise GIAError(UPSTREAM_ERROR, "ChatGPT did not open a conversation after sending the prompt")
+            await self._sleep(1.0)
+
+    async def _await_images(self, page, chat_id, known, blocked) -> tuple[list[OutputImage], str | None]:
+        """Poll the conversation until new output images appear. A finished assistant reply with no tool message
+        that stays unchanged for NO_IMAGE_STABLE_S is a refusal: the image tool is asynchronous and may still
+        arrive after the assistant ends its turn."""
+        deadline = self._clock() + self.settings.gen_timeout_s
+        last_sig, stable_since = None, None
+        while True:
+            _raise_if_blocked(blocked)
+            status, data = await page.api(f"/backend-api/conversation/{chat_id}")
+            if status == 200 and data:
+                fresh = new_messages(data, known)
+                images = output_images(fresh)
+                if images:
+                    return images, assistant_text(fresh)
+                text = assistant_text(fresh)
+                if text and not has_tool_message(fresh):
+                    sig = tuple((m.get("id"), m.get("status")) for m in fresh)
+                    if sig != last_sig:
+                        last_sig, stable_since = sig, self._clock()
+                    elif self._clock() - stable_since >= NO_IMAGE_STABLE_S:
+                        return [], text
+                else:
+                    last_sig = stable_since = None
+            if self._clock() >= deadline:
+                raise GIAError(TIMEOUT, "ChatGPT returned no image before gen_timeout_s")
+            await self._sleep(POLL_S)
+
+    def _save(self, data, *, prompt, conv, refs_meta, project, subdir, index, slug_source) -> SavedImage:
+        meta = {"prompt": prompt, "model": CHATGPT_MODEL, "conversation_id": conv,
+                "ref_sha256": [r["sha256"] for r in refs_meta]}
+        return save_image(data, output_root=self.settings.output_root, project=project, subdir=subdir,
+                          prompt=slug_source or prompt.removeprefix(GENERATE_PREFIX), index=index, meta=meta,
+                          write_sidecar=self.settings.write_sidecar, thumb_size=self.settings.thumb_size)
+
+    # -- retry / delete -----------------------------------------------------------------
+    async def retry_download(self, conversation_id, image_index) -> SavedImage:
+        rec = self.state.conversation(conversation_id)
+        if rec is None:
+            raise GIAError(UNKNOWN_CONVERSATION, f"conversation {conversation_id} not found")
+        entry = next((e for e in rec.images if e.get("index") == image_index), None)
+        if entry is None or not entry.get("image_id"):
+            raise GIAError(UPSTREAM_ERROR, f"no re-downloadable image {image_index} in {conversation_id}")
+        try:
+            async with self.browser.page() as raw:
+                page = self.page_factory(raw)
+                await page.open(f"{BASE_URL}/")
+                data = await page.download(rec.chat_metadata[0], entry["image_id"])
+        except Exception as e:
+            raise _map_exc(e) from e
+        saved = self._save(data, prompt=rec.prompt, conv=conversation_id, refs_meta=rec.refs or [],
+                           project=rec.project, subdir=rec.subdir, index=image_index, slug_source=rec.user_prompt)
+        images = [dict(e) for e in rec.images]
+        for e in images:
+            if e.get("index") == image_index:
+                e.update(path=str(saved.path), width=saved.width, height=saved.height, bytes=saved.nbytes,
+                         format=saved.format, full_size=saved.full_size)
+        ok = all(e.get("path") for e in images)
+        append_record(self.state, type="retry_download", conversation_id=conversation_id,
+                      chat_metadata=rec.chat_metadata, prompt=rec.prompt, style=rec.style, style_text=rec.style_text,
+                      aspect_hint=rec.aspect_hint, model=rec.model, project=rec.project, subdir=rec.subdir,
+                      refs=rec.refs or [], images=images, status="ok" if ok else rec.status,
+                      code=None if ok else rec.code, gemini_text=rec.gemini_text, parent_id=rec.id,
+                      user_prompt=rec.user_prompt)
+        return saved
+
+    async def delete_conversation(self, conversation_id) -> None:
+        """Hide the conversation from the ChatGPT sidebar (is_visible=false) and mark it deleted locally."""
+        rec = self.state.conversation(conversation_id)
+        if rec is None:
+            raise GIAError(UNKNOWN_CONVERSATION, f"conversation {conversation_id} not found")
+        try:
+            async with self.browser.page() as raw:
+                page = self.page_factory(raw)
+                await page.open(f"{BASE_URL}/")
+                status, _ = await page.api(f"/backend-api/conversation/{rec.chat_metadata[0]}", "PATCH",
+                                           {"is_visible": False})
+        except Exception as e:
+            raise _map_exc(e) from e
+        if status != 200:
+            raise GIAError(UPSTREAM_ERROR, f"ChatGPT did not hide the conversation (HTTP {status})")
+        append_record(self.state, type="delete", conversation_id=conversation_id, chat_metadata=None, parent_id=rec.id)
