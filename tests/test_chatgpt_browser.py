@@ -179,13 +179,25 @@ class FakeResponse:
 
 
 class FakeInput:
-    def __init__(self, page, accept):
-        self.page, self.accept = page, accept
+    """Entries are an accept string/None or a dict with accept/capture/multiple, like the real attributes."""
+
+    def __init__(self, page, spec):
+        self.page = page
+        self.spec = spec if isinstance(spec, dict) else {"accept": spec}
+        self.accept = self.spec.get("accept")
 
     async def get_attribute(self, name):
-        return self.accept if name == "accept" else None
+        if name == "accept":
+            return self.accept
+        if name == "capture":
+            return self.spec.get("capture")
+        if name == "multiple":
+            return "" if self.spec.get("multiple") else None
+        return None
 
     async def set_input_files(self, files):
+        if len(files) > 1 and not self.spec.get("multiple"):
+            raise RuntimeError("Locator.set_input_files: Error: Non-multiple file input can only accept single file")
         self.page.uploaded.append((self.accept, files))
         for r in self.page.on_upload(files):
             self.page.emit(r)
@@ -288,6 +300,7 @@ async def test_send_keeps_line_breaks_inside_the_message():
 
 async def test_attach_waits_for_one_finished_upload_per_file(tmp_path):
     fake = FakePage()
+    fake.file_inputs = [{"accept": "image/*", "multiple": True}]
     up = "https://chatgpt.com" + cw.UPLOAD_PATH
     fake.on_upload = lambda files: [FakeResponse(up, method="GET"), FakeResponse(up, status=500),
                                     *[FakeResponse(up) for _ in files]]
@@ -322,6 +335,36 @@ async def test_download_follows_the_signed_url():
     data = await _cpage(fake).download("conv", "file_1")
     assert data == b"IMG:https://chatgpt.com/backend-api/estuary/content?id=f"
     assert fake.api_calls == [("/backend-api/files/download/file_1?conversation_id=conv&inline=false", "GET", None)]
+
+
+async def test_attach_skips_the_camera_input_and_prefers_a_multiple_one(tmp_path):
+    fake = FakePage()
+    fake.file_inputs = [{"accept": "image/*", "capture": "environment"},
+                        {"accept": "image/*,video/*"},
+                        {"accept": "image/*", "multiple": True}]
+    up = "https://chatgpt.com" + cw.UPLOAD_PATH
+    fake.on_upload = lambda files: [FakeResponse(up) for _ in files]
+    paths = [tmp_path / "a.png", tmp_path / "b.png"]
+    await _cpage(fake).attach(paths)
+    assert fake.uploaded == [("image/*", [str(p) for p in paths])]
+
+
+async def test_attach_sets_files_one_per_call_without_a_multiple_input(tmp_path):
+    fake = FakePage()
+    fake.file_inputs = [{"accept": "image/*", "capture": "environment"}, {"accept": "image/*,video/*"}]
+    up = "https://chatgpt.com" + cw.UPLOAD_PATH
+    fake.on_upload = lambda files: [FakeResponse(up) for _ in files]
+    paths = [tmp_path / "a.png", tmp_path / "b.png"]
+    await _cpage(fake).attach(paths)
+    assert fake.uploaded == [("image/*,video/*", [str(paths[0])]), ("image/*,video/*", [str(paths[1])])]
+
+
+async def test_attach_without_an_upload_input_is_upstream_error(tmp_path):
+    fake = FakePage()
+    fake.file_inputs = [{"accept": "image/*", "capture": "environment"}, {"accept": "audio/*"}]
+    with pytest.raises(GIAError) as e:
+        await _cpage(fake).attach([tmp_path / "a.png"])
+    assert e.value.code == "upstream_error" and fake.handlers == []
 
 
 async def test_download_without_url_is_upstream_error():
