@@ -22,6 +22,7 @@ dependencies = [
   "python-multipart>=0.0.9",
   "svglib>=1.5",
   "pypdfium2>=4.0,<5",
+  "playwright>=1.50",
 ]
 
 [project.optional-dependencies]

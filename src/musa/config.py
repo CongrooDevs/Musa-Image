@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     app_port: int = 8765                # Musa web app port (GIA_APP_PORT)
     app_with_mcp: bool = False          # musa-mcp also starts Musa (GIA_APP_WITH_MCP)
     temp_chats: bool = True              # generate in temporary chats: they never appear in the Gemini chat history (GIA_TEMP_CHATS)
+    chrome_path: str | None = None       # Google Chrome binary for the ChatGPT (web) provider (GIA_CHROME_PATH)
+    chatgpt_idle_close_s: float = 120.0  # close the headless Chrome after this many idle seconds (proposal, not measured)
     @classmethod
     def settings_customise_sources(
         cls,
@@ -53,6 +55,10 @@ class Settings(BaseSettings):
     def lock_file(self) -> Path: return self.state_dir / "state.lock"
     @property
     def firefox_profile_dir(self) -> Path: return self.state_dir / "firefox-profile"
+    @property
+    def chatgpt_profile_dir(self) -> Path: return self.state_dir / "chatgpt-chrome-profile"
+    @property
+    def chatgpt_lock_file(self) -> Path: return self.state_dir / "chatgpt-profile.lock"
 
     def allowed_ref_dirs_list(self) -> list[Path]:
         if self.allowed_ref_dirs.strip():
@@ -68,7 +74,8 @@ class Settings(BaseSettings):
 
     def ensure_dirs(self) -> None:
         """Create the private dirs 0700 and tighten pre-existing ones (incl. upstream cookie cache files)."""
-        for d in (self.state_dir, self.cookie_dir, self.upstream_cache_dir, self.state_dir / "logs"):
+        for d in (self.state_dir, self.cookie_dir, self.upstream_cache_dir, self.state_dir / "logs",
+                  self.chatgpt_profile_dir):
             d.mkdir(parents=True, exist_ok=True, mode=0o700)
             os.chmod(d, 0o700)
         for f in self.upstream_cache_dir.iterdir():

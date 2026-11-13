@@ -64,3 +64,17 @@ def test_load_settings_cached(monkeypatch, settings):
     a, b = load_settings(), load_settings()
     assert a is b
     load_settings.cache_clear()
+
+
+def test_chatgpt_settings(settings: Settings, monkeypatch):
+    assert settings.chrome_path is None
+    assert settings.chatgpt_idle_close_s == 120.0
+    assert settings.chatgpt_profile_dir == settings.state_dir / "chatgpt-chrome-profile"
+    assert settings.chatgpt_lock_file == settings.state_dir / "chatgpt-profile.lock"
+    monkeypatch.setenv("GIA_CHROME_PATH", "/opt/chrome")
+    assert Settings().chrome_path == "/opt/chrome"
+
+
+def test_ensure_dirs_creates_private_chatgpt_profile(settings: Settings):
+    settings.ensure_dirs()
+    assert (settings.chatgpt_profile_dir.stat().st_mode & 0o777) == 0o700

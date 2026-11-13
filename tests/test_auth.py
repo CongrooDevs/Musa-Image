@@ -1,7 +1,9 @@
+import signal
 import builtins
 import sqlite3
 import sys
 
+from filelock import FileLock
 import pytest
 
 from musa import auth
@@ -210,3 +212,115 @@ def test_find_firefox_missing(settings):
     with pytest.raises(GIAError) as e:
         auth.find_firefox(settings)
     assert e.value.code == "auth_failed" and "GIA_FIREFOX_PATH" in e.value.details["hint"]
+
+
+def _chrome_cookies_db(profile, rows):
+    db = profile / "Default" / "Cookies"
+    db.parent.mkdir(parents=True, exist_ok=True)
+    con = sqlite3.connect(db)
+    con.execute("CREATE TABLE IF NOT EXISTS cookies (host_key TEXT, name TEXT, encrypted_value BLOB)")
+    con.executemany("INSERT INTO cookies VALUES (?, ?, x'00')", rows)
+    con.commit()
+    return con
+
+
+def test_chatgpt_session_present_reads_a_copy_of_the_live_db(tmp_path):
+    con = _chrome_cookies_db(tmp_path, [(".chatgpt.com", "_cfuvid")])
+    try:
+        assert auth.chatgpt_session_present(tmp_path) is False
+        con.execute("INSERT INTO cookies VALUES ('chatgpt.com', '__Secure-next-auth.session-token.0', x'00')")
+        con.commit()
+        assert auth.chatgpt_session_present(tmp_path) is True  # connection still open: read from a copy
+    finally:
+        con.close()
+
+
+def test_chatgpt_session_present_ignores_other_hosts_and_missing_db(tmp_path):
+    assert auth.chatgpt_session_present(tmp_path) is False
+    con = _chrome_cookies_db(tmp_path, [(".example.com", "__Secure-next-auth.session-token")])
+    con.close()
+    assert auth.chatgpt_session_present(tmp_path) is False
+
+
+def test_login_chatgpt_confirms_only_after_chrome_exits(settings, monkeypatch, capsys):
+    monkeypatch.setattr(builtins, "input", _no_input)
+    monkeypatch.setattr(auth.time, "sleep", lambda s: None)
+    settings.chrome_path = sys.executable  # any existing file; the launcher is faked
+    events = []
+    answers = iter([False, True, True])
+
+    def check(profile):
+        value = next(answers)
+        events.append(("check", value))
+        return value
+
+    auth.login_chatgpt(settings, launcher=lambda c, p: events.append(("launch", c, p)),
+                       closer=lambda p: events.append(("close", p)), session_check=check)
+    profile = settings.chatgpt_profile_dir
+    assert events == [("launch", sys.executable, profile), ("check", False), ("check", True),
+                      ("close", profile), ("check", True)]
+    assert (profile.stat().st_mode & 0o777) == 0o700
+    out = capsys.readouterr()
+    assert out.out == "" and "ChatGPT" in out.err
+
+
+def test_login_chatgpt_cookie_missing_after_close(settings, monkeypatch):
+    monkeypatch.setattr(auth.time, "sleep", lambda s: None)
+    settings.chrome_path = sys.executable
+    answers = iter([True, False])
+    with pytest.raises(GIAError) as e:
+        auth.login_chatgpt(settings, launcher=lambda c, p: None, closer=lambda p: None,
+                           session_check=lambda p: next(answers))
+    assert e.value.code == "auth_expired"
+
+
+def test_login_chatgpt_timeout_closes_chrome(settings, monkeypatch):
+    monkeypatch.setattr(auth.time, "sleep", lambda s: None)
+    ticks = iter(range(0, 10_000, 100))
+    monkeypatch.setattr(auth.time, "monotonic", lambda: next(ticks))
+    settings.chrome_path = sys.executable
+    closed = []
+    with pytest.raises(GIAError) as e:
+        auth.login_chatgpt(settings, launcher=lambda c, p: None, closer=closed.append,
+                           session_check=lambda p: False)
+    assert e.value.code == "auth_expired" and "timeout" in str(e.value)
+    assert closed == [settings.chatgpt_profile_dir]
+
+
+def test_login_chatgpt_profile_busy(settings):
+    settings.chrome_path = sys.executable
+    settings.ensure_dirs()
+    launched = []
+    with FileLock(str(settings.chatgpt_lock_file)):
+        with pytest.raises(GIAError) as e:
+            auth.login_chatgpt(settings, launcher=lambda c, p: launched.append(p), closer=lambda p: None,
+                               session_check=lambda p: True)
+    assert e.value.code == "temporarily_blocked" and launched == []
+
+
+def test_find_chrome_missing(settings):
+    settings.chrome_path = "/nonexistent/chrome"
+    with pytest.raises(GIAError) as e:
+        auth.find_chrome(settings)
+    assert e.value.code == "auth_failed" and "GIA_CHROME_PATH" in e.value.details["hint"]
+
+
+def test_close_chrome_waits_until_every_process_exits(monkeypatch, tmp_path):
+    seen = iter([[11, 12], [11, 12], [12], []])
+    kills = []
+    monkeypatch.setattr(auth, "_profile_pids", lambda p: next(seen))
+    monkeypatch.setattr(auth.os, "kill", lambda pid, sig: kills.append((pid, sig)))
+    monkeypatch.setattr(auth.time, "sleep", lambda s: None)
+    auth._close_chrome(tmp_path)
+    assert kills == [(11, signal.SIGTERM), (12, signal.SIGTERM)]
+
+
+def test_close_chrome_kills_after_timeout(monkeypatch, tmp_path):
+    kills = []
+    monkeypatch.setattr(auth, "_profile_pids", lambda p: [11])
+    monkeypatch.setattr(auth.os, "kill", lambda pid, sig: kills.append((pid, sig)))
+    monkeypatch.setattr(auth.time, "sleep", lambda s: None)
+    ticks = iter(range(0, 10_000, 100))
+    monkeypatch.setattr(auth.time, "monotonic", lambda: next(ticks))
+    auth._close_chrome(tmp_path, timeout_s=10)
+    assert kills == [(11, signal.SIGTERM), (11, signal.SIGKILL)]

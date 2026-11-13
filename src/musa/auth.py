@@ -10,8 +10,10 @@ import tempfile
 import time
 from pathlib import Path
 
+from filelock import FileLock, Timeout as LockTimeout
+
 from .config import Settings
-from .errors import AUTH_EXPIRED, AUTH_FAILED, GIAError
+from .errors import AUTH_EXPIRED, AUTH_FAILED, TEMPORARILY_BLOCKED, GIAError
 
 
 def read_cookie_jar(path: Path) -> list[dict]:
@@ -183,3 +185,109 @@ def login_guided(settings: Settings, launcher=None, closer=None) -> list[dict]:
         (closer or _close_firefox)(profile)
     save_cookie_jar_atomic(jar, settings.cookie_file)
     return jar
+
+
+# -- ChatGPT (web) -------------------------------------------------------------
+CHROME_CANDIDATES = ("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+                     "google-chrome", "google-chrome-stable")
+CHATGPT_LOGIN_URL = "https://chatgpt.com/auth/login"
+CHATGPT_SESSION_COOKIE = "__Secure-next-auth.session-token"
+CHROME_CLOSE_TIMEOUT_S = 10.0
+
+
+def find_chrome(settings: Settings) -> str:
+    for candidate in ([settings.chrome_path] if settings.chrome_path else CHROME_CANDIDATES):
+        found = shutil.which(candidate) or (candidate if Path(candidate).is_file() else None)
+        if found:
+            return found
+    raise GIAError(AUTH_FAILED, "Google Chrome not found", hint="install Google Chrome or set GIA_CHROME_PATH")
+
+
+def chatgpt_session_present(profile_dir: Path) -> bool:
+    """True when the profile's cookie store holds a ChatGPT session cookie (name only: values are encrypted).
+
+    Chrome may hold the live db open, so the db and its journal are copied and the copy is read."""
+    db = Path(profile_dir) / "Default" / "Cookies"
+    if not db.exists():
+        return False
+    with tempfile.TemporaryDirectory() as td:
+        for suffix in ("", "-journal", "-wal"):
+            src = Path(f"{db}{suffix}")
+            if src.exists():
+                shutil.copyfile(src, Path(td) / f"Cookies{suffix}")
+        con = sqlite3.connect(Path(td) / "Cookies")
+        try:
+            row = con.execute("SELECT 1 FROM cookies WHERE host_key LIKE '%chatgpt.com' AND name LIKE ? LIMIT 1",
+                              (CHATGPT_SESSION_COOKIE + "%",)).fetchone()
+        except sqlite3.DatabaseError:
+            return False  # profile still initialising
+        finally:
+            con.close()
+    return row is not None
+
+
+def _launch_chrome(chrome: str, profile_dir: Path) -> None:
+    """Plain Chrome process: no automation switches and no debugging port, so sign-in works as usual."""
+    subprocess.Popen(
+        [chrome, f"--user-data-dir={profile_dir}", "--no-first-run", "--no-default-browser-check", CHATGPT_LOGIN_URL],
+        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        start_new_session=True)
+
+
+def _profile_pids(profile_dir: Path) -> list[int]:
+    found = subprocess.run(["pgrep", "-f", "--", f"--user-data-dir={profile_dir}"], capture_output=True, text=True)
+    return [int(p) for p in found.stdout.split()]
+
+
+def _close_chrome(profile_dir: Path, timeout_s: float = CHROME_CLOSE_TIMEOUT_S) -> None:
+    """SIGTERM every Chrome process bound to this profile and wait until all exit (SIGKILL after timeout_s),
+    so the cookie store is flushed before anyone reads it or opens the profile again."""
+    def signal_all(sig) -> None:
+        for pid in _profile_pids(profile_dir):
+            try:
+                os.kill(pid, sig)
+            except ProcessLookupError:
+                pass
+
+    signal_all(signal.SIGTERM)
+    deadline = time.monotonic() + timeout_s
+    while _profile_pids(profile_dir):
+        if time.monotonic() >= deadline:
+            signal_all(signal.SIGKILL)
+            return
+        time.sleep(0.2)
+
+
+def login_chatgpt(settings: Settings, launcher=None, closer=None, session_check=None) -> None:
+    """Guided ChatGPT sign-in in a plain Google Chrome on the dedicated profile Musa later drives headless.
+
+    Holds the profile lock (never waits for it) so no headless Chrome opens the profile meanwhile; confirms the
+    session cookie again after Chrome has exited. stdio-safe: never reads stdin or writes stdout."""
+    settings.ensure_dirs()
+    profile = settings.chatgpt_profile_dir
+    profile.mkdir(parents=True, exist_ok=True)
+    os.chmod(profile, 0o700)
+    check = session_check or chatgpt_session_present
+    lock = FileLock(str(settings.chatgpt_lock_file))
+    try:
+        lock.acquire(timeout=0)
+    except LockTimeout:
+        raise GIAError(TEMPORARILY_BLOCKED, "the ChatGPT Chrome profile is in use by another Musa process",
+                       hint="retry when the current ChatGPT job ends") from None
+    try:
+        (launcher or _launch_chrome)(find_chrome(settings), profile)
+        print("Sign in to ChatGPT in the Chrome window; it closes by itself once the session cookie is "
+              f"detected (timeout {LOGIN_TIMEOUT_S}s).", file=sys.stderr, flush=True)
+        try:
+            deadline = time.monotonic() + LOGIN_TIMEOUT_S
+            while not check(profile):
+                if time.monotonic() >= deadline:
+                    raise GIAError(AUTH_EXPIRED, "login timeout", hint="run: musa auth --chatgpt")
+                time.sleep(LOGIN_POLL_S)
+        finally:
+            (closer or _close_chrome)(profile)
+        if not check(profile):
+            raise GIAError(AUTH_EXPIRED, "ChatGPT session cookie not found after Chrome closed",
+                           hint="run: musa auth --chatgpt")
+    finally:
+        lock.release()
