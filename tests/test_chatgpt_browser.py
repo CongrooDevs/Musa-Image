@@ -175,7 +175,7 @@ class FakeResponse:
         self.request = SimpleNamespace(method=method)
 
     async def finished(self):
-        return None
+        await asyncio.Event().wait()  # the real stream never ends: attach must not depend on it
 
 
 class FakeInput:
