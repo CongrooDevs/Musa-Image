@@ -211,10 +211,16 @@ def chatgpt_session_present(profile_dir: Path) -> bool:
     if not db.exists():
         return False
     with tempfile.TemporaryDirectory() as td:
-        for suffix in ("", "-journal", "-wal"):
-            src = Path(f"{db}{suffix}")
-            if src.exists():
-                shutil.copyfile(src, Path(td) / f"Cookies{suffix}")
+        try:
+            for suffix in ("", "-journal", "-wal"):
+                src = Path(f"{db}{suffix}")
+                try:
+                    shutil.copyfile(src, Path(td) / f"Cookies{suffix}")
+                except FileNotFoundError:
+                    if not suffix:
+                        return False
+        except OSError:
+            return False
         con = sqlite3.connect(Path(td) / "Cookies")
         try:
             row = con.execute("SELECT 1 FROM cookies WHERE host_key LIKE '%chatgpt.com' AND name LIKE ? LIMIT 1",

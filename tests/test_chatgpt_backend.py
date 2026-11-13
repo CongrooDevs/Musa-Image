@@ -146,6 +146,22 @@ async def test_generate_saves_image_and_records_chatgpt_conversation(make, setti
     assert st["image_gen"]["remaining"] == 3 and st["image_gen"]["reset_after"] == "2026-11-14T20:21:58Z"
 
 
+async def test_post_turn_quota_failure_does_not_discard_the_generation(make):
+    class Flaky(FakeChatGPT):
+        n = 0
+
+        async def image_quota(self):
+            self.n += 1
+            if self.n > 1:
+                raise RuntimeError("cloudflare html")
+            return await super().image_quota()
+    fake = Flaky(polls=[_conv(_msg("u1", "user", 1)), _done("file_out")])
+    b, state, _ = make(fake)
+    res = await b.generate("p", [], model=CHATGPT_MODEL)
+    assert res.status == "ok" and len(res.images) == 1 and res.images[0].path.exists()
+    assert state.conversation(res.conversation_id).images[0]["image_id"] == "file_out"
+
+
 async def test_edit_reopens_the_conversation_and_takes_only_new_images(make):
     old_user, old_tool = _msg("u1", "user", 1, parts=["x"]), _msg("t0", "tool", 2, parts=[_img("file_old")])
     before = _conv(old_user, old_tool)

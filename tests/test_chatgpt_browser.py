@@ -155,6 +155,19 @@ async def test_unexpected_error_tears_down_but_giaerror_keeps_browser(settings):
     await b.aclose()
 
 
+async def test_cancelled_context_close_still_stops_playwright_and_frees_the_lock(settings):
+    pw = FakePW()
+    b = _browser(settings, pw)
+
+    async def cancelled_close():
+        raise asyncio.CancelledError
+    with pytest.raises(asyncio.CancelledError):
+        async with b.page():
+            pw.contexts[0].close = cancelled_close
+            raise RuntimeError("target closed")
+    assert pw.stopped and _lock_free(settings)
+
+
 # --- ChatGPTPage over a fake Playwright page ---------------------------------
 class FakeResponse:
     def __init__(self, url, status=200, method="POST"):

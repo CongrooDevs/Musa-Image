@@ -242,6 +242,30 @@ def test_chatgpt_session_present_ignores_other_hosts_and_missing_db(tmp_path):
     assert auth.chatgpt_session_present(tmp_path) is False
 
 
+def test_chatgpt_session_present_survives_a_journal_vanishing_mid_copy(tmp_path, monkeypatch):
+    con = _chrome_cookies_db(tmp_path, [(".chatgpt.com", "__Secure-next-auth.session-token")])
+    con.close()
+    (tmp_path / "Default" / "Cookies-journal").write_bytes(b"")
+    real = auth.shutil.copyfile
+
+    def flaky(src, dst):
+        if str(src).endswith("-journal"):
+            raise FileNotFoundError(src)
+        return real(src, dst)
+    monkeypatch.setattr(auth.shutil, "copyfile", flaky)
+    assert auth.chatgpt_session_present(tmp_path) is True
+
+
+def test_chatgpt_session_present_false_when_main_db_vanishes(tmp_path, monkeypatch):
+    con = _chrome_cookies_db(tmp_path, [(".chatgpt.com", "__Secure-next-auth.session-token")])
+    con.close()
+
+    def gone(src, dst):
+        raise FileNotFoundError(src)
+    monkeypatch.setattr(auth.shutil, "copyfile", gone)
+    assert auth.chatgpt_session_present(tmp_path) is False
+
+
 def test_login_chatgpt_confirms_only_after_chrome_exits(settings, monkeypatch, capsys):
     monkeypatch.setattr(builtins, "input", _no_input)
     monkeypatch.setattr(auth.time, "sleep", lambda s: None)

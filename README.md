@@ -114,8 +114,8 @@ Las tools de generación (`generate_image`, `edit_image`) devuelven el contrato 
 | `edit_image` | `conversation_id`, `prompt`, `refs[]`, `style`, `style_text`, `template`, `template_vars`, `aspect_hint`, `model`, `project`, `subdir`, `copy_to`, `collection`, `return_image` | Contrato de generación (continúa la conversación) |
 | `retry_download` | `conversation_id`, `image_index` | `{status, code, image{path,width,height,bytes,format,full_size}}`; reintenta solo la descarga, sin regenerar ni gastar cuota |
 | `delete_conversation` | `conversation_id` | `{status, code, conversation_id}`; borra en Gemini y marca en el historial local |
-| `auth_status` | — | Estado de la sesión: cookies, validez, modelos, imágenes hoy, estado de la cuenta, antigüedad de la cookie (`cookie_age_s`) y cuota Google (5h/semanal %) |
-| `auth_login` | — | Login guiado: abre Firefox (perfil propio), inicia sesión en gemini.google.com; el navegador se cierra solo al detectar la cookie (o tras 5 min → `auth_expired` "login timeout"). El perfil persiste, así que los siguientes logins suelen ser instantáneos |
+| `auth_status` | — | Estado de la sesión: cookies, validez, modelos, imágenes hoy, estado de la cuenta, antigüedad de la cookie (`cookie_age_s`) y cuota Google (5h/semanal %); incluye el sub-objeto `chatgpt` `{session, image_gen}` |
+| `auth_login` | `provider?` (`gemini` \| `chatgpt`) | Login guiado. `gemini` (por defecto): abre Firefox (perfil propio), inicia sesión en gemini.google.com; el navegador se cierra solo al detectar la cookie (o tras 5 min → `auth_expired` "login timeout"). `chatgpt`: abre Chrome sin automatizar con su perfil propio. El perfil persiste, así que los siguientes logins suelen ser instantáneos |
 | `list_styles` | — | `{nombre: descripción}` |
 | `list_style_gems` | — | `{status, gems: [{style, gem_id, name, custom}]}`; solo lectura |
 | `style_gem` | `style`, `enabled`, `instructions?` | Activa/desactiva el Gem de un estilo (ver «Gem de estilo»): `enabled=true` lo crea, o actualiza `instructions` si las pasas; `enabled=false` lo borra. Devuelve `{style, gem: {gem_id, name, custom} \| None}` |
@@ -432,10 +432,10 @@ Todas las respuestas de error incluyen `code`, `message`, `details`, `retryable`
 
 | `code` | `retryable` | Significado / qué hacer |
 |---|---|---|
-| `auth_expired` | no | Sesión caducada (o modo invitado detectado): ejecuta `musa auth` / `auth_login` y reintenta |
-| `usage_limit` | no | Límite de uso de la cuenta alcanzado: para y espera a que se reinicie la ventana de cuota |
-| `temporarily_blocked` | sí | Bloqueo temporal de Google: espera varios minutos; no reintentes en bucle |
-| `no_image` | no | Gemini respondió sin imagen: lee `gemini_text` y reformula el prompt |
+| `auth_expired` | no | Sesión caducada (o modo invitado detectado): ejecuta `musa auth` / `auth_login` y reintenta; para `chatgpt-web`, `musa auth --chatgpt` / `auth_login(provider="chatgpt")` |
+| `usage_limit` | no | Límite de uso alcanzado (Gemini o ChatGPT): para y espera a que se reinicie la ventana de cuota (`details.resets_at` si se conoce) |
+| `temporarily_blocked` | sí | Bloqueo temporal (Google, o ChatGPT/Cloudflare) o perfil de Chrome de ChatGPT ocupado: espera varios minutos; no reintentes en bucle |
+| `no_image` | no | El modelo respondió sin imagen: lee `gemini_text` y reformula el prompt |
 | `timeout` | sí | Se agotó el tiempo: reintenta una vez; si se repite, simplifica el prompt o reduce refs |
 | `generated_not_saved` | sí | Se generó pero no se pudo guardar: usa `retry_download` (sin coste de cuota); ver `details.reason` |
 | `content_blocked` | no | Contenido rechazado por las políticas de Gemini: cambia el prompt o las refs |
@@ -446,8 +446,8 @@ Todas las respuestas de error incluyen `code`, `message`, `details`, `retryable`
 | `template_missing_var` | no | Falta una variable de la plantilla: pásalas todas en `template_vars` (`details.required`) |
 | `unknown_conversation` | no | `conversation_id` no está en el historial: búscalo con `list_generations` |
 | `unknown_model` | no | Modelo no disponible en tu cuenta: elige uno de `list_models` |
-| `auth_failed` | no | Falló el login guiado (p. ej. Firefox no encontrado: instálalo o usa `GIA_FIREFOX_PATH`) |
-| `upstream_error` | sí | Error no clasificado de la API de Gemini: reintenta más tarde; si persiste, `auth_status` |
+| `auth_failed` | no | Falló el login guiado o el arranque del navegador (Gemini: instala Firefox o usa `GIA_FIREFOX_PATH`; ChatGPT: instala Google Chrome o usa `GIA_CHROME_PATH`, y el paquete `playwright`) |
+| `upstream_error` | sí | Error no clasificado del proveedor (Gemini o ChatGPT): reintenta más tarde; si persiste, `auth_status` |
 | `quota_guard` | sí | El guardián de cuota (`GIA_QUOTA_STOP_PCT`) detuvo la llamada antes del límite de Google: espera hasta `details.resets_at` |
 | `path_not_allowed` | no | `copy_to` debe apuntar dentro de `output_root` o del directorio de trabajo |
 | `invalid_aspect` | no | `aspect_hint` inválido: usa uno de `details.valid` (`1:1`, `4:5`, `3:4`, `2:3`, `9:16`, `5:4`, `4:3`, `3:2`, `16:9`, `21:9`) |
