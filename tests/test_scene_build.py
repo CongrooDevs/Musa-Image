@@ -2,10 +2,10 @@ import json
 
 import pytest
 
-from gemini_image_api import scene_math as sm
-from gemini_image_api.compositions import scene_index_html
-from gemini_image_api.errors import GIAError
-from gemini_image_api.scene_build import build_scene, frames_view, validate_animation_patch
+from musa import scene_math as sm
+from musa.compositions import scene_index_html
+from musa.errors import GIAError
+from musa.scene_build import build_scene, frames_view, validate_animation_patch
 
 LAYER = {"id": "ly_1", "role": "piece", "name": "Hermes", "file": "ly_1_1.png", "status": "done", "visible": True,
          "bbox": [100, 50, 160, 170], "offset": [3, -2], "rev": 5, "animation": {"type": "static"}}

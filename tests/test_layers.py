@@ -1,8 +1,8 @@
 import pytest
 from PIL import Image, ImageChops, ImageDraw, ImageStat
 
-from gemini_image_api.errors import GIAError
-from gemini_image_api.layers import composite, layer_png, normalize_size, prepare_piece, search_offset
+from musa.errors import GIAError
+from musa.layers import composite, layer_png, normalize_size, prepare_piece, search_offset
 from sprite_synth import composition_set
 
 

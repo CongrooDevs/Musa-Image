@@ -1,14 +1,14 @@
 import pytest, yaml
 from datetime import datetime, timezone
 from pathlib import Path
-from gemini_image_api.client import Backend, GenerateResult
-from gemini_image_api.errors import GIAError, UPSTREAM_ERROR
+from musa.client import Backend, GenerateResult
+from musa.errors import GIAError, UPSTREAM_ERROR
 
-from gemini_image_api.library import LibraryStore
-from gemini_image_api.service import ImageService, to_payload
-from gemini_image_api.state import StateStore, GenerationRecord
-from gemini_image_api.storage import SavedImage
-from gemini_image_api.style_store import UserStyleStore
+from musa.library import LibraryStore
+from musa.service import ImageService, to_payload
+from musa.state import StateStore, GenerationRecord
+from musa.storage import SavedImage
+from musa.style_store import UserStyleStore
 
 class FakeBackend(Backend):
     def __init__(self, quota=None, save_error=None):
@@ -119,7 +119,7 @@ async def test_copy_to_validated_before_call_and_applied_after(svc, tmp_path):
 async def test_gen_ref_resolved_from_history(svc, settings):
     s, b = svc()
     st = StateStore(settings.state_dir)
-    from gemini_image_api.state import GenerationRecord
+    from musa.state import GenerationRecord
     st.append(GenerationRecord(id="g_0123456789ab", ts="2026-11-09T00:00:00+00:00", type="generate",
                                conversation_id="c_9", chat_metadata=["c"], prompt="p", style=None,
                                style_text=None, aspect_hint=None, model=None, project=None, subdir=None,
@@ -171,7 +171,7 @@ def test_list_generations_payload(svc, settings):
 def test_list_generations_returns_display_prompt(svc, settings):
     s, _ = svc()
     st = StateStore(settings.state_dir)
-    from gemini_image_api.state import GenerationRecord
+    from musa.state import GenerationRecord
     st.append(GenerationRecord(id="g_0123456789ab", ts="2026-11-09T00:00:00+00:00", type="generate",
                                conversation_id="c_9", chat_metadata=["c"],
                                prompt="Generate an image (do not search the web): x", user_prompt="x",
@@ -430,7 +430,7 @@ def test_zip_limits(svc, settings, monkeypatch):
     with pytest.raises(GIAError) as e:
         s.zip_images(keys)
     assert e.value.code == "invalid_query" and "100" in str(e.value)
-    monkeypatch.setattr("gemini_image_api.service.MAX_ZIP_BYTES", 20)
+    monkeypatch.setattr("musa.service.MAX_ZIP_BYTES", 20)
     with pytest.raises(GIAError) as e:
         s.zip_images(keys[:2])
     assert e.value.code == "invalid_query" and "bytes" in str(e.value)
@@ -965,7 +965,7 @@ def test_batch_favorite_is_idempotent(svc, settings):
 
 
 def test_batch_reads_history_once(svc, settings, monkeypatch):
-    import gemini_image_api.service as svc_mod
+    import musa.service as svc_mod
     s, _ = svc()
     st = StateStore(settings.state_dir)
     _seed_gen(settings, st, "g_0123456789ab", "2026-11-09T00:00:00+00:00", "p", n=5)
@@ -1117,7 +1117,7 @@ def _key(b, i=0):
 
 async def test_generate_animation_sends_sheet_prompt_and_stores_ficha(svc, settings):
     from PIL import Image
-    from gemini_image_api.sprites import cache_path
+    from musa.sprites import cache_path
     s, b = _sheet_svc(svc, settings)
     sr = await s.generate(prompt="a robot walking", aspect_hint="1:1", display_prompt="Robot",
                           animation={"grid": "4x2", "mode": "sprite"})
@@ -1283,7 +1283,7 @@ async def test_delete_image_purges_animation(svc, settings):
 
 def test_batch_delete_purges_file_thumb_mark_and_animation(svc, settings):
     from PIL import Image
-    from gemini_image_api.sprites import write_sheet
+    from musa.sprites import write_sheet
     s, _ = svc()
     st = StateStore(settings.state_dir)
     paths = _seed_gen(settings, st, "g_0123456789ab", "2026-11-09T00:00:00+00:00", "p", n=2)
@@ -1303,7 +1303,7 @@ def test_batch_delete_purges_file_thumb_mark_and_animation(svc, settings):
 
 
 def test_service_owns_a_composition_store(svc, settings):
-    from gemini_image_api.compositions import CompositionStore
+    from musa.compositions import CompositionStore
     s, _ = svc()
     assert isinstance(s.compositions, CompositionStore) and s.compositions.dir == settings.state_dir
     custom = CompositionStore(settings.state_dir)

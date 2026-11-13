@@ -452,11 +452,11 @@ def mcp_config_dict(repo_root: Path | None) -> dict:
                   "args": ["run", "--project", str(repo_root), "musa-mcp"]}
     else:
         server = {"command": shutil.which("musa-mcp") or "musa-mcp"}
-    return {"mcpServers": {"gemini-image-api": server}}
+    return {"mcpServers": {"musa": server}}
 
 
 def _checkout_root(module_file: str | Path = __file__) -> Path | None:
-    """Repo root when running from a source checkout (<root>/src/gemini_image_api/cli.py), else None.
+    """Repo root when running from a source checkout (<root>/src/musa/cli.py), else None.
 
     Path components and the parsed [project].name are compared exactly, never substrings.
     """
@@ -469,7 +469,7 @@ def _checkout_root(module_file: str | Path = __file__) -> Path | None:
     except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError):
         return None
     proj = data.get("project")
-    return root if isinstance(proj, dict) and proj.get("name") == "gemini-image-api" else None
+    return root if isinstance(proj, dict) and proj.get("name") == "musa" else None
 
 
 @app.command(name="mcp-config")

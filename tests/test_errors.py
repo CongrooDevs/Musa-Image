@@ -1,5 +1,5 @@
-from gemini_image_api import errors
-from gemini_image_api.errors import (GIAError, AUTH_EXPIRED, UNKNOWN_STYLE,
+from musa import errors
+from musa.errors import (GIAError, AUTH_EXPIRED, UNKNOWN_STYLE,
                                      error_payload, NEXT_ACTION, RETRYABLE)
 
 

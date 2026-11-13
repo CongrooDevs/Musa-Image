@@ -16,7 +16,7 @@ def _install_fake_upstream():
     names = ["gemini_webapi", "gemini_webapi.constants", "gemini_webapi.exceptions",
              "gemini_webapi.types", "gemini_webapi.types.image"]
     saved = {n: sys.modules.get(n) for n in names}
-    saved["gemini_image_api.client"] = sys.modules.pop("gemini_image_api.client", None)
+    saved["musa.client"] = sys.modules.pop("musa.client", None)
 
     pkg = types.ModuleType("gemini_webapi")
     const = types.ModuleType("gemini_webapi.constants")
@@ -24,7 +24,7 @@ def _install_fake_upstream():
     typ = types.ModuleType("gemini_webapi.types")
     img = types.ModuleType("gemini_webapi.types.image")
 
-    from gemini_image_api.upstream import (
+    from musa.upstream import (
         AccountStatus,
         GeneratedImage as _RealGeneratedImage,
         AuthError, ImageGenerationError, ModelInvalidError,
@@ -59,10 +59,10 @@ def _install_fake_upstream():
     sys.modules.update({"gemini_webapi": pkg, "gemini_webapi.constants": const,
                         "gemini_webapi.exceptions": exc,
                         "gemini_webapi.types": typ, "gemini_webapi.types.image": img})
-    import gemini_image_api
-    prev_attr = getattr(gemini_image_api, "client", None)
+    import musa
+    prev_attr = getattr(musa, "client", None)
     try:
-        import gemini_image_api.client as mod
+        import musa.client as mod
     finally:
         for n, m in saved.items():
             if m is None:
@@ -70,9 +70,9 @@ def _install_fake_upstream():
             else:
                 sys.modules[n] = m
         if prev_attr is not None:  # re-bind the package to the real module, not the fakes
-            gemini_image_api.client = prev_attr
-        elif hasattr(gemini_image_api, "client"):
-            delattr(gemini_image_api, "client")
+            musa.client = prev_attr
+        elif hasattr(musa, "client"):
+            delattr(musa, "client")
     return mod, exc, img
 
 
@@ -85,8 +85,8 @@ def png_bytes() -> bytes:
 client_mod, exc, upstream_img = _install_fake_upstream()
 GeneratedImage, WebImage = upstream_img.GeneratedImage, upstream_img.WebImage
 
-from gemini_image_api.errors import GIAError, UPSTREAM_ERROR  # noqa: E402
-from gemini_image_api.state import StateStore  # noqa: E402
+from musa.errors import GIAError, UPSTREAM_ERROR  # noqa: E402
+from musa.state import StateStore  # noqa: E402
 
 GeminiWebBackend, build_backend = client_mod.GeminiWebBackend, client_mod.build_backend
 
@@ -207,7 +207,7 @@ async def test_temp_chats_default_on(backend_factory):
 
 def test_temp_chats_env_override(monkeypatch):
     monkeypatch.setenv("GIA_TEMP_CHATS", "false")
-    from gemini_image_api.config import load_settings
+    from musa.config import load_settings
     assert load_settings().temp_chats is False
 
 
@@ -492,7 +492,7 @@ async def test_auth_rebuild_clears_client_under_client_lock(backend_factory):
     assert seen == [True]
 
 async def test_slug_comes_from_user_prompt_not_prefix(backend_factory):
-    from gemini_image_api.styles import GENERATE_PREFIX
+    from musa.styles import GENERATE_PREFIX
     b, _ = backend_factory()
     r1 = await b.generate(GENERATE_PREFIX + "un gato", [], model="gemini-flash")
     assert "un-gato" in r1.images[0].path.name and "generate-an-image" not in r1.images[0].path.name
@@ -507,7 +507,7 @@ USAGE = {"tier": {"id": 2, "label": "PRO"},
 
 
 def test_normalize_quota():
-    from gemini_image_api.client import normalize_quota
+    from musa.client import normalize_quota
     assert normalize_quota(USAGE) == {"tier": "PRO", "window_5h_pct": 4, "weekly_pct": 2,
                                       "resets_at_5h": "2026-11-10T03:28:32-05:00",
                                       "resets_at_weekly": "2026-11-12T10:28:32-05:00"}

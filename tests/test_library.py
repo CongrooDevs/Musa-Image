@@ -1,6 +1,6 @@
 import json, pytest
-from gemini_image_api.errors import GIAError
-from gemini_image_api.library import LibraryStore
+from musa.errors import GIAError
+from musa.library import LibraryStore
 
 @pytest.fixture
 def lib(settings):

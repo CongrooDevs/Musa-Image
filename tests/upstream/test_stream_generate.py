@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 import pytest
-from gemini_image_api.upstream.batchexecute import parse_stream_generate_response
+from musa.upstream.batchexecute import parse_stream_generate_response
 
 FIXTURE_PATH = Path(__file__).resolve().parent.parent / "fixtures" / "upstream" / "call_13_StreamGenerate.json"
 

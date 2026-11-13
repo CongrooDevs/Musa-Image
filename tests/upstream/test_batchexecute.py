@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 import pytest
-from gemini_image_api.upstream.batchexecute import (
+from musa.upstream.batchexecute import (
     build_batchexecute_req, parse_batchexecute_chunks, get_rpc_result
 )
 

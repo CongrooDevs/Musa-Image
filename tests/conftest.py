@@ -1,6 +1,6 @@
 import pytest
 
-from gemini_image_api.config import Settings
+from musa.config import Settings
 
 
 @pytest.fixture

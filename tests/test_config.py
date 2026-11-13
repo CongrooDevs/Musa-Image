@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from gemini_image_api.config import Settings, load_settings, usable_cwd
+from musa.config import Settings, load_settings, usable_cwd
 
 
 def test_defaults(settings: Settings):

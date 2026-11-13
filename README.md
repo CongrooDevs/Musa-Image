@@ -1,6 +1,6 @@
-# gemini-image-api
+# Musa
 
-[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)]()
 
 Servidor **MCP (stdio)** y CLI **`musa`** para generar y editar imágenes con **tu propia sesión web de Gemini** (cookies del navegador), sin API key de pago. Incluye **Musa**, una app web local para organizar y generar: galería, estilos con imagen de referencia, colecciones y generación con cola.
@@ -21,7 +21,7 @@ Arquitectura: `agente MCP / CLI musa → capa de servicio (refs, estilos, almace
 
 - Automatizar `gemini.google.com` puede quedar **fuera de los Términos de Servicio de Google**. Las consecuencias (límites, bloqueos, suspensión) recaen sobre tu cuenta.
 - **Usa una cuenta Google secundaria dedicada que tenga la suscripción**, no tu cuenta principal.
-- Se usa una API web interna **no oficial** mediante un cliente nativo asíncrono (`src/gemini_image_api/upstream/`) con `curl_cffi` para impersonar TLS/HTTP2 de navegador. Google puede modificar sus endpoints o payloads sin aviso; en caso de desajustes, ejecuta el E2E manual de abajo.
+- Se usa una API web interna **no oficial** mediante un cliente nativo asíncrono (`src/musa/upstream/`) con `curl_cffi` para impersonar TLS/HTTP2 de navegador. Google puede modificar sus endpoints o payloads sin aviso; en caso de desajustes, ejecuta el E2E manual de abajo.
 - **No uses el contenido generado para entrenar modelos**: lo prohíbe el ToS.
 
 ## Instalación
@@ -75,7 +75,7 @@ El mismo bloque sirve para **omp**, **Claude Code**, **Claude Desktop** y **Curs
 ```json
 {
   "mcpServers": {
-    "gemini-image-api": {
+    "musa": {
       "command": "/ruta/absoluta/a/uv",
       "args": ["run", "--project", "<ruta-al-repo>", "musa-mcp"]
     }
@@ -197,7 +197,7 @@ Además de las rutas descritas arriba (todas bajo la clave por arranque):
 - Cada persona ejecuta su propio `musa auth` con **su** cuenta de Gemini.
 - Las cookies viven en `~/.gemini-image-api` y **nunca se comparten ni se suben** al repositorio.
 - Los estilos y prompts propios son **locales de cada usuario**.
-- Configuración MCP sin rutas absolutas: `{"mcpServers": {"gemini-image-api": {"command": "musa-mcp"}}}`.
+- Configuración MCP sin rutas absolutas: `{"mcpServers": {"musa": {"command": "musa-mcp"}}}`.
 
 ## Musa: galería local
 
@@ -344,7 +344,7 @@ El catálogo se carga del primer archivo que exista en este orden de búsqueda:
 
 1. la ruta indicada en `GIA_STYLES_FILE`;
 2. `~/.config/gemini-image-api/styles.yaml`;
-3. el `styles.yaml` empaquetado dentro del paquete (`src/gemini_image_api/styles.yaml`).
+3. el `styles.yaml` empaquetado dentro del paquete (`src/musa/styles.yaml`).
 
 Para personalizar estilos o plantillas, **copia el archivo empaquetado a `~/.config/gemini-image-api/styles.yaml`** (o apunta `GIA_STYLES_FILE` a otro archivo). Tiene dos secciones:
 
@@ -402,7 +402,7 @@ Otras: `GIA_MAX_REF_BYTES`, `GIA_MIN_DELAY_S`, `GIA_THUMB_SIZE`, `GIA_FIREFOX_PA
 - Con `return_image` se crea una miniatura JPEG (`GIA_THUMB_SIZE`, 512 px por defecto) que viaja como bloque de imagen MCP; los PNG llevan metadatos `tEXt` (prompt, modelo, conversation_id, hashes de refs).
 - Sidecar `.json` opcional (`GIA_WRITE_SIDECAR=true`).
 - Historial en `<state_dir>/generations.jsonl` (por defecto `~/.gemini-image-api/generations.jsonl`): de ahí sale el `conversation_id` para `musa edit`, `retry-download` y `delete`, y los id para refs `gen:<id>` (`musa history` / `list_generations`).
-- Logs en `<state_dir>/logs/gia.log` (rotativo) y en stderr, con los secretos de sesión (`__Secure-*`, `SAPISID*`, `Cookie:`, ruta de caché de cookies) redactados. La caché de cookies refrescadas de `gemini-webapi` se guarda en `<state_dir>/cookies/upstream_cache/` (no en `$TMPDIR`): se escribe al terminar cada comando CLI y cuando el cliente del servidor MCP se cierra solo tras 15 min de inactividad. Los logs de upstream van a `<state_dir>/logs/upstream.log` (nivel WARNING, rotación 1 MB, retención 3 archivos), también redactados.
+- Logs en `<state_dir>/logs/gia.log` (rotativo) y en stderr, con los secretos de sesión (`__Secure-*`, `SAPISID*`, `Cookie:`, ruta de caché de cookies) redactados. La caché de cookies refrescadas del cliente interno se guarda en `<state_dir>/cookies/upstream_cache/` (no en `$TMPDIR`): se escribe al terminar cada comando CLI y cuando el cliente del servidor MCP se cierra solo tras 15 min de inactividad. Los logs de upstream van a `<state_dir>/logs/upstream.log` (nivel WARNING, rotación 1 MB, retención 3 archivos), también redactados.
 
 ## Seguridad
 
@@ -484,12 +484,12 @@ Los tests nunca tocan la red; las llamadas de red se prueban offline con mocks y
 
 ## Licencia
 
-**AGPL-3.0** (obligada por la licencia de `gemini-webapi`).
+**MIT** (ver `LICENSE`).
 
 ## Créditos y licencias de recursos
 
-- **Inter** (The Inter Project Authors) y **Cormorant Garamond** (The Cormorant Project Authors): tipografías de la app web Musa, bajo **SIL Open Font License 1.1** (`src/gemini_image_api/web/assets/fonts/Inter-OFL.txt` y `src/gemini_image_api/web/assets/fonts/CormorantGaramond-OFL.txt`).
-- **Iconos Lucide** (Lucide Icons and Contributors), licencia **ISC**; los iconos derivados de Feather (Cole Bemis) van bajo **MIT** (`src/gemini_image_api/web/assets/LUCIDE-LICENSE.txt`).
+- **Inter** (The Inter Project Authors) y **Cormorant Garamond** (The Cormorant Project Authors): tipografías de la app web Musa, bajo **SIL Open Font License 1.1** (`src/musa/web/assets/fonts/Inter-OFL.txt` y `src/musa/web/assets/fonts/CormorantGaramond-OFL.txt`).
+- **Iconos Lucide** (Lucide Icons and Contributors), licencia **ISC**; los iconos derivados de Feather (Cole Bemis) van bajo **MIT** (`src/musa/web/assets/LUCIDE-LICENSE.txt`).
 - Arte de dominio público usado en la pantalla de carga y el banner de Musa (Wikimedia Commons).
 - **Logo de Musa** (`web/assets/logo-128.jpg`, favicon `web/assets/favicon.png`): generado con IA por el usuario a partir de una ilustración de referencia.
 - **Figuras de la Encyclopédie de Diderot y d'Alembert** (láminas «Dessein», 1762–1772, dominio público) en la pantalla de carga de Musa.

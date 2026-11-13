@@ -1,13 +1,13 @@
 import pytest, yaml
 from pathlib import Path
-from gemini_image_api.styles import StyleCatalog, build_prompt, ASPECT_HINTS, resolve_styles_path, load_catalog, PACKAGE_ROOT
-from gemini_image_api.errors import GIAError
+from musa.styles import StyleCatalog, build_prompt, ASPECT_HINTS, resolve_styles_path, load_catalog, PACKAGE_ROOT
+from musa.errors import GIAError
 
 def test_styles_path_precedence(settings, monkeypatch, tmp_path):
     home = tmp_path / "home"; monkeypatch.setenv("HOME", str(home))
     settings.styles_file = None
     packaged = resolve_styles_path(settings)
-    assert packaged.name == "styles.yaml" and "gemini_image_api" in str(packaged) and packaged.exists()
+    assert packaged.name == "styles.yaml" and "musa" in str(packaged) and packaged.exists()
     user = home / ".config/gemini-image-api/styles.yaml"; user.parent.mkdir(parents=True); user.write_text("styles: {}")
     assert resolve_styles_path(settings) == user
     explicit = tmp_path / "x.yaml"; settings.styles_file = explicit
@@ -63,7 +63,7 @@ def test_template_bad_placeholder_is_gia_error(tmp_path, tpl, exc_missing):
     assert e.value.details["missing"] == exc_missing and e.value.details["required"] == ["producto"]
 
 def test_prompt_has_single_space_after_prefix(catalog):
-    from gemini_image_api.styles import GENERATE_PREFIX
+    from musa.styles import GENERATE_PREFIX
     assert build_prompt(catalog, prompt="un gato") == GENERATE_PREFIX + "un gato"
     assert "  " not in build_prompt(catalog, prompt="un gato")
 
@@ -95,7 +95,7 @@ def test_legacy_yaml_still_loads(settings, tmp_path):
     assert (s.id, s.name, s.family, s.append, s.ref) == ("x", "x", "otros", "a", None)
 
 def test_user_styles_are_merged(settings):
-    from gemini_image_api.style_store import UserStyleStore
+    from musa.style_store import UserStyleStore
     settings.styles_file = None
     UserStyleStore(settings.state_dir).create(name="Mi acuarela", description="suave", append="soft watercolor")
     cat = load_catalog(settings)
@@ -105,14 +105,14 @@ def test_escaping_ref_is_dropped_with_warning(settings, caplog):
     settings.styles_file = None
     udir = settings.state_dir / "styles"; udir.mkdir(parents=True)
     (udir / "styles.yaml").write_text('styles:\n  evil:\n    description: d\n    ref: "../../etc/passwd"\n')
-    with caplog.at_level("WARNING", logger="gemini_image_api.styles"):
+    with caplog.at_level("WARNING", logger="musa.styles"):
         cat = load_catalog(settings)
     assert cat.styles["evil"].ref is None and cat.styles["evil"].source == "user"
     assert "escapes ref_base" in caplog.text
 
 
 def test_preview_prompt_style_template_aspect(catalog):
-    from gemini_image_api.styles import preview_prompt
+    from musa.styles import preview_prompt
     out = preview_prompt(catalog, prompt="", style="anime", template="anuncio",
                          template_vars={"producto": "zapato"}, aspect_hint="16:9")
     assert "foto de zapato" in out["final_prompt"] and "anime style, cel shading" in out["final_prompt"]
@@ -121,8 +121,8 @@ def test_preview_prompt_style_template_aspect(catalog):
 
 
 def test_preview_prompt_style_ref_and_errors(settings):
-    from gemini_image_api.style_store import UserStyleStore
-    from gemini_image_api.styles import preview_prompt
+    from musa.style_store import UserStyleStore
+    from musa.styles import preview_prompt
     settings.styles_file = None
     s = UserStyleStore(settings.state_dir).create(
         name="Ref", append="x", image=(b"\x89PNG\r\n\x1a\n" + b"\x00" * 64, "a.png"))
@@ -134,7 +134,7 @@ def test_preview_prompt_style_ref_and_errors(settings):
 
 
 def test_preview_prompt_propagates_template_and_aspect_errors(catalog):
-    from gemini_image_api.styles import preview_prompt
+    from musa.styles import preview_prompt
     with pytest.raises(GIAError) as e:
         preview_prompt(catalog, prompt="", template="anuncio", template_vars={})
     assert e.value.code == "template_missing_var"

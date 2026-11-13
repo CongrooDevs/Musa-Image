@@ -2,8 +2,8 @@ import hashlib
 import time
 import pytest
 from unittest.mock import AsyncMock, patch
-from gemini_image_api.upstream.session import UpstreamSession, compute_sapisid_hash
-from gemini_image_api.upstream.exceptions import AuthError, TemporarilyBlockedError
+from musa.upstream.session import UpstreamSession, compute_sapisid_hash
+from musa.upstream.exceptions import AuthError, TemporarilyBlockedError
 
 def test_compute_sapisid_hash():
     sapisid = "test_sapisid_val"

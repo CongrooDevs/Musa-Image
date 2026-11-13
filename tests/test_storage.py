@@ -3,8 +3,8 @@ import io
 import pytest
 from PIL import Image
 
-from gemini_image_api.errors import GIAError
-from gemini_image_api.storage import check_copy_dest, copy_file, safe_output_dir, save_image, slugify
+from musa.errors import GIAError
+from musa.storage import check_copy_dest, copy_file, safe_output_dir, save_image, slugify
 
 
 def png_bytes(w=64, h=48, color=(255, 0, 0)) -> bytes:

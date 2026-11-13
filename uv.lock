@@ -660,60 +660,6 @@ wheels = [
 ]
 
 [[package]]
-name = "gemini-image-api"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "curl-cffi" },
-    { name = "fastmcp" },
-    { name = "filelock" },
-    { name = "httpx" },
-    { name = "loguru" },
-    { name = "pillow" },
-    { name = "pydantic" },
-    { name = "pydantic-settings" },
-    { name = "pypdfium2" },
-    { name = "python-multipart" },
-    { name = "pyyaml" },
-    { name = "sse-starlette" },
-    { name = "starlette" },
-    { name = "svglib" },
-    { name = "typer" },
-    { name = "uvicorn" },
-]
-
-[package.optional-dependencies]
-test = [
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "respx" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "curl-cffi", specifier = ">=0.7" },
-    { name = "fastmcp", specifier = ">=2.10" },
-    { name = "filelock", specifier = ">=3.14" },
-    { name = "httpx", specifier = ">=0.27" },
-    { name = "loguru", specifier = ">=0.7" },
-    { name = "pillow", specifier = ">=10.3" },
-    { name = "pydantic", specifier = ">=2.7" },
-    { name = "pydantic-settings", specifier = ">=2.3" },
-    { name = "pypdfium2", specifier = ">=4.0,<5" },
-    { name = "pytest", marker = "extra == 'test'", specifier = ">=8" },
-    { name = "pytest-asyncio", marker = "extra == 'test'", specifier = ">=0.23" },
-    { name = "python-multipart", specifier = ">=0.0.9" },
-    { name = "pyyaml", specifier = ">=6.0" },
-    { name = "respx", marker = "extra == 'test'", specifier = ">=0.21" },
-    { name = "sse-starlette", specifier = ">=2.0" },
-    { name = "starlette", specifier = ">=1.0" },
-    { name = "svglib", specifier = ">=1.5" },
-    { name = "typer", specifier = ">=0.12" },
-    { name = "uvicorn", specifier = ">=0.30" },
-]
-provides-extras = ["test"]
-
-[[package]]
 name = "griffelib"
 version = "2.4.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1082,6 +1028,60 @@ sdist = { url = "https://files.pythonhosted.org/packages/d6/54/cfe61301667036ec9
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8", size = 9979, upload-time = "2022-08-14T12:40:09.779Z" },
 ]
+
+[[package]]
+name = "musa"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "curl-cffi" },
+    { name = "fastmcp" },
+    { name = "filelock" },
+    { name = "httpx" },
+    { name = "loguru" },
+    { name = "pillow" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "pypdfium2" },
+    { name = "python-multipart" },
+    { name = "pyyaml" },
+    { name = "sse-starlette" },
+    { name = "starlette" },
+    { name = "svglib" },
+    { name = "typer" },
+    { name = "uvicorn" },
+]
+
+[package.optional-dependencies]
+test = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "respx" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "curl-cffi", specifier = ">=0.7" },
+    { name = "fastmcp", specifier = ">=2.10" },
+    { name = "filelock", specifier = ">=3.14" },
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "loguru", specifier = ">=0.7" },
+    { name = "pillow", specifier = ">=10.3" },
+    { name = "pydantic", specifier = ">=2.7" },
+    { name = "pydantic-settings", specifier = ">=2.3" },
+    { name = "pypdfium2", specifier = ">=4.0,<5" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=8" },
+    { name = "pytest-asyncio", marker = "extra == 'test'", specifier = ">=0.23" },
+    { name = "python-multipart", specifier = ">=0.0.9" },
+    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "respx", marker = "extra == 'test'", specifier = ">=0.21" },
+    { name = "sse-starlette", specifier = ">=2.0" },
+    { name = "starlette", specifier = ">=1.0" },
+    { name = "svglib", specifier = ">=1.5" },
+    { name = "typer", specifier = ">=0.12" },
+    { name = "uvicorn", specifier = ">=0.30" },
+]
+provides-extras = ["test"]
 
 [[package]]
 name = "openapi-pydantic"

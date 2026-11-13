@@ -2,10 +2,10 @@ import json
 from pathlib import Path
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
-from gemini_image_api.upstream.session import UpstreamSession
-from gemini_image_api.upstream.client import GeminiClient
-from gemini_image_api.upstream.batchexecute import parse_stream_generate_response
-from gemini_image_api.upstream.exceptions import (
+from musa.upstream.session import UpstreamSession
+from musa.upstream.client import GeminiClient
+from musa.upstream.batchexecute import parse_stream_generate_response
+from musa.upstream.exceptions import (
     UsageLimitExceededError, ModelInvalidError, TemporarilyBlockedError
 )
 
@@ -65,7 +65,7 @@ def test_parse_stream_generate_error_codes():
     with pytest.raises(TemporarilyBlockedError):
         parse_stream_generate_response(raw_blocked_err)
 
-    from gemini_image_api.upstream.exceptions import ImageGenerationError
+    from musa.upstream.exceptions import ImageGenerationError
     raw_content_blocked = ')]}\'\n\n[["wrb.fr",null,null,null,null,[3,null,[["type.googleapis.com/assistant.boq.bard.application.BardErrorInfo",[1003]]]]]]'
     with pytest.raises(ImageGenerationError):
         parse_stream_generate_response(raw_content_blocked)

@@ -5,7 +5,7 @@ import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-from loguru import logger as _loguru  # loguru is a dependency of gemini-webapi, not part of it
+from loguru import logger as _loguru  # loguru is a dependency of the internal client, not part of it
 
 REDACT_PATTERNS = [r"__Secure-\S+", r"cached_cookies_[^\s/'\"]+", r"SAPISID\S*", r"Cookie:.*"]
 _REDACTED = "[REDACTED]"
@@ -34,7 +34,7 @@ class _RedactFilter(logging.Filter):
 
 
 def setup_logging(state_dir: Path) -> None:
-    """Route stdlib logging and loguru (used by gemini-webapi) to stderr + a rotating file, redacted.
+    """Route stdlib logging and loguru (used by the internal client) to stderr + a rotating file, redacted.
 
     Never writes to stdout: the MCP stdio transport owns it.
     """
@@ -64,7 +64,7 @@ def setup_logging(state_dir: Path) -> None:
 
 
 def add_upstream_file_sink(state_dir: Path) -> None:
-    """gemini-webapi's set_log_level() drops every loguru sink; re-add a redacted file sink after it.
+    """the internal client's set_log_level() drops every loguru sink; re-add a redacted file sink after it.
 
     Idempotent: a sink added by a previous call is replaced, never duplicated.
     """

@@ -1,9 +1,9 @@
 # tests/test_refs.py
 import pytest, respx, httpx
 from pathlib import Path
-from gemini_image_api.refs import resolve_refs, sniff_image_format, validate_local_ref, validate_trusted_image
-from gemini_image_api.state import GenerationRecord
-from gemini_image_api.errors import GIAError
+from musa.refs import resolve_refs, sniff_image_format, validate_local_ref, validate_trusted_image
+from musa.state import GenerationRecord
+from musa.errors import GIAError
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 32
 JPEG = b"\xff\xd8\xff\xe0" + b"\x00" * 32
@@ -71,7 +71,7 @@ async def test_resolve_refs_url_descarga_a_temp(settings, tmp_path, monkeypatch)
     assert len(out[0].sha256) == 64
     assert route.calls.last.request.headers["host"] == "example.com"
     assert route.calls.last.request.extensions["sni_hostname"] == "example.com"
-    assert route.calls.last.request.headers["user-agent"].startswith("gemini-image-api/")
+    assert route.calls.last.request.headers["user-agent"].startswith("musa/")
 
 @respx.mock
 async def test_resolve_refs_url_ssrf_bloqueada(settings, tmp_path, monkeypatch):

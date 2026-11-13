@@ -23,7 +23,7 @@ RPC_DELETE_GEM = "UXcSJb"
 RPC_DELETE_CHAT = "GzXR5e"
 
 class GeminiClient:
-    """Async client replacing gemini-webapi for image generation and Gem management."""
+    """Async client for image generation and Gem management."""
 
     def __init__(
         self,

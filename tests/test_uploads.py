@@ -4,8 +4,8 @@ import time
 
 import pytest
 
-from gemini_image_api.errors import GIAError
-from gemini_image_api.uploads import UploadStore
+from musa.errors import GIAError
+from musa.uploads import UploadStore
 
 
 def test_save_png_returns_id_and_file_permissions(settings, png_bytes):
@@ -36,7 +36,7 @@ def test_save_converts_svg_to_png(settings):
 
 
 def test_save_rejects_broken_svg(settings, monkeypatch):
-    import gemini_image_api.uploads as up
+    import musa.uploads as up
     monkeypatch.setattr(up, "svg_to_png", lambda b: (_ for _ in ()).throw(ValueError("boom")))
     store = UploadStore(settings.state_dir, settings)
     with pytest.raises(GIAError) as e:

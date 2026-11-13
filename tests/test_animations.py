@@ -1,7 +1,7 @@
 import json
 import stat
 
-from gemini_image_api.animations import AnimationStore
+from musa.animations import AnimationStore
 
 K = "g_0123456789ab#0"
 

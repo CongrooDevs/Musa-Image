@@ -3,7 +3,7 @@ import logging
 import pytest
 from loguru import logger
 
-from gemini_image_api.logsetup import redact, setup_logging
+from musa.logsetup import redact, setup_logging
 
 
 @pytest.fixture(autouse=True)
@@ -50,7 +50,7 @@ def test_redact_real_cache_filenames(psid):
 
 async def test_upstream_file_sink_survives_set_log_level_and_redacts(tmp_path):
     from loguru import logger
-    from gemini_image_api.logsetup import setup_logging, add_upstream_file_sink
+    from musa.logsetup import setup_logging, add_upstream_file_sink
     setup_logging(tmp_path)
     logger.remove()                       # what upstream set_log_level does
     add_upstream_file_sink(tmp_path)
@@ -61,7 +61,7 @@ async def test_upstream_file_sink_survives_set_log_level_and_redacts(tmp_path):
 
 
 async def test_upstream_file_sink_is_idempotent(tmp_path):
-    from gemini_image_api.logsetup import add_upstream_file_sink
+    from musa.logsetup import add_upstream_file_sink
     setup_logging(tmp_path)
     add_upstream_file_sink(tmp_path)
     add_upstream_file_sink(tmp_path)  # e.g. build_backend called twice

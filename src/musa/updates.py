@@ -15,7 +15,7 @@ def get_local_sha() -> str | None:
     """Attempts to retrieve the installed git commit SHA via PEP 610 or local repo root."""
     try:
         import importlib.metadata
-        dist = importlib.metadata.distribution("gemini-image-api")
+        dist = importlib.metadata.distribution("musa")
         direct_url_text = dist.read_text("direct_url.json")
         if direct_url_text:
             data = json.loads(direct_url_text)
