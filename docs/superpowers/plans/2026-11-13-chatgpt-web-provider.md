@@ -1878,12 +1878,13 @@ git commit -m "ChatGPT: backend de generación, edición, descarga y borrado"
 
 ---
 
-### Tarea 5: `RoutedBackend`, `build_backend` y etiqueta de modelo
+### Tarea 5: `RoutedBackend`, `build_backend`, etiqueta de modelo y quota guard por proveedor
 
 **Archivos:**
 - Modificar: `src/musa/client.py` (`RoutedBackend` antes de `build_backend`; `build_backend:565-571`)
 - Modificar: `src/musa/jobs.py:35-36` (`MODEL_LABELS`)
-- Test: `tests/test_router.py` (nuevo), `tests/test_client.py:403-405`, `tests/test_jobs.py`
+- Modificar: `src/musa/service.py:186-197` (`_guard`), `:226-246` (`_run`), `:285-311` (llamadas a `_run`)
+- Test: `tests/test_router.py` (nuevo), `tests/test_client.py:403-405`, `tests/test_jobs.py`, `tests/test_service.py`
 
 **Interfaces:**
 - Consume: `CHATGPT_MODEL` (Tarea 4) y `ChatGPTWebBackend(settings, state)` (Tarea 4).
@@ -2099,16 +2100,85 @@ MODEL_LABELS = {"gemini-flash": "Flash", "gemini-flash-lite": "Flash Lite", "gem
                 "gemini-carbon": "Carbon", "gemini-4-hydrogen": "Hydrogen", "chatgpt-web": "ChatGPT (web)"}
 ```
 
-- [ ] **Paso 4: Ejecutar la suite completa**
+- [ ] **Paso 4: Quota guard solo para Gemini — tests (fallan)**
+
+`ImageService._guard()` lee los porcentajes de Gemini (`backend.quota()`) antes de **cualquier** llamada. Con el enrutador, una generación de ChatGPT se bloquearía por el uso de Gemini. La decisión: el guard se salta cuando la llamada va a ChatGPT. Para ChatGPT, la única barrera previa es su propia comprobación `remaining == 0` (Tarea 4). En una edición, el proveedor es el de la conversación (`rec.model`), no el `model` recibido, que en las ediciones suele ser el `default_model` de Gemini.
+
+Añadir a `tests/test_service.py` (los imports de `GenerationRecord`, `StateStore`, `datetime` y `timezone` ya existen):
+
+```python
+async def test_quota_guard_skips_chatgpt_generations(svc, settings):
+    settings.quota_stop_pct = 90
+    s, b = svc(quota={"tier": "PRO", "window_5h_pct": 99, "weekly_pct": 1, "resets_at_5h": "r", "resets_at_weekly": "w"})
+    await s.generate(prompt="x", model="chatgpt-web")
+    assert b.calls[0][0] == "generate" and b.calls[0][3] == "chatgpt-web"
+
+
+async def test_quota_guard_skips_edits_of_chatgpt_conversations(svc, settings):
+    settings.quota_stop_pct = 90
+    s, b = svc(quota={"tier": "PRO", "window_5h_pct": 99, "weekly_pct": 1, "resets_at_5h": "r", "resets_at_weekly": "w"})
+    StateStore(settings.state_dir).append(GenerationRecord(
+        id="g_00000000c9a7", ts=datetime.now(timezone.utc).isoformat(), type="generate", conversation_id="c_gpt",
+        chat_metadata=["6af76eed-1aec-83e9-b323-d348dba09bfa"], prompt="p", style=None, style_text=None,
+        aspect_hint=None, model="chatgpt-web", project=None, subdir=None, refs=[], images=[], status="ok",
+        code=None, gemini_text="", elapsed_s=1.0, parent_id=None))
+    await s.edit("c_gpt", prompt="verde")
+    assert b.calls[0][:2] == ("edit", "c_gpt")
+    with pytest.raises(GIAError) as e:  # a Gemini conversation is still guarded
+        await s.edit("c_other", prompt="verde")
+    assert e.value.code == "quota_guard"
+```
+
+Run: `uv run pytest tests/test_service.py -q -k "skips"`
+Expected: FAIL (`quota_guard` raised for `chatgpt-web`).
+
+- [ ] **Paso 5: Quota guard solo para Gemini — implementación**
+
+En `src/musa/service.py`, cambiar el import de `client` (línea 18) por:
+
+```python
+from .client import CHATGPT_MODEL, Backend, GenerateResult, GEM_MISSING
+```
+
+Cambiar la firma y el comienzo de `_guard` (línea 186) por:
+
+```python
+    async def _guard(self, provider_model: str | None = None) -> None:
+        """Gemini's quota guard (5h/weekly %). ChatGPT calls skip it: they never spend Gemini quota, and the
+        ChatGPT backend refuses the turn itself when image_gen.remaining is 0."""
+        if provider_model == CHATGPT_MODEL:
+            return
+        stop = float(self.settings.quota_stop_pct or 0)
+```
+
+(El resto del cuerpo de `_guard` no cambia.)
+
+En `_run`, añadir el parámetro `provider_model: str | None = None` al final de la firma y cambiar `await self._guard()` (línea 246) por `await self._guard(provider_model)`.
+
+En `generate`, añadir `provider_model=model,` a la llamada `self._run(...)` (después de `collection=collection`).
+
+En `edit`, justo después de `shown = display_prompt or prompt`, añadir:
+
+```python
+        rec = self.state.conversation(conversation_id)
+        provider_model = rec.model if rec is not None else model  # an edit follows its conversation's provider
+```
+
+y añadir `provider_model=provider_model,` a su llamada `self._run(...)`.
+
+Run: `uv run pytest tests/test_service.py -q`
+Expected: PASS, incluidos los tests de quota guard ya existentes, que siguen bloqueando las llamadas de Gemini.
+
+- [ ] **Paso 6: Ejecutar la suite completa**
 
 Run: `uv run pytest -q`
 Expected: PASS.
 
-- [ ] **Paso 5: Commit**
+- [ ] **Paso 7: Commit**
 
 ```bash
-git add src/musa/client.py src/musa/jobs.py tests/test_router.py tests/test_client.py tests/test_jobs.py
-git commit -m "ChatGPT: enrutador de backends por modelo y conversación"
+git add src/musa/client.py src/musa/jobs.py src/musa/service.py tests/test_router.py tests/test_client.py tests/test_jobs.py tests/test_service.py
+git commit -m "ChatGPT: enrutador de backends y quota guard solo para Gemini"
 ```
 
 ---
