@@ -4,7 +4,7 @@ import base64
 import json
 import tempfile
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 
 import anyio
 from fastmcp import FastMCP
@@ -68,6 +68,11 @@ get_composition(composition=<id or name>) read them; export_composition(composit
 scene.json, musa-scene.js, index.html) and never overwrites; webp=true also writes scene-<name>.webp (animated). Pieces can be animated without
 spending quota: set_layer_animation(composition, layer=<id or name>, animation={type: static} | {type: motion, preset: bob|sway|pulse|fall,
 amplitude?, period?, phase?, copies?}); frames and states (they spend images) are made from Musa. Pick pieces that do not touch each other.
+ChatGPT (web): pass model="chatgpt-web" to generate_image/generate_batch/generate_animation to use the user's ChatGPT web
+session instead (headless Google Chrome, dedicated profile; sign in with auth_login(provider="chatgpt")). edit_image,
+retry_download and delete_conversation follow the conversation's provider automatically. ChatGPT has no Gems: a style's
+Gem is ignored there (warning gem_ignored). auth_status.chatgpt = {session, image_gen: {remaining, reset_after,
+checked_at}} as of the last ChatGPT call. Automating chatgpt.com may break OpenAI's Terms of Use; the user accepted it.
 """
 
 Prompt = Annotated[str, Field(description="What to draw (any language). For edit_image: the change to apply.")]
@@ -159,11 +164,18 @@ def create_server(backend: Backend, settings: Settings) -> FastMCP:
         return status
 
     @mcp.tool(annotations={"openWorldHint": True})
-    async def auth_login() -> dict:
-        """Open the user's Firefox (dedicated profile) to sign in to Gemini; closes itself once logged in."""
-        from .auth import login_guided
+    async def auth_login(provider: Annotated[Literal["gemini", "chatgpt"], Field(
+            description="gemini: Firefox sign-in to Gemini; chatgpt: Google Chrome sign-in to ChatGPT (model chatgpt-web)")] = "gemini") -> dict:
+        """Open a dedicated browser profile to sign in (Gemini: Firefox; ChatGPT: Google Chrome); closes itself once logged in."""
+        from . import auth as auth_mod
         try:
-            jar = await asyncio.to_thread(login_guided, settings)
+            if provider == "chatgpt":
+                chatgpt = getattr(backend, "chatgpt", None)
+                if chatgpt is not None:
+                    await chatgpt.aclose()  # release the profile held by the idle headless Chrome
+                await asyncio.to_thread(auth_mod.login_chatgpt, settings)
+                return {"status": "ok", "provider": "chatgpt"}
+            jar = await asyncio.to_thread(auth_mod.login_guided, settings)
         except GIAError as e:
             return error_payload(e)
         except Exception as e:

@@ -133,14 +133,24 @@ def edit(conversation_id: str, prompt: str,
 
 
 @app.command()
-def auth(status: bool = typer.Option(False, "--status", help="Show session status instead of logging in")):
-    """Guided login (Firefox) or session check."""
+def auth(status: bool = typer.Option(False, "--status", help="Show session status instead of logging in"),
+         chatgpt: bool = typer.Option(False, "--chatgpt", help="ChatGPT (Google Chrome) instead of Gemini (Firefox)")):
+    """Guided login (Firefox for Gemini; Google Chrome with --chatgpt) or session check."""
     b, s = _bs()
     if status:
         try:
-            _dump(_run(b.status()))
+            st = _run(b.status())
         except GIAError as e:
             _fail(e)
+        _dump(st.get("chatgpt") if chatgpt else st)
+        return
+    if chatgpt:
+        from . import auth as auth_mod
+        try:
+            auth_mod.login_chatgpt(s)
+        except GIAError as e:
+            _fail(e)
+        typer.echo(f"OK: ChatGPT session saved in {s.chatgpt_profile_dir}")
         return
     from .auth import login_guided
     try:

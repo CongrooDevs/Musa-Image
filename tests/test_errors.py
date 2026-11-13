@@ -42,3 +42,9 @@ def test_error_payload_is_actionable():
     assert "reset" in p["next_action"].lower()
     assert p["details"]["resets_at"].startswith("2026-11-10")
     assert error_payload(GIAError("usage_limit", "x"))["retryable"] is False
+
+
+def test_next_actions_cover_both_providers():
+    assert "auth --chatgpt" in NEXT_ACTION[errors.AUTH_EXPIRED]
+    assert "GIA_CHROME_PATH" in NEXT_ACTION[errors.AUTH_FAILED]
+    assert "Gemini" not in NEXT_ACTION[errors.NO_IMAGE]

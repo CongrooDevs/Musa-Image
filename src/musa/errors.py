@@ -31,10 +31,10 @@ UNKNOWN_COMPOSITION = "unknown_composition"
 RETRYABLE = frozenset({TIMEOUT, TEMPORARILY_BLOCKED, GENERATED_NOT_SAVED, QUOTA_GUARD, UPSTREAM_ERROR})
 
 NEXT_ACTION = {
-    AUTH_EXPIRED: "Session expired: call auth_login (or run `musa auth`), then retry.",
-    USAGE_LIMIT: "Google usage limit reached: stop generating and wait for the quota window to reset.",
-    TEMPORARILY_BLOCKED: "Temporarily blocked by Google: wait several minutes before retrying; do not loop.",
-    NO_IMAGE: "Gemini answered without an image: read gemini_text and rephrase the prompt.",
+    AUTH_EXPIRED: "Session expired: call auth_login (or run `musa auth`); for model chatgpt-web use auth_login(provider=\"chatgpt\") / `musa auth --chatgpt`. Then retry.",
+    USAGE_LIMIT: "Usage limit reached (Gemini or ChatGPT): stop generating and wait for the quota window to reset (details.resets_at when known).",
+    TEMPORARILY_BLOCKED: "Temporarily blocked (Google, or ChatGPT/Cloudflare), or the ChatGPT browser profile is busy: wait several minutes before retrying; do not loop.",
+    NO_IMAGE: "The model answered without an image: read gemini_text and rephrase the prompt.",
     TIMEOUT: "Timed out: retry once; if it repeats, simplify the prompt or reduce refs.",
     GENERATED_NOT_SAVED: "Image was generated but not saved: call retry_download (no quota cost); see details.reason.",
     CONTENT_BLOCKED: "Blocked by Gemini policy: change the prompt or refs.",
@@ -45,8 +45,8 @@ NEXT_ACTION = {
     TEMPLATE_MISSING_VAR: "Provide every variable listed in details.required via template_vars.",
     UNKNOWN_CONVERSATION: "Unknown conversation_id: call list_generations to find it, or generate_image to start one.",
     UNKNOWN_MODEL: "Model not available on this account: call list_models and pick one.",
-    AUTH_FAILED: "Guided login failed: check details/message (Firefox installed? GIA_FIREFOX_PATH).",
-    UPSTREAM_ERROR: "Unclassified Gemini error: retry once later; if it persists, check auth_status.",
+    AUTH_FAILED: "Guided login or browser start failed: check details/message (Gemini needs Firefox, GIA_FIREFOX_PATH; ChatGPT needs Google Chrome, GIA_CHROME_PATH, and the playwright package).",
+    UPSTREAM_ERROR: "Unclassified provider error: retry once later; if it persists, check auth_status.",
     QUOTA_GUARD: "Quota guard stopped the call before reaching Google's limit: wait until details.resets_at.",
     PATH_NOT_ALLOWED: "copy_to must be inside output_root or the working directory.",
     INVALID_ASPECT: "Use one of details.valid for aspect_hint.",
