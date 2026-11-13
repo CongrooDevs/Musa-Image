@@ -640,3 +640,8 @@ async def test_other_warning_overrides_existing(env):
     (job,) = env.q.submit(prompt="a")
     await wait_until(lambda: job.status == "done")
     assert job.warning["code"] == "gem_missing"
+
+
+def test_model_entries_label_chatgpt():
+    got = model_entries([{"model_name": "chatgpt-web", "display_name": "ChatGPT (web)", "available": True}])
+    assert got[1] == {"id": "chatgpt-web", "name": "ChatGPT (web)", "description": "ChatGPT (web)"}

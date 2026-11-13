@@ -402,7 +402,9 @@ async def test_list_models_includes_display_name_when_present(backend_factory):
 
 async def test_build_backend(settings, monkeypatch):
     monkeypatch.setattr(client_mod, "_default_client_cls", FakeClient)
-    assert isinstance(build_backend(settings), GeminiWebBackend)
+    b = build_backend(settings)
+    assert isinstance(b, client_mod.RoutedBackend) and isinstance(b.gemini, GeminiWebBackend)
+    assert type(b.chatgpt).__name__ == "ChatGPTWebBackend"
 
 
 async def test_status_not_blocked_during_slow_generation(backend_factory):

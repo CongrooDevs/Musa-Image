@@ -1309,3 +1309,25 @@ def test_service_owns_a_composition_store(svc, settings):
     custom = CompositionStore(settings.state_dir)
     s2 = type(s)(s.backend, settings, s.state, compositions=custom)
     assert s2.compositions is custom
+
+
+async def test_quota_guard_skips_chatgpt_generations(svc, settings):
+    settings.quota_stop_pct = 90
+    s, b = svc(quota={"tier": "PRO", "window_5h_pct": 99, "weekly_pct": 1, "resets_at_5h": "r", "resets_at_weekly": "w"})
+    await s.generate(prompt="x", model="chatgpt-web")
+    assert b.calls[0][0] == "generate" and b.calls[0][3] == "chatgpt-web"
+
+
+async def test_quota_guard_skips_edits_of_chatgpt_conversations(svc, settings):
+    settings.quota_stop_pct = 90
+    s, b = svc(quota={"tier": "PRO", "window_5h_pct": 99, "weekly_pct": 1, "resets_at_5h": "r", "resets_at_weekly": "w"})
+    StateStore(settings.state_dir).append(GenerationRecord(
+        id="g_00000000c9a7", ts=datetime.now(timezone.utc).isoformat(), type="generate", conversation_id="c_gpt",
+        chat_metadata=["6af76eed-1aec-83e9-b323-d348dba09bfa"], prompt="p", style=None, style_text=None,
+        aspect_hint=None, model="chatgpt-web", project=None, subdir=None, refs=[], images=[], status="ok",
+        code=None, gemini_text="", elapsed_s=1.0, parent_id=None))
+    await s.edit("c_gpt", prompt="verde")
+    assert b.calls[0][:2] == ("edit", "c_gpt")
+    with pytest.raises(GIAError) as e:  # a Gemini conversation is still guarded
+        await s.edit("c_other", prompt="verde")
+    assert e.value.code == "quota_guard"
