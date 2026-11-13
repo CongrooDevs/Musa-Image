@@ -73,7 +73,7 @@ Musa genera y edita imágenes también con **ChatGPT**, usando la sesión web de
    - **Señal de fin de subida:** se cuentan las respuestas `POST /backend-api/files/process_upload_stream` con estado 200: basta la respuesta (cabeceras) de cada una. El stream queda abierto, así que `finished()` no se usa (verificado en vivo el 2026-11-13 con 2 referencias). Cuando el contador llega al número de referencias, se continúa.
    - Límite: 90 s; si se supera, `upstream_error` («la subida de referencias no terminó»).
    - No se usa el estado del botón de enviar: solo se localizó por `aria-label="Enviar"`, que depende del idioma.
-   - **Verificado una sola vez, con 1 referencia** (1 respuesta). Que haya una respuesta por archivo con varias referencias se comprueba en la tarea de verificación (§9).
+   - **Verificado en vivo el 2026-11-13 con 2 referencias:** llega una respuesta 200 de `process_upload_stream` por archivo. También se verificó que el primer `input[accept=image/*]` de la página es el de la cámara (`capture="environment"`, sin `multiple`), por lo que `attach` lo salta y elige un input con `multiple`.
 5. **Enviar:** clic en el editor (`#prompt-textarea`, o `div[contenteditable='true']` como alternativa), `keyboard.type(prompt, delay=20)` y luego `Enter`.
    - Mientras se envía, se registran las respuestas de `/backend-api/` que contengan `conversation` o `sentinel`. Un 403 o 404 en ellas se traduce a `temporarily_blocked`.
 6. **Id de la conversación:** en una generación, esperar a que la URL coincida con `/c/<uuid>` (60 s); si no ocurre, `upstream_error`. En una edición se usa el id guardado en `rec.chat_metadata[0]`.
