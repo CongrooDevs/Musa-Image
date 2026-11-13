@@ -873,3 +873,18 @@ async def test_mcp_composition_public_shape_has_no_internal_fields(comp_server):
         assert "owner_pid" not in comp and "master_exists" not in comp
         assert all("source_exists" not in ly for ly in comp["layers"])
     assert got["width"] == 800 and got["layers"][1]["animation"] == {"type": "static"}
+
+
+async def test_auth_login_chatgpt_closes_the_browser_first(server, backend, monkeypatch):
+    order = []
+
+    class ChatGPTSide:
+        async def aclose(self):
+            order.append("aclose")
+
+    backend.chatgpt = ChatGPTSide()  # same object the server holds; auth_login looks it up at call time
+    monkeypatch.setattr("musa.auth.login_chatgpt", lambda s: order.append("login"))
+    async with Client(server) as c:
+        res = await c.call_tool("auth_login", {"provider": "chatgpt"})
+    assert res.structured_content == {"status": "ok", "provider": "chatgpt"}
+    assert order == ["aclose", "login"]

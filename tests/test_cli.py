@@ -479,3 +479,20 @@ def test_styles_edit_validates_style_before_resolving_image(settings, tmp_path, 
         r = runner.invoke(cli.app, ["styles", "edit", sid, "--image", "https://example.com/a.png"])
         assert r.exit_code == 1 and json.loads(r.output)["code"] == code
     assert called == []
+
+
+def test_auth_chatgpt_runs_the_chrome_login(settings, monkeypatch):
+    calls = []
+    monkeypatch.setattr("musa.auth.login_chatgpt", lambda s: calls.append(s))
+    cli.set_backend(FakeBackend(), settings)
+    r = runner.invoke(cli.app, ["auth", "--chatgpt"])
+    assert r.exit_code == 0 and calls == [settings] and "ChatGPT" in r.output
+
+
+def test_auth_chatgpt_status_prints_only_the_chatgpt_part(settings):
+    class WithChatGPT(FakeBackend):
+        async def status(self):
+            return {"valid": True, "chatgpt": {"session": True, "image_gen": {"remaining": 2}}}
+    cli.set_backend(WithChatGPT(), settings)
+    r = runner.invoke(cli.app, ["auth", "--status", "--chatgpt"])
+    assert r.exit_code == 0 and json.loads(r.output) == {"session": True, "image_gen": {"remaining": 2}}

@@ -68,6 +68,19 @@ musa auth --status               # comprueba la sesión
 
 (Desde un clon del repositorio, antepón `uv run`.) Las cookies quedan en `<state_dir>/cookies/` con permisos `0600` (`<state_dir>` es `~/.gemini-image-api` por defecto; configurable con `GIA_STATE_DIR`).
 
+## ChatGPT (web)
+
+Musa también genera y edita con **tu sesión web de ChatGPT** (vale una cuenta Free): elige el modelo **«ChatGPT (web)»** (`chatgpt-web`) en el selector, en `musa gen --model chatgpt-web` o en `generate_image(model="chatgpt-web")`. Las ediciones, `retry_download` y `delete_conversation` siguen solas al proveedor de su conversación.
+
+> ⚠️ **Términos de uso:** los Términos de OpenAI prohíben extraer contenido generado de forma automática o programática. Este canal automatiza chatgpt.com y descarga las imágenes. El riesgo sobre tu cuenta es tuyo.
+
+- **Requisito:** Google Chrome (en macOS, `/Applications/Google Chrome.app`; en otro sitio, `GIA_CHROME_PATH`).
+- **Inicio de sesión:** `musa auth --chatgpt` (o `auth_login(provider="chatgpt")`) abre Chrome **sin automatizar** con un perfil propio en `<state_dir>/chatgpt-chrome-profile`. Inicia sesión y Chrome se cierra solo al detectar la cookie.
+- **Generación:** Musa abre ese perfil en Chrome **headless**, sin puerto de depuración, y lo cierra tras 2 min sin uso. Solo un proceso puede usar el perfil a la vez: si Musa y musa-mcp coinciden, el segundo espera.
+- **Historial:** las conversaciones quedan en tu barra lateral de ChatGPT. `musa delete` / `delete_conversation` las oculta.
+- **Cuota:** `musa auth --status --chatgpt` muestra `image_gen.remaining` y `reset_after` según la última llamada. Musa no supone ningún límite fijo.
+- **Gems:** ChatGPT no los usa. El estilo se aplica como texto (aviso `gem_ignored`).
+
 ## Registrar el MCP en tu agente
 
 El mismo bloque sirve para **omp**, **Claude Code**, **Claude Desktop** y **Cursor** (en su archivo de configuración MCP respectivo):
@@ -147,7 +160,7 @@ En `update_prompt` y `delete_prompt`, `prompt` es el id (`pr_xxxxxxxx`) o el nom
 |---|---|
 | `musa gen PROMPT` | Genera imagen (chat nuevo). Opciones: `-r/--ref` (repetible), `--style`, `--style-text`, `--template`, `-v/--var k=v` (repetible), `--aspect`, `--project`, `--subdir`, `--copy-to`, `--collection`, `--model` |
 | `musa edit CONVERSATION_ID PROMPT` | Edita la imagen de una conversación existente (mismas opciones que `gen`, incluidos `--copy-to` y `--collection`) |
-| `musa auth [--status]` | Login guiado (Firefox) o comprobación de sesión |
+| `musa auth [--status] [--chatgpt]` | Login guiado (Firefox para Gemini; Google Chrome con `--chatgpt`) o comprobación de sesión (`--status --chatgpt` muestra solo ChatGPT) |
 | `musa styles` | Lista estilos y plantillas |
 | `musa styles gems` | Lista los Gems de estilo activos: `[{style, gem_id, name, custom}]` |
 | `musa styles gem ESTILO on\|off [--instructions TEXTO]` | Activa (`on`) o desactiva (`off`) el Gem de un estilo (ver «Gem de estilo»); `--instructions` fija instrucciones personalizadas (cadena vacía: restaura la plantilla) |
@@ -394,7 +407,7 @@ Archivo opcional `~/.config/gemini-image-api/config.yaml`; las variables de ento
 | `GIA_APP_WITH_MCP` | `false` | Si es `true`, `musa-mcp` arranca también Musa en el mismo proceso |
 | `GIA_TEMP_CHATS` | `true` | Genera en chats temporales de Gemini: no quedan en el historial de chats de gemini.google.com (el `edit` sigue funcionando). `false` para dejarlos visibles |
 
-Otras: `GIA_MAX_REF_BYTES`, `GIA_MIN_DELAY_S`, `GIA_THUMB_SIZE`, `GIA_FIREFOX_PATH` (binario de Firefox para `musa auth`).
+Otras: `GIA_MAX_REF_BYTES`, `GIA_MIN_DELAY_S`, `GIA_THUMB_SIZE`, `GIA_FIREFOX_PATH` (binario de Firefox para `musa auth`), `GIA_CHROME_PATH` (binario de Google Chrome para ChatGPT), `GIA_CHATGPT_IDLE_CLOSE_S` (segundos sin uso antes de cerrar Chrome; 120).
 
 ## Salida y estado
 
