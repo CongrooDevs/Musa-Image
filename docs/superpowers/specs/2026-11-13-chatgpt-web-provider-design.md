@@ -181,16 +181,18 @@ Son 5 ejecuciones, no una prueba de fiabilidad.
   - Con el lock ocupado → `temporarily_blocked`.
 - `ChatGPTBrowser`: los argumentos de lanzamiento excluyen `--use-mock-keychain` y `--enable-automation`, y el UA se deriva del real (con un lanzador falso).
 
-### Verificación real (al final, con la cuenta del usuario; gasta ≈4 imágenes)
+### Verificación real (al final, con la cuenta del usuario)
 
-1. **Client hints en headless:** `navigator.userAgentData.brands` con el override aplicado no contiene `HeadlessChrome`. Sin gasto de cuota.
+**Presupuesto:** los pasos 2, 3 y 4 gastan 1 imagen cada uno (3 en total); los pasos 1, 5 y 6 no gastan. La última lectura fue `remaining: 3`, sin margen. Antes de empezar se lee la cuota con `musa auth --chatgpt --status`, y se ejecutan solo los pasos que quepan, en este orden: 1, 2, 3, 5, 6 y por último 4. Lo que no quepa (normalmente el paso 4, la prueba con 2 referencias) **se deja para después de `reset_after`** y el trabajo se entrega indicando qué queda pendiente. No se supone ningún límite fijo de cuota: se usa siempre el `remaining` que devuelva la API.
+
+1. **Client hints en headless:** con el override aplicado, `navigator.userAgentData.brands` no contiene `HeadlessChrome`. No gasta cuota.
 2. `musa gen --model chatgpt-web "<prompt>"` → imagen guardada y registro correcto.
 3. `musa edit <conv> "<cambio>"` → imagen nueva en la misma conversación de ChatGPT.
-4. `musa gen --model chatgpt-web -r <img1> -r <img2> "<prompt>"` → **2 referencias**: confirmar 2 `process_upload_stream`.
-5. `musa delete <conv>` → la conversación desaparece de la barra lateral (comprobar en `GET /backend-api/conversations`).
-6. Al terminar: ningún proceso Chrome con el perfil y ningún puerto escuchando.
+4. `musa gen --model chatgpt-web -r <img1> -r <img2> "<prompt>"` → **2 referencias**: confirmar 2 respuestas `process_upload_stream`.
+5. `musa delete <conv>` (sobre la conversación de los pasos 2 y 3) → la conversación ya no aparece en `GET /backend-api/conversations`. No gasta cuota.
+6. Al terminar: ningún proceso Chrome usando el perfil y ningún puerto escuchando.
 
-Si el paso 1 o el 4 fallan, se corrige en el diseño antes de dar el trabajo por terminado.
+Si falla el paso 1 o el 4, se corrige el diseño antes de dar el trabajo por terminado. Si el paso 4 quedó pendiente, el paso 4 de §5.1 (la subida de varias referencias) sigue marcado como «sin verificar».
 
 ## 10. Fuera de alcance
 
