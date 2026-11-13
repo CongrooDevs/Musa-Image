@@ -1,0 +1,983 @@
+{
+ "cases": [
+  {
+   "type": "bob",
+   "params": {
+    "amplitude": 6,
+    "period": 2.0,
+    "phase": 0
+   },
+   "t": 0,
+   "expect": {
+    "dy": -0.0
+   }
+  },
+  {
+   "type": "bob",
+   "params": {
+    "amplitude": 6,
+    "period": 2.0,
+    "phase": 0
+   },
+   "t": 0.5,
+   "expect": {
+    "dy": -6.0
+   }
+  },
+  {
+   "type": "bob",
+   "params": {
+    "amplitude": 6,
+    "period": 2.0,
+    "phase": 0
+   },
+   "t": 0.75,
+   "expect": {
+    "dy": -4.242640687119286
+   }
+  },
+  {
+   "type": "bob",
+   "params": {
+    "amplitude": 6,
+    "period": 2.0,
+    "phase": 0
+   },
+   "t": 1.3,
+   "expect": {
+    "dy": 4.854101966249684
+   }
+  },
+  {
+   "type": "bob",
+   "params": {
+    "amplitude": 6,
+    "period": 2.0,
+    "phase": 0.25
+   },
+   "t": 0,
+   "expect": {
+    "dy": -6.0
+   }
+  },
+  {
+   "type": "bob",
+   "params": {
+    "amplitude": 6,
+    "period": 2.0,
+    "phase": 0.25
+   },
+   "t": 0.5,
+   "expect": {
+    "dy": -7.347880794884119e-16
+   }
+  },
+  {
+   "type": "bob",
+   "params": {
+    "amplitude": 6,
+    "period": 2.0,
+    "phase": 0.25
+   },
+   "t": 0.75,
+   "expect": {
+    "dy": 4.242640687119285
+   }
+  },
+  {
+   "type": "bob",
+   "params": {
+    "amplitude": 6,
+    "period": 2.0,
+    "phase": 0.25
+   },
+   "t": 1.3,
+   "expect": {
+    "dy": 3.52671151375484
+   }
+  },
+  {
+   "type": "sway",
+   "params": {
+    "amplitude": 4,
+    "period": 2.4,
+    "phase": 0
+   },
+   "t": 0,
+   "expect": {
+    "theta": 0.0
+   }
+  },
+  {
+   "type": "sway",
+   "params": {
+    "amplitude": 4,
+    "period": 2.4,
+    "phase": 0
+   },
+   "t": 0.6,
+   "expect": {
+    "theta": 4.0
+   }
+  },
+  {
+   "type": "sway",
+   "params": {
+    "amplitude": 4,
+    "period": 2.4,
+    "phase": 0
+   },
+   "t": 1.0,
+   "expect": {
+    "theta": 1.9999999999999998
+   }
+  },
+  {
+   "type": "sway",
+   "params": {
+    "amplitude": 4,
+    "period": 2.4,
+    "phase": 0
+   },
+   "t": 2.4,
+   "expect": {
+    "theta": 0.0
+   }
+  },
+  {
+   "type": "sway",
+   "params": {
+    "amplitude": 4,
+    "period": 2.4,
+    "phase": 0
+   },
+   "t": 3.1,
+   "expect": {
+    "theta": 3.863703305156273
+   }
+  },
+  {
+   "type": "sway",
+   "params": {
+    "amplitude": 30,
+    "period": 0.3,
+    "phase": 0.7
+   },
+   "t": 0.11,
+   "expect": {
+    "theta": 12.202099292274005
+   }
+  },
+  {
+   "type": "pulse",
+   "params": {
+    "amplitude": 0.04,
+    "period": 1.6,
+    "phase": 0
+   },
+   "t": 0,
+   "expect": {
+    "s": 1.0
+   }
+  },
+  {
+   "type": "pulse",
+   "params": {
+    "amplitude": 0.04,
+    "period": 1.6,
+    "phase": 0
+   },
+   "t": 0.4,
+   "expect": {
+    "s": 1.04
+   }
+  },
+  {
+   "type": "pulse",
+   "params": {
+    "amplitude": 0.04,
+    "period": 1.6,
+    "phase": 0
+   },
+   "t": 0.9,
+   "expect": {
+    "s": 0.9846926627053965
+   }
+  },
+  {
+   "type": "pulse",
+   "params": {
+    "amplitude": 0.3,
+    "period": 10,
+    "phase": 0.5
+   },
+   "t": 2.5,
+   "expect": {
+    "s": 0.7
+   }
+  },
+  {
+   "type": "fall",
+   "params": {
+    "amplitude": 120,
+    "period": 1.2,
+    "phase": 0,
+    "copies": 3
+   },
+   "t": 0,
+   "expect": {
+    "dy": [
+     -120.0,
+     -80.00000000000001,
+     -40.00000000000001
+    ],
+    "opacity": [
+     0.0,
+     1.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "type": "fall",
+   "params": {
+    "amplitude": 120,
+    "period": 1.2,
+    "phase": 0,
+    "copies": 3
+   },
+   "t": 0.05,
+   "expect": {
+    "dy": [
+     -115.0,
+     -75.0,
+     -35.00000000000001
+    ],
+    "opacity": [
+     0.27777777777777785,
+     1.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "type": "fall",
+   "params": {
+    "amplitude": 120,
+    "period": 1.2,
+    "phase": 0,
+    "copies": 3
+   },
+   "t": 0.3,
+   "expect": {
+    "dy": [
+     -90.0,
+     -50.00000000000001,
+     -10.000000000000004
+    ],
+    "opacity": [
+     1.0,
+     1.0,
+     0.5555555555555558
+    ]
+   }
+  },
+  {
+   "type": "fall",
+   "params": {
+    "amplitude": 120,
+    "period": 1.2,
+    "phase": 0,
+    "copies": 3
+   },
+   "t": 0.6,
+   "expect": {
+    "dy": [
+     -60.0,
+     -20.000000000000007,
+     -100.00000000000001
+    ],
+    "opacity": [
+     1.0,
+     1.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "type": "fall",
+   "params": {
+    "amplitude": 120,
+    "period": 1.2,
+    "phase": 0,
+    "copies": 3
+   },
+   "t": 1.1,
+   "expect": {
+    "dy": [
+     -9.999999999999991,
+     -90.0,
+     -49.999999999999986
+    ],
+    "opacity": [
+     0.5555555555555551,
+     1.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "type": "fall",
+   "params": {
+    "amplitude": 2000,
+    "period": 0.5,
+    "phase": 0.35,
+    "copies": 5
+   },
+   "t": 0.2,
+   "expect": {
+    "dy": [
+     -500.0,
+     -100.00000000000009,
+     -1700.0000000000002,
+     -1299.9999999999998,
+     -899.9999999999999
+    ],
+    "opacity": [
+     1.0,
+     0.33333333333333365,
+     0.9999999999999994,
+     1.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "type": "fall",
+   "params": {
+    "amplitude": 10,
+    "period": 1.2,
+    "phase": 0.9,
+    "copies": 1
+   },
+   "t": 0.0,
+   "expect": {
+    "dy": [
+     -0.9999999999999998
+    ],
+    "opacity": [
+     0.6666666666666665
+    ]
+   }
+  },
+  {
+   "type": "frames",
+   "params": {
+    "n": 4,
+    "fps": 10,
+    "loop": "loop"
+   },
+   "t": 0,
+   "expect": {
+    "index": 0
+   }
+  },
+  {
+   "type": "frames",
+   "params": {
+    "n": 4,
+    "fps": 10,
+    "loop": "loop"
+   },
+   "t": 0.09,
+   "expect": {
+    "index": 0
+   }
+  },
+  {
+   "type": "frames",
+   "params": {
+    "n": 4,
+    "fps": 10,
+    "loop": "loop"
+   },
+   "t": 0.1,
+   "expect": {
+    "index": 1
+   }
+  },
+  {
+   "type": "frames",
+   "params": {
+    "n": 4,
+    "fps": 10,
+    "loop": "loop"
+   },
+   "t": 0.35,
+   "expect": {
+    "index": 3
+   }
+  },
+  {
+   "type": "frames",
+   "params": {
+    "n": 4,
+    "fps": 10,
+    "loop": "loop"
+   },
+   "t": 0.8,
+   "expect": {
+    "index": 0
+   }
+  },
+  {
+   "type": "frames",
+   "params": {
+    "n": 4,
+    "fps": 10,
+    "loop": "loop"
+   },
+   "t": 1.0,
+   "expect": {
+    "index": 2
+   }
+  },
+  {
+   "type": "frames",
+   "params": {
+    "n": 4,
+    "fps": 10,
+    "loop": "loop"
+   },
+   "t": 2.55,
+   "expect": {
+    "index": 1
+   }
+  },
+  {
+   "type": "frames",
+   "params": {
+    "n": 4,
+    "fps": 10,
+    "loop": "pingpong"
+   },
+   "t": 0,
+   "expect": {
+    "index": 0
+   }
+  },
+  {
+   "type": "frames",
+   "params": {
+    "n": 4,
+    "fps": 10,
+    "loop": "pingpong"
+   },
+   "t": 0.1,
+   "expect": {
+    "index": 1
+   }
+  },
+  {
+   "type": "frames",
+   "params": {
+    "n": 4,
+    "fps": 10,
+    "loop": "pingpong"
+   },
+   "t": 0.3,
+   "expect": {
+    "index": 3
+   }
+  },
+  {
+   "type": "frames",
+   "params": {
+    "n": 4,
+    "fps": 10,
+    "loop": "pingpong"
+   },
+   "t": 0.4,
+   "expect": {
+    "index": 2
+   }
+  },
+  {
+   "type": "frames",
+   "params": {
+    "n": 4,
+    "fps": 10,
+    "loop": "pingpong"
+   },
+   "t": 0.6,
+   "expect": {
+    "index": 0
+   }
+  },
+  {
+   "type": "frames",
+   "params": {
+    "n": 4,
+    "fps": 10,
+    "loop": "pingpong"
+   },
+   "t": 0.7,
+   "expect": {
+    "index": 1
+   }
+  },
+  {
+   "type": "frames",
+   "params": {
+    "n": 4,
+    "fps": 10,
+    "loop": "pingpong"
+   },
+   "t": 1.0,
+   "expect": {
+    "index": 2
+   }
+  },
+  {
+   "type": "frames",
+   "params": {
+    "n": 1,
+    "fps": 10,
+    "loop": "pingpong"
+   },
+   "t": 0.5,
+   "expect": {
+    "index": 0
+   }
+  },
+  {
+   "type": "frames",
+   "params": {
+    "n": 2,
+    "fps": 5,
+    "loop": "pingpong"
+   },
+   "t": 0.6,
+   "expect": {
+    "index": 1
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "loop"
+   },
+   "t": 0,
+   "expect": {
+    "index": 0
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "loop"
+   },
+   "t": 0.7,
+   "expect": {
+    "index": 0
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "loop"
+   },
+   "t": 0.8,
+   "expect": {
+    "index": 1
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "loop"
+   },
+   "t": 1.7,
+   "expect": {
+    "index": 2
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "loop"
+   },
+   "t": 2.4,
+   "expect": {
+    "index": 2
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "loop"
+   },
+   "t": 5,
+   "expect": {
+    "index": 0
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "pingpong"
+   },
+   "t": 0,
+   "expect": {
+    "index": 0
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "pingpong"
+   },
+   "t": 0.8,
+   "expect": {
+    "index": 1
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "pingpong"
+   },
+   "t": 1.6,
+   "expect": {
+    "index": 2
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "pingpong"
+   },
+   "t": 2.4,
+   "expect": {
+    "index": 2
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "pingpong"
+   },
+   "t": 3.2,
+   "expect": {
+    "index": 0
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "pingpong"
+   },
+   "t": 4.0,
+   "expect": {
+    "index": 1
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "pingpong"
+   },
+   "t": 4.8,
+   "expect": {
+    "index": 1
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "once"
+   },
+   "t": 0,
+   "expect": {
+    "index": 0
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "once"
+   },
+   "t": 0.8,
+   "expect": {
+    "index": 1
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "once"
+   },
+   "t": 1.6,
+   "expect": {
+    "index": 2
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "once"
+   },
+   "t": 2.4,
+   "expect": {
+    "index": 2
+   }
+  },
+  {
+   "type": "states",
+   "params": {
+    "m": 3,
+    "hold": 0.8,
+    "loop": "once"
+   },
+   "t": 100,
+   "expect": {
+    "index": 2
+   }
+  },
+  {
+   "type": "frames_placement",
+   "params": {
+    "box": [
+     503,
+     190,
+     718,
+     729
+    ],
+    "frame_w": 200,
+    "frame_h": 300,
+    "frame_boxes": [
+     [
+      20,
+      10,
+      120,
+      260
+     ],
+     null
+    ]
+   },
+   "t": 0,
+   "expect": {
+    "box": [
+     459.88,
+     168.44,
+     431.20000000000005,
+     646.8000000000001
+    ]
+   }
+  },
+  {
+   "type": "frames_placement",
+   "params": {
+    "box": [
+     100,
+     50,
+     200,
+     250
+    ],
+    "frame_w": 64,
+    "frame_h": 64,
+    "frame_boxes": [
+     null,
+     [
+      8,
+      4,
+      40,
+      60
+     ],
+     [
+      0,
+      0,
+      10,
+      10
+     ]
+    ]
+   },
+   "t": 0,
+   "expect": {
+    "box": [
+     71.42857142857143,
+     35.714285714285715,
+     228.57142857142858,
+     228.57142857142858
+    ]
+   }
+  },
+  {
+   "type": "states_placement",
+   "params": {
+    "bbox_k": [
+     10,
+     20,
+     110,
+     220
+    ],
+    "offset_layer": [
+     500,
+     400
+    ],
+    "offset_k": [
+     -2,
+     -5
+    ]
+   },
+   "t": 0,
+   "expect": {
+    "box": [
+     508,
+     415,
+     100,
+     200
+    ]
+   }
+  },
+  {
+   "type": "states_placement",
+   "params": {
+    "bbox_k": [
+     0,
+     0,
+     50,
+     60
+    ],
+    "offset_layer": [
+     0,
+     0
+    ],
+    "offset_k": [
+     0,
+     0
+    ]
+   },
+   "t": 0,
+   "expect": {
+    "box": [
+     0,
+     0,
+     50,
+     60
+    ]
+   }
+  },
+  {
+   "type": "pivot",
+   "params": {
+    "preset": "sway",
+    "box": [
+     100,
+     200,
+     300,
+     500
+    ]
+   },
+   "t": 0,
+   "expect": {
+    "pivot": [
+     200.0,
+     500
+    ]
+   }
+  },
+  {
+   "type": "pivot",
+   "params": {
+    "preset": "pulse",
+    "box": [
+     100,
+     200,
+     300,
+     500
+    ]
+   },
+   "t": 0,
+   "expect": {
+    "pivot": [
+     200.0,
+     350.0
+    ]
+   }
+  },
+  {
+   "type": "pivot",
+   "params": {
+    "preset": "bob",
+    "box": [
+     100,
+     200,
+     300,
+     500
+    ]
+   },
+   "t": 0,
+   "expect": {
+    "pivot": [
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "type": "fall_auto",
+   "params": {
+    "height": 539
+   },
+   "t": 0,
+   "expect": {
+    "amplitude": 647
+   }
+  },
+  {
+   "type": "fall_auto",
+   "params": {
+    "height": 25
+   },
+   "t": 0,
+   "expect": {
+    "amplitude": 30
+   }
+  }
+ ]
+}

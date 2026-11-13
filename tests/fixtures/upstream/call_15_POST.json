@@ -1,0 +1,7 @@
+{
+  "method": "POST",
+  "url": "https://gemini.google.com/_/BardChatUi/data/batchexecute",
+  "request_data": "{'at': 'REDACTED_SNLM0E', 'f.req': '[[[\"c8o8Fe\",\"[[[null,null,null,[null,null,null,null,null,\\\\\"\\\\\"]],[\\\\\"http://googleusercontent.com/image_generation_content/0_909\\\\\",0],null,[19,\\\\\"\\\\\"],null,null,null,null,null,\\\\\"\\\\\"],[\\\\\"r_dfe0dccdff41c485\\\\\",\\\\\"rc_e2e217ce031b44ff\\\\\",\\\\\"c_bbc62490b04b10f4\\\\\",null,\\\\\"\\\\\"],1,0,1]\",null,\"generic\"]]]'}",
+  "status_code": 200,
+  "response_text": ")]}'\n\n190\n[[\"wrb.fr\",\"c8o8Fe\",null,null,null,[3,null,[[\"type.googleapis.com/assistant.boq.bard.application.BardErrorInfo\",[1003]]]],\"generic\"],[\"di\",5321],[\"af.httprm\",5321,\"117610143457363962\",37]]\n25\n[[\"e\",4,null,null,226]]\n"
+}

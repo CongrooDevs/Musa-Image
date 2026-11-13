@@ -1,0 +1,7 @@
+{
+  "method": "POST",
+  "url": "https://gemini.google.com/_/BardChatUi/data/batchexecute",
+  "request_data": "{'at': 'REDACTED_SNLM0E', 'f.req': '[[[\"ESY5D\",\"[[[\\\\\"bard_activity_enabled\\\\\"]]]\",null,\"generic\"]]]'}",
+  "status_code": 200,
+  "response_text": ")]}'\n\n130\n[[\"wrb.fr\",\"ESY5D\",\"[[null,null,null,null,true]]\",null,null,null,\"generic\"],[\"di\",78],[\"af.httprm\",77,\"3517277793866652021\",38]]\n25\n[[\"e\",4,null,null,166]]\n"
+}

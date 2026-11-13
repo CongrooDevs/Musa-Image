@@ -1,0 +1,7 @@
+{
+  "method": "POST",
+  "url": "https://gemini.google.com/_/BardChatUi/data/batchexecute",
+  "request_data": "{'at': 'REDACTED_SNLM0E', 'f.req': '[[[\"jSf9Qc\",\"[]\",null,\"generic\"]]]'}",
+  "status_code": 200,
+  "response_text": ")]}'\n\n230\n[[\"wrb.fr\",\"jSf9Qc\",\"[2,[[2394,0.01,1,[[1794551312,18571000]],null,null,2400],[48332,0.00105999,2,[[1795102112,18778000]],null,null,48384]],false]\",null,null,null,\"generic\"],[\"di\",208],[\"af.httprm\",208,\"2135717172749218529\",37]]\n25\n[[\"e\",4,null,null,266]]\n"
+}

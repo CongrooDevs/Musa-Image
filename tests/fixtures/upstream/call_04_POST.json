@@ -1,0 +1,7 @@
+{
+  "method": "POST",
+  "url": "https://gemini.google.com/_/BardChatUi/data/batchexecute",
+  "request_data": "{'at': 'REDACTED_SNLM0E', 'f.req': '[[[\"MaZiqc\",\"[13,null,[1,null,1]]\",null,\"generic\"]]]'}",
+  "status_code": 200,
+  "response_text": ")]}'\n\n108\n[[\"wrb.fr\",\"MaZiqc\",\"[]\",null,null,null,\"generic\"],[\"di\",160],[\"af.httprm\",160,\"-8445545704516934292\",35]]\n25\n[[\"e\",4,null,null,144]]\n"
+}

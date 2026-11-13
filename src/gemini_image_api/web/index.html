@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Musa · Galería de imágenes generadas</title>
+<link rel="stylesheet" href="/static/app.css" />
+<link rel="icon" type="image/png" href="/static/assets/favicon.png" />
+<script>try { if (sessionStorage.getItem("musa-loader")) document.documentElement.dataset.nols = "1"; } catch (e) {}</script>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#121212" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Musa" />
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" /><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /><path d="M20 2v4" /><path d="M22 4h-4" /><circle cx="4" cy="20" r="2" /></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="14" y="3" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" /></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="m12 14 4-4" /><path d="M3.34 19a10 10 0 1 1 17.32 0" /></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" /></symbol>
+  <symbol id="i-film" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M7 3v18" /><path d="M3 7.5h4" /><path d="M3 12h18" /><path d="M3 16.5h4" /><path d="M17 3v18" /><path d="M17 7.5h4" /><path d="M17 16.5h4" /></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="3" width="5" height="18" rx="1" /><rect x="5" y="3" width="5" height="18" rx="1" /></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34" /><circle cx="11" cy="11" r="8" /></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14" /><path d="M12 5v14" /></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z" /></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 3v12" /><path d="m17 8-5-5-5 5" /><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 15V3" /><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="m7 10 5 5 5-5" /></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M10 11v6" /><path d="M14 11v6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M3 6h18" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" /></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7" /><path d="M12 19V5" /></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6" /></symbol>
+  <symbol id="i-reuse" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></symbol>
+  <symbol id="i-prev" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol>
+  <symbol id="i-expand" viewBox="0 0 24 24"><path d="M15 3h6v6" /><path d="m21 3-7 7" /><path d="m3 21 7-7" /><path d="M9 21H3v-6" /></symbol>
+  <symbol id="i-folder-plus" viewBox="0 0 24 24"><path d="M12 10v6" /><path d="M9 13h6" /><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></symbol>
+  <symbol id="i-template" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /><path d="M14 2v5a1 1 0 0 0 1 1h5" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" /></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /><circle cx="12" cy="12" r="3" /></symbol>
+  <symbol id="i-reveal" viewBox="0 0 24 24"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" /></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z" /></symbol>
+  <symbol id="i-gemini" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M12 1.5c.7 6.3 4.2 9.8 10.5 10.5-6.3.7-9.8 4.2-10.5 10.5-.7-6.3-4.2-9.8-10.5-10.5C7.8 11.3 11.3 7.8 12 1.5z" /></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551" /></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" /><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" /><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" /></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14" /></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M10 2v8l3-3 3 3V2" /><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20" /></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M10 5H3" /><path d="M12 19H3" /><path d="M14 3v4" /><path d="M16 17v4" /><path d="M21 12h-9" /><path d="M21 19h-5" /><path d="M21 5h-7" /><path d="M8 10v4" /><path d="M8 12H3" /></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></symbol>
+  <symbol id="i-command" viewBox="0 0 24 24"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" /></symbol>
+  <symbol id="i-list-checks" viewBox="0 0 24 24"><path d="m3 17 2 2 4-4" /><path d="m3 7 2 2 4-4" /><path d="M13 6h8" /><path d="M13 12h8" /><path d="M13 18h8" /></symbol>
+  <symbol id="i-check-square" viewBox="0 0 24 24"><path d="M21 10.656V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12.344" /><path d="m9 11 3 3L22 4" /></symbol>
+  <symbol id="i-bookmark-minus" viewBox="0 0 24 24"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z" /><path d="M9 10h6" /></symbol>
+  <symbol id="i-folder-minus" viewBox="0 0 24 24"><path d="M9 13h6" /><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" /></symbol>
+  <symbol id="i-compose" viewBox="0 0 24 24"><circle cx="9" cy="9" r="7" /><circle cx="15" cy="15" r="7" /></symbol>
+  <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" /><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" /><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" /><path d="m2 2 20 20" /></symbol>
+</svg>
+
+<a class="skip" id="skip-link" href="#main">Saltar al contenido</a>
+
+<!-- ═══ PANTALLA DE CARGA ═══ -->
+<div class="loader" id="loader">
+  <p class="sr" id="ld-status" role="status">Cargando…</p>
+  <div class="ld-row" id="ld-row"></div>
+  <h2 class="ld-title" id="ld-title">Cada imagen empieza en la historia del arte.</h2>
+  <ol class="ld-steps">
+    <li><span class="n">01</span>Elige un estilo</li>
+    <li><span class="n">02</span>Escribe la escena</li>
+    <li><span class="n">03</span>Guarda en colecciones</li>
+  </ol>
+  <div class="ld-foot">
+    <span class="ld-brand"><span class="logo-mark"></span>Musa</span>
+    <span class="ld-progress" aria-hidden="true"><i id="ld-bar"></i></span>
+    <span class="ld-credit" id="ld-credit"></span>
+    <button class="ld-skip" id="ld-skip">Entrar ahora</button>
+  </div>
+</div>
+
+<div class="stage">
+<div class="window">
+  <aside class="sidebar">
+    <button class="logo" id="logo" title="Ver pantalla de carga"><span class="logo-mark"></span><span class="word">Musa</span></button>
+    <nav class="nav" id="side-nav" aria-label="Principal">
+      <button class="nav-item" data-nav="inicio"><svg class="i" aria-hidden="true"><use href="#i-home"/></svg>Inicio</button>
+      <button class="nav-item" data-nav="estilos"><svg class="i" aria-hidden="true"><use href="#i-spark"/></svg>Estilos</button>
+      <button class="nav-item" data-nav="galeria"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg>Galería <span class="count" id="count-gal"></span></button>
+      <button class="nav-item" data-nav="colecciones"><svg class="i" aria-hidden="true"><use href="#i-folder"/></svg>Colecciones <span class="count" id="count-col"></span></button>
+      <button class="nav-item" data-nav="composiciones"><svg class="i" aria-hidden="true"><use href="#i-compose"/></svg>Composiciones</button>
+      <div class="nav-sep"></div>
+      <button class="nav-item" data-nav="limites"><svg class="i" aria-hidden="true"><use href="#i-gauge"/></svg>Límites de uso</button>
+      <button class="nav-item" id="replay"><svg class="i" aria-hidden="true"><use href="#i-play"/></svg>Pantalla de carga</button>
+    </nav>
+    <div class="plan-mini" id="plan-mini">
+      <p class="t-sm fw-5" id="plan-tier">Plan PRO</p>
+      <p class="muted t-xs"><span class="tnum" id="plan-used"></span><span id="plan-used-lbl"> libre en 5 h</span></p>
+      <div class="bar"><i id="plan-bar"></i></div>
+      <p class="muted t-xs" id="plan-reset"></p>
+    </div>
+  </aside>
+
+  <main class="main" id="main" tabindex="-1">
+    <div class="main-head">
+      <nav class="crumbs" aria-label="Ruta">
+        <button class="root" data-nav="inicio">Musa</button><span class="slash" aria-hidden="true">/</span><h1 id="page-title">Inicio</h1>
+      </nav>
+      <span class="spacer"></span>
+      <label class="search"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><input id="global-search" placeholder="Buscar en la galería" aria-label="Buscar en la galería"></label>
+      <button type="button" class="btn ck-btn" id="ck-btn" aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K" aria-label="Abrir la paleta de comandos"><svg class="i" aria-hidden="true"><use href="#i-command"/></svg><span class="ck-btn-txt">Comandos</span><kbd class="kbd" id="ck-btn-kbd" aria-hidden="true">⌘K</kbd></button>
+      <button type="button" class="btn" id="update-pill" hidden title="Nueva versión disponible" style="margin-right: 8px; font-size: 12px; gap: 4px; border: 1px solid var(--accent); color: var(--accent);"><svg class="i" aria-hidden="true"><use href="#i-spark"/></svg><span>Actualización</span></button>
+      <button class="credit-pill" data-nav="limites" id="quota-pill" title="Ver límites de uso"><b class="tnum" id="quota-pill-pct">—</b> <span class="muted">libre</span></button>
+    </div>
+
+    <!-- ═══ INICIO ═══ -->
+    <section class="screen" id="screen-inicio" data-title="Inicio">
+      <div class="banner">
+        <img src="/static/assets/arte/banner-jatte.jpg" width="2000" height="1331" alt="Fragmento de Tarde de domingo en la isla de La Grande Jatte, de Georges Seurat">
+        <span class="credit-chip">Georges Seurat · La Grande Jatte, 1884–1886</span>
+      </div>
+      <div class="detail">
+        <div class="col">
+          <div class="section-title"><h2>Empieza con un estilo</h2><button class="link" data-nav="estilos" id="see-all-styles">Ver todos los estilos</button></div>
+          <div class="tool-row" id="tool-row"></div>
+
+          <div class="section-title"><h2>Recientes</h2><span class="sec-acts"><button type="button" class="btn sel-toggle" data-sel-toggle aria-pressed="false"><svg class="i" aria-hidden="true"><use href="#i-check-square"/></svg>Seleccionar</button><button class="link" data-nav="galeria">Ver galería</button></span></div>
+          <div class="strip" id="strip-recent"></div>
+          <div class="empty" id="recent-empty" hidden>Aún no hay imágenes. Genera la primera con el compositor de abajo.</div>
+        </div>
+
+        <aside class="side">
+          <div>
+            <h2>Pendientes</h2>
+            <p class="desc">Generaciones enviadas que aún no llegan a la galería. Se procesan una a una.</p>
+          </div>
+          <div class="mini-card"><span class="tnum" id="side-quota">—</span><span class="muted t-xs" id="side-quota-lbl">libre en 5 h</span></div>
+          <div id="side-queue"><p class="q-empty">Nada pendiente. Lo que envíes desde el compositor aparecerá aquí.</p></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ═══ GALERÍA ═══ -->
+    <section class="screen" id="screen-galeria" data-title="Galería">
+      <p class="lead">Todas tus generaciones. Guarda cada imagen en una colección para organizarla.</p>
+      <div class="fbar" id="gal-toolbar"></div>
+      <div class="masonry" id="masonry"></div>
+      <div class="sentinel" id="gal-sentinel" aria-hidden="true"></div>
+      <div class="empty" id="gal-empty" hidden></div>
+    </section>
+
+    <!-- ═══ ESTILOS ═══ -->
+    <section class="screen" id="screen-estilos" data-title="Estilos">
+      <p class="lead">Cada estilo puede llevar una imagen de referencia. Selecciona uno para usarlo en el compositor.</p>
+      <div class="pills" id="style-filter" role="group" aria-label="Familia de estilo"></div>
+      <div class="style-grid" id="style-grid"></div>
+    </section>
+
+    <!-- ═══ COLECCIONES ═══ -->
+    <section class="screen" id="screen-colecciones" data-title="Colecciones">
+      <div id="coll-list-view" class="coll-view">
+        <div class="section-title">
+          <p class="lead lead-flat">Agrupa imágenes por cliente, campaña o proyecto.</p>
+          <button class="btn" id="new-coll-btn"><svg class="i i-sm" aria-hidden="true"><use href="#i-plus"/></svg>Nueva colección</button>
+        </div>
+        <div class="coll-grid" id="coll-grid"></div>
+        <div class="empty" id="coll-empty" hidden>Aún no tienes colecciones. Crea la primera para agrupar tus imágenes.</div>
+      </div>
+      <div id="coll-detail-view" class="coll-view" hidden></div>
+    </section>
+
+    <!-- ═══ COMPOSICIONES ═══ -->
+    <section class="screen" id="screen-composiciones" data-title="Composiciones">
+      <div id="comp-list-view" class="coll-view">
+        <div class="section-title">
+          <p class="lead lead-flat">Separa una escena en piezas, cada una en su propia capa, y recompónlas a tu gusto.</p>
+          <button class="btn" id="new-comp-btn"><svg class="i i-sm" aria-hidden="true"><use href="#i-plus"/></svg>Nueva composición</button>
+        </div>
+        <div class="coll-grid" id="comp-grid"></div>
+        <div class="empty" id="comp-empty" hidden>Aún no tienes composiciones. Crea la primera para separar una escena en capas.</div>
+      </div>
+      <div id="comp-edit-view" class="coll-view" hidden></div>
+    </section>
+
+    <!-- ═══ LÍMITES ═══ -->
+    <section class="screen" id="screen-limites" data-title="Límites de uso">
+      <div class="section-title">
+        <p class="lead lead-flat">Consumo de tu cuenta de Gemini</p>
+        <span class="status" id="limits-status">Servicio operativo</span>
+      </div>
+      <div class="limits-top">
+        <div class="panel ring-card" id="limit-ring">
+          <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="track" cx="60" cy="60" r="50"/>
+            <circle class="val" id="ring-val" cx="60" cy="60" r="50" pathLength="100" stroke-dasharray="0 100"/>
+            <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" id="ring-txt">—</text>
+          </svg>
+          <div>
+            <p class="muted t-sm">Ventana de 5 h</p>
+            <p class="big-num mt-6" id="lim-free">—</p>
+            <p class="muted t-sm mt-4" id="lim-window"></p>
+          </div>
+        </div>
+        <div class="panel" id="limit-gen">
+          <p class="muted t-sm">Generaciones</p>
+          <p class="big-num mt-12">1 <span class="muted big-unit">a la vez</span></p>
+          <p class="muted t-sm mt-10" id="lim-queue">Se procesan una a una.</p>
+        </div>
+        <div class="panel" id="limit-storage">
+          <p class="muted t-sm">Almacenamiento</p>
+          <p class="big-num mt-12" id="lim-storage">—</p>
+          <div class="bar-track"><i id="lim-storage-bar"></i></div>
+          <p class="muted t-sm mt-10" id="lim-storage-sub"></p>
+        </div>
+      </div>
+      <div class="limits-grid">
+        <div class="panel" id="limit-chart-panel">
+          <div class="section-title"><h2>Imágenes por día</h2><span class="muted t-xs">últimos 7 días</span></div>
+          <div class="chart" id="chart"></div>
+          <p class="chart-empty muted t-sm" id="chart-empty" hidden>Aún no hay actividad en los últimos 7 días.</p>
+        </div>
+        <div class="panel plan-panel" id="limit-plan">
+          <p class="muted t-sm">Plan actual</p>
+          <p class="big-num big-num-sm" id="plan-big">—</p>
+          <p class="desc" id="plan-desc"></p>
+          <div class="bar-track"><i id="plan-week-bar"></i></div>
+          <p class="muted t-xs mt-10" id="plan-week"></p>
+        </div>
+      </div>
+      <div class="panel panel-table" id="limit-activity">
+        <table class="ds">
+          <thead><tr><th>Trabajo</th><th>Modelo</th><th class="col-2">Estilo</th><th class="num">Imágenes</th><th class="num col-2">Tiempo</th><th>Estado</th></tr></thead>
+          <tbody id="activity-body"></tbody>
+        </table>
+        <p class="table-empty muted t-sm" id="activity-empty" hidden>Aún no hay trabajos. Cuando generes imágenes aparecerán aquí.</p>
+      </div>
+    </section>
+
+    <!-- ═══ COMPOSITOR FIJO ═══ -->
+    <div class="dock" id="dock">
+      <div class="dock-inner">
+        <div class="pop queue-pop" id="queue-pop" hidden></div>
+        <div class="pop model-pop" id="model-pop" role="listbox" aria-label="Modelo de imagen" hidden></div>
+        <div class="pop style-pop" id="style-pop" role="listbox" aria-label="Estilo" hidden></div>
+        <div class="pop anim-pop" id="anim-pop" role="listbox" aria-label="Tipo de generación" hidden></div>
+        <div class="pop ratio-pop" id="ratio-pop" role="listbox" aria-label="Proporción" hidden></div>
+        <div class="pop attach-pop" id="attach-pop" hidden></div>
+        <div class="pop tpl-pop" id="tpl-pop" role="listbox" aria-label="Plantilla" hidden></div>
+        <div class="pop prompt-pop" id="prompt-pop" role="dialog" aria-label="Prompts guardados" hidden></div>
+        <input type="file" id="ref-file" accept="image/*" multiple hidden>
+        <div class="cmp">
+          <div class="cbox">
+            <div class="edit-banner" id="edit-banner" hidden>
+              <img id="edit-thumb" alt="" width="28" height="28">
+              <p class="edit-txt"><span class="muted t-xs">Editando</span><span id="edit-prompt" class="edit-prompt"></span></p>
+              <button type="button" class="btn btn-sm" id="edit-cancel"><svg class="i i-sm" aria-hidden="true"><use href="#i-close"/></svg>Cancelar edición</button>
+            </div>
+            <div class="refs" id="refs" role="group" aria-label="Referencias"></div>
+            <label for="prompt" class="sr" id="prompt-label">Describe la imagen</label>
+            <textarea id="prompt" rows="1" placeholder="Describe la imagen que quieres generar…"></textarea>
+            <div class="tpl-fields" id="tpl-fields" role="group" aria-label="Campos de la plantilla" hidden></div>
+          </div>
+          <div class="cbar">
+            <button class="cpill" id="attach" aria-haspopup="true" aria-expanded="false" aria-label="Añadir imagen de referencia, 0/3" title="Añadir imagen de referencia"><svg class="i" aria-hidden="true"><use href="#i-clip"/></svg><span class="ref-count tnum" id="ref-count">0/3</span></button>
+            <button class="cpill" id="anim-btn" aria-haspopup="listbox" aria-expanded="false" title="Tipo de generación"><svg class="i" aria-hidden="true"><use href="#i-film"/></svg><span class="lbl-txt" id="anim-txt">Imagen</span><svg class="i chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
+            <button class="cpill" id="style-btn" aria-haspopup="listbox" aria-expanded="false" title="Estilo"><svg class="i" aria-hidden="true"><use href="#i-spark"/></svg><span class="lbl-txt" id="style-chip-txt"></span><svg class="i chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
+            <button class="cpill" id="ratio-btn" aria-haspopup="listbox" aria-expanded="false" title="Proporción"><span class="rico-box"><span class="rico" id="ratio-ico"></span></span><span class="lbl-txt" id="ratio-txt">1:1</span><svg class="i chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
+            <button class="cpill" id="model-btn" aria-haspopup="listbox" aria-expanded="false" title="Modelo"><svg class="i i-gem" aria-hidden="true"><use href="#i-gemini"/></svg><span class="model-txt" id="model-txt">Auto</span><svg class="i chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
+            <button class="cpill" id="tpl-btn" aria-haspopup="listbox" aria-expanded="false" title="Plantilla"><svg class="i" aria-hidden="true"><use href="#i-template"/></svg><span class="lbl-txt" id="tpl-txt">Ninguna</span><svg class="i chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
+            <span class="cbreak" aria-hidden="true"></span>
+            <button class="cpill" id="prompts-btn" aria-haspopup="dialog" aria-expanded="false" aria-controls="prompt-pop" aria-label="Prompts guardados" title="Prompts guardados"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg></button>
+            <div class="cpill cstep" role="group" aria-label="Variaciones" title="Variaciones">
+              <svg class="i" aria-hidden="true"><use href="#i-layers"/></svg>
+              <button type="button" id="var-minus" aria-label="Menos variaciones"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
+              <span id="var-n" aria-live="polite" aria-atomic="true">1</span>
+              <button type="button" id="var-plus" aria-label="Más variaciones"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+            </div>
+            <span class="cost sr" id="cost">1 img</span>
+            <span class="cpill cdest" title="Guardar en"><svg class="i" aria-hidden="true"><use href="#i-folder"/></svg><label for="dest-coll" class="sr">Guardar en</label><select id="dest-coll"></select></span>
+            <span class="spacer"></span>
+            <button class="cpill cqueue" id="queue-btn" aria-expanded="false" aria-controls="queue-pop" title="Pendientes de generación"><span class="dot" aria-hidden="true"></span><span class="q-txt" id="queue-txt">Nada pendiente</span></button>
+            <span class="sr" id="queue-live" role="status"></span>
+            <button class="send" id="send" aria-label="Generar" title="Generar" aria-disabled="true"><svg class="i" aria-hidden="true"><use href="#i-send"/></svg></button>
+          </div>
+        </div>
+        <div class="selbar" id="selbar" role="region" aria-label="Acciones sobre la selección" hidden>
+          <div class="pop sel-pop" id="sel-coll-pop" role="dialog" aria-label="Añadir a colección" hidden></div>
+          <p class="sel-count tnum" id="sel-count" role="status" aria-live="polite" aria-atomic="true">0 seleccionadas</p>
+          <div class="sel-acts" role="group" aria-label="Acciones">
+            <button type="button" class="btn" data-sel-act="favorite" title="Favorita"><svg class="i" aria-hidden="true"><use href="#i-bookmark"/></svg><span class="sel-lbl">Favorita</span></button>
+            <button type="button" class="btn" data-sel-act="unfavorite" title="Quitar favorita"><svg class="i" aria-hidden="true"><use href="#i-bookmark-minus"/></svg><span class="sel-lbl">Quitar favorita</span></button>
+            <button type="button" class="btn" id="sel-coll-btn" data-sel-act="collection" aria-haspopup="dialog" aria-expanded="false" aria-controls="sel-coll-pop" title="Añadir a colección…"><svg class="i" aria-hidden="true"><use href="#i-folder-plus"/></svg><span class="sel-lbl">Añadir a colección…</span></button>
+            <button type="button" class="btn" data-sel-act="remove_from_collection" id="sel-uncoll" title="Quitar de colección" hidden><svg class="i" aria-hidden="true"><use href="#i-folder-minus"/></svg><span class="sel-lbl">Quitar de colección</span></button>
+            <button type="button" class="btn" data-sel-act="zip" id="sel-zip" aria-describedby="sel-note" title="Descargar (.zip)"><svg class="i" aria-hidden="true"><use href="#i-download"/></svg><span class="sel-lbl">Descargar (.zip)</span></button>
+            <button type="button" class="btn danger" data-sel-act="delete" title="Borrar"><svg class="i" aria-hidden="true"><use href="#i-trash"/></svg><span class="sel-lbl">Borrar</span></button>
+          </div>
+          <div class="sel-tools" role="group" aria-label="Selección">
+            <button type="button" class="btn" data-sel-fails id="sel-fails" title="Ver las imágenes que fallaron" hidden><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg><span class="sel-lbl">Ver fallos</span></button>
+            <button type="button" class="btn" data-sel-all title="Seleccionar todo lo visible"><svg class="i" aria-hidden="true"><use href="#i-list-checks"/></svg><span class="sel-lbl">Todo lo visible</span></button>
+            <button type="button" class="btn" data-sel-clear title="Limpiar selección"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg><span class="sel-lbl">Limpiar</span></button>
+            <button type="button" class="btn" data-sel-exit title="Salir del modo selección (Esc)"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span class="sel-lbl">Hecho</span></button>
+          </div>
+          <p class="sel-note" id="sel-note" hidden></p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</div>
+
+<!-- ═══ PANEL DE DETALLE DE IMAGEN ═══ -->
+<dialog id="detail-dialog" aria-labelledby="dlg-title">
+  <div class="dlg">
+    <div class="dlg-art" id="dlg-art"></div>
+    <div class="dlg-info">
+      <div class="dlg-head-btns">
+        <button class="btn btn-sm icon-btn" id="dlg-prev" aria-label="Imagen anterior" title="Imagen anterior"><svg class="i" aria-hidden="true"><use href="#i-prev"/></svg></button>
+        <button class="btn btn-sm icon-btn" id="dlg-next" aria-label="Imagen siguiente" title="Imagen siguiente"><svg class="i" aria-hidden="true"><use href="#i-next"/></svg></button>
+        <button class="btn btn-sm icon-btn" id="dlg-download" aria-label="Descargar imagen" title="Descargar imagen"><svg class="i" aria-hidden="true"><use href="#i-download"/></svg></button>
+        <button class="btn btn-sm icon-btn" id="dlg-x" aria-label="Cerrar" title="Cerrar"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg></button>
+      </div>
+      <div class="minw-0">
+        <h2 id="dlg-title" class="dlg-title"></h2>
+        <p class="muted" id="dlg-meta"></p>
+      </div>
+      <div class="pbox">
+        <span class="label">Prompt</span>
+        <p class="ptxt" id="dlg-prompt"></p>
+        <div class="pact">
+          <button class="ghost" id="dlg-reuse"><svg class="i" aria-hidden="true"><use href="#i-reuse"/></svg>Reutilizar prompt</button>
+          <label class="pchk" title="Aplica también el estilo, la proporción y el modelo de esta imagen"><input type="checkbox" id="dlg-reuse-all" checked>Con sus ajustes</label>
+          <button class="ghost" id="dlg-save-prompt"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg>Guardar prompt</button>
+        </div>
+      </div>
+      <div>
+        <span class="label">Colecciones</span>
+        <div class="dlg-list" id="dlg-colls"></div>
+        <form class="inline-form" id="dlg-new-coll">
+          <input class="input" id="dlg-new-coll-name" placeholder="Nueva colección…" aria-label="Nombre de la nueva colección">
+          <button class="btn btn-sm" type="submit"><svg class="i i-sm" aria-hidden="true"><use href="#i-plus"/></svg>Añadir</button>
+        </form>
+      </div>
+      <p class="credit" id="dlg-credit"></p>
+      <div class="dlg-actions">
+        <button class="btn btn-sm btn-primary" id="dlg-edit"><svg class="i i-sm" aria-hidden="true"><use href="#i-edit"/></svg>Editar imagen</button>
+        <button class="btn btn-sm" id="dlg-anim"><svg class="i i-sm" aria-hidden="true"><use href="#i-film"/></svg><span id="dlg-anim-txt">Convertir en animación</span></button>
+        <button class="btn btn-sm" id="dlg-anim-export" hidden><svg class="i i-sm" aria-hidden="true"><use href="#i-download"/></svg>Exportar animación</button>
+        <button class="btn btn-sm" id="dlg-style"><svg class="i i-sm" aria-hidden="true"><use href="#i-spark"/></svg>Guardar como estilo</button>
+        <button class="btn btn-sm" id="dlg-copyref"><svg class="i i-sm" aria-hidden="true"><use href="#i-copy"/></svg>Copiar ID</button>
+        <button class="btn btn-sm" id="dlg-fav"><svg class="i i-sm" aria-hidden="true"><use href="#i-bookmark"/></svg><span id="dlg-fav-txt">Añadir a favoritas</span></button>
+        <button class="btn btn-sm" id="dlg-reveal"><svg class="i i-sm" aria-hidden="true"><use href="#i-reveal"/></svg>Mostrar en Finder</button>
+        <button class="btn btn-sm danger" id="dlg-delete"><svg class="i i-sm" aria-hidden="true"><use href="#i-trash"/></svg>Borrar</button>
+      </div>
+      <div class="dlg-foot">
+        <button class="btn btn-sm dlg-foot-main" id="dlg-ref"><svg class="i i-sm" aria-hidden="true"><use href="#i-plus"/></svg><span id="dlg-ref-txt">Usar como referencia</span></button>
+        <button class="btn btn-sm btn-primary" id="dlg-done"><svg class="i i-sm" aria-hidden="true"><use href="#i-check"/></svg>Listo</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<!-- ═══ NUEVA COLECCIÓN ═══ -->
+<dialog id="coll-dialog" aria-labelledby="coll-title">
+  <form class="dlg-form" id="coll-form">
+    <h2 id="coll-title" class="dlg-h">Nueva colección</h2>
+    <div>
+      <label class="label" for="coll-name">Nombre</label>
+      <input class="input" id="coll-name" required placeholder="Ej. Campaña otoño">
+    </div>
+    <div>
+      <label class="label" for="coll-desc">Descripción (opcional)</label>
+      <input class="input" id="coll-desc">
+    </div>
+    <div class="dlg-btns">
+      <button type="button" class="btn" id="coll-cancel"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg>Cancelar</button>
+      <button type="submit" class="btn btn-primary" id="coll-submit"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Crear colección</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ═══ NUEVO ESTILO ═══ -->
+<dialog id="style-dialog" aria-labelledby="style-title">
+  <form class="dlg-form wide" id="style-form" autocomplete="off">
+    <h2 id="style-title" class="dlg-h">Nuevo estilo</h2>
+    <div>
+      <span class="label" id="st-ref-label">Imagen de referencia (opcional)</span>
+      <div class="st-drop" id="st-drop" role="group" aria-labelledby="st-ref-label">
+        <div class="st-thumb" id="st-thumb"><span class="st-empty" id="st-empty">Arrastra o pega una imagen</span></div>
+        <div class="st-drop-side">
+          <p class="muted t-sm" id="st-ref-help">Gemini copia el movimiento, la paleta y la técnica de esta imagen.</p>
+          <div class="row-wrap">
+            <button type="button" class="btn btn-sm" id="st-upload"><svg class="i i-sm" aria-hidden="true"><use href="#i-upload"/></svg>Subir imagen</button>
+            <button type="button" class="btn btn-sm" id="st-gallery" aria-expanded="false" aria-controls="st-pick-grid"><svg class="i i-sm" aria-hidden="true"><use href="#i-grid"/></svg>Elegir de la galería</button>
+            <button type="button" class="btn btn-sm danger" id="st-remove" hidden><svg class="i i-sm" aria-hidden="true"><use href="#i-trash"/></svg>Quitar imagen</button>
+          </div>
+        </div>
+      </div>
+      <input type="file" id="st-file" accept="image/*" hidden>
+      <div class="ref-grid st-pick" id="st-pick-grid" role="group" aria-label="Imágenes de tu galería" hidden></div>
+    </div>
+    <div>
+      <label class="label" for="st-name">Nombre</label>
+      <input class="input" id="st-name" required maxlength="80" placeholder="Ej. Acuarela de campo">
+    </div>
+    <div>
+      <div class="label-row"><label class="label" for="st-append">Instrucciones</label><span class="muted t-xs tnum" id="st-count" aria-live="off">0</span></div>
+      <textarea class="input" id="st-append" rows="3" aria-describedby="st-append-hint" placeholder="Ej. acuarela suave, bordes difusos, colores pastel"></textarea>
+      <p class="muted t-xs mt-4" id="st-append-hint">Se añade al prompt en cada generación.</p>
+    </div>
+    <details class="st-more" id="st-more">
+      <summary>Más opciones</summary>
+      <div class="st-more-body">
+        <div>
+          <label class="label" for="st-desc">Descripción (opcional)</label>
+          <input class="input" id="st-desc">
+        </div>
+        <div>
+          <label class="label" for="st-family">Familia</label>
+          <select class="input" id="st-family"><option value="">Sin familia</option></select>
+          <p class="muted t-xs mt-4">Para agrupar en Estilos.</p>
+        </div>
+      </div>
+    </details>
+    <div class="st-prev">
+      <div class="label-row"><span class="label" id="st-prev-label">Vista previa del prompt</span></div>
+      <div class="st-prev-ex"><label class="muted t-xs" for="st-example">Prompt de ejemplo</label><input class="input" id="st-example" value="un retrato"></div>
+      <p class="st-prev-text" id="st-prev-text" aria-labelledby="st-prev-label"></p>
+    </div>
+    <div class="dlg-btns dlg-btns-split">
+      <button type="button" class="btn" id="st-test" aria-describedby="st-test-note"><svg class="i" aria-hidden="true"><use href="#i-play"/></svg>Probar</button>
+      <div class="dlg-btns">
+        <button type="button" class="btn" id="style-cancel"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg><span id="style-cancel-txt">Cancelar</span></button>
+        <button type="submit" class="btn btn-primary" id="style-submit"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Guardar</button>
+      </div>
+    </div>
+    <p class="muted t-xs st-test-note" id="st-test-note">Probar gasta 1 imagen de tu cuota.</p>
+  </form>
+</dialog>
+
+<!-- ═══ INSTRUCCIONES DEL GEM ═══ -->
+<dialog id="gem-dialog" aria-labelledby="gem-title">
+  <form class="dlg-form" id="gem-form">
+    <h2 id="gem-title" class="dlg-h">Instrucciones del Gem</h2>
+    <p class="muted t-sm gem-style-name" id="gem-style-name"></p>
+    <div>
+      <label class="label" for="gem-text">Instrucciones que se envían al Gem de Gemini</label>
+      <textarea class="input" id="gem-text" rows="10"></textarea>
+    </div>
+    <div class="dlg-btns dlg-btns-split">
+      <button type="button" class="btn btn-sm" id="gem-restore"><svg class="i i-sm" aria-hidden="true"><use href="#i-reuse"/></svg>Restaurar plantilla</button>
+      <div class="dlg-btns">
+        <button type="button" class="btn" id="gem-cancel"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg>Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="gem-save"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Guardar</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<!-- ═══ CONFIRMACIÓN ═══ -->
+<dialog id="confirm-dialog" aria-labelledby="cf-title" aria-describedby="cf-text">
+  <form class="dlg-form" id="cf-form">
+    <h2 id="cf-title" class="dlg-h"></h2>
+    <p class="muted" id="cf-text"></p>
+    <div class="dlg-btns">
+      <button type="button" class="btn" id="cf-cancel"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg>Cancelar</button>
+      <button type="submit" class="btn btn-primary btn-danger" id="cf-ok"></button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ═══ RESULTADO DE ACCIONES POR LOTE ═══ -->
+<dialog id="batch-dialog" aria-labelledby="bd-title" aria-describedby="bd-text">
+  <div class="dlg-form">
+    <h2 id="bd-title" class="dlg-h"></h2>
+    <p class="muted" id="bd-text"></p>
+    <ul class="bd-list" id="bd-list"></ul>
+    <div class="dlg-btns">
+      <button type="button" class="btn btn-primary" id="bd-close"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Entendido</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- ═══ PROMPT GUARDADO ═══ -->
+<dialog id="prompt-dialog" aria-labelledby="pd-title">
+  <form class="dlg-form" id="pd-form" autocomplete="off">
+    <h2 id="pd-title" class="dlg-h">Guardar prompt</h2>
+    <div>
+      <label class="label" for="pd-name">Nombre</label>
+      <input class="input" id="pd-name" required maxlength="80" placeholder="Ej. Retrato de estudio">
+    </div>
+    <div>
+      <label class="label" for="pd-text">Prompt</label>
+      <textarea class="input" id="pd-text" required maxlength="4000" rows="5"></textarea>
+    </div>
+    <div class="dlg-btns">
+      <button type="button" class="btn" id="pd-cancel"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg>Cancelar</button>
+      <button type="submit" class="btn btn-primary" id="pd-ok"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ═══ CONVERTIR / AJUSTAR ANIMACIÓN ═══ -->
+<dialog id="anim-dialog" aria-labelledby="ad-title">
+  <form class="dlg-form" id="ad-form" autocomplete="off" novalidate>
+    <h2 id="ad-title" class="dlg-h">Convertir en animación</h2>
+    <p class="muted t-sm">Divide la imagen en una rejilla de frames y la reproduce en bucle. No gasta cuota.</p>
+    <div class="ad-grid">
+      <div>
+        <label class="label" for="ad-cols">Columnas</label>
+        <input class="input" id="ad-cols" type="number" min="1" max="8" step="1" inputmode="numeric" aria-describedby="ad-count">
+      </div>
+      <div>
+        <label class="label" for="ad-rows">Filas</label>
+        <input class="input" id="ad-rows" type="number" min="1" max="8" step="1" inputmode="numeric" aria-describedby="ad-count">
+      </div>
+    </div>
+    <p class="muted t-xs ad-count" id="ad-count" role="status" aria-live="polite"></p>
+    <div>
+      <label class="label" for="ad-mode">Modo</label>
+      <select class="input" id="ad-mode">
+        <option value="sprite">Mascota · fondo transparente</option>
+        <option value="scene">Escena · sin transparencia</option>
+      </select>
+    </div>
+    <div>
+      <label class="label" for="ad-key">Color de fondo</label>
+      <select class="input" id="ad-key" aria-describedby="ad-key-help">
+        <option value="green">Verde</option>
+        <option value="magenta">Magenta</option>
+      </select>
+      <p class="muted t-xs ad-help" id="ad-key-help">Usa verde si tu personaje es rosa o morado; magenta si es verde.</p>
+    </div>
+    <div class="ad-grid ad-grid-3">
+      <div>
+        <label class="label" for="ad-tol">Tolerancia</label>
+        <input class="input" id="ad-tol" type="number" min="5" max="80" step="1" inputmode="numeric">
+      </div>
+      <div>
+        <label class="label" for="ad-fps">FPS</label>
+        <input class="input" id="ad-fps" type="number" min="2" max="30" step="1" inputmode="numeric">
+      </div>
+      <div>
+        <label class="label" for="ad-loop">Repetición</label>
+        <select class="input" id="ad-loop">
+          <option value="loop">Bucle</option>
+          <option value="pingpong">Ida y vuelta</option>
+        </select>
+      </div>
+    </div>
+    <label class="pchk" id="ad-redetect-row" hidden><input type="checkbox" id="ad-redetect">Volver a detectar las celdas</label>
+    <div class="dlg-btns dlg-btns-split">
+      <button type="button" class="btn danger" id="ad-remove" hidden><svg class="i" aria-hidden="true"><use href="#i-trash"/></svg>Quitar animación</button>
+      <div class="dlg-btns">
+        <button type="button" class="btn" id="ad-cancel"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg>Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="ad-ok"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Guardar</button>
+      </div>
+    </div>
+    <p class="muted t-xs">No gasta cuota.</p>
+  </form>
+</dialog>
+
+<!-- ═══ NUEVA COMPOSICIÓN ═══ -->
+<dialog id="comp-dialog" aria-labelledby="cd-title">
+  <form class="dlg-form" id="cd-form" autocomplete="off" novalidate>
+    <h2 id="cd-title" class="dlg-h">Nueva composición</h2>
+    <div>
+      <label class="label" for="cd-name">Nombre</label>
+      <input class="input" id="cd-name" maxlength="80" placeholder="Opcional: si lo dejas vacío uso el principio de la escena">
+    </div>
+    <div>
+      <label class="label" for="cd-prompt">Escena</label>
+      <textarea class="input" id="cd-prompt" maxlength="4000" rows="4" required placeholder="Ej. Hermes, un robot, en un espacio lleno de tiendas que llenan un tarro de monedas"></textarea>
+    </div>
+    <div>
+      <label class="label" for="cd-pieces">Piezas (una por línea)</label>
+      <textarea class="input" id="cd-pieces" rows="4" required aria-describedby="cd-pieces-help cd-pieces-count" placeholder="Hermes&#10;Tarro&#10;Monedas"></textarea>
+      <p class="muted t-xs cd-help" id="cd-pieces-help">Cada pieza sale en su propia capa. El fondo se crea solo. Elige piezas que no se toquen entre sí.</p>
+      <p class="muted t-xs cd-help" id="cd-pieces-count" role="status" aria-live="polite"></p>
+    </div>
+    <div class="cd-grid">
+      <div>
+        <label class="label" for="cd-ratio">Proporción</label>
+        <select class="input" id="cd-ratio"></select>
+      </div>
+      <div>
+        <label class="label" for="cd-model">Modelo</label>
+        <select class="input" id="cd-model"></select>
+      </div>
+      <div>
+        <label class="label" for="cd-style">Estilo</label>
+        <select class="input" id="cd-style"></select>
+      </div>
+    </div>
+    <label class="pchk" id="cd-refs-row"><input type="checkbox" id="cd-refs"><span id="cd-refs-txt">Usar las referencias del compositor (0)</span></label>
+    <p class="muted t-sm" id="cd-note" role="status" aria-live="polite"></p>
+    <div class="dlg-btns">
+      <button type="button" class="btn" id="cd-cancel"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg>Cancelar</button>
+      <button type="submit" class="btn btn-primary" id="cd-ok"><svg class="i" aria-hidden="true"><use href="#i-compose"/></svg>Crear composición</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ═══ CORREGIR CAPA ═══ -->
+<dialog id="layer-edit-dialog" aria-labelledby="le-title">
+  <form class="dlg-form" id="le-form" autocomplete="off" novalidate>
+    <h2 id="le-title" class="dlg-h">Corregir capa</h2>
+    <div>
+      <label class="label" for="le-prompt">Qué hay que corregir</label>
+      <textarea class="input" id="le-prompt" maxlength="2000" rows="4" required aria-describedby="le-note" placeholder="Ej. Que el tarro sea de cristal y tenga la tapa abierta"></textarea>
+    </div>
+    <p class="muted t-xs" id="le-note">Gasta 1 imagen de tu cuota.</p>
+    <div class="dlg-btns">
+      <button type="button" class="btn" id="le-cancel"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg>Cancelar</button>
+      <button type="submit" class="btn btn-primary" id="le-ok"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Corregir</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+<div class="toast err" id="toast-err" role="alert"></div>
+<div class="fpop" id="filter-pop" role="dialog" aria-label="Filtros" hidden></div>
+
+<!-- ═══ PALETA DE COMANDOS (⌘K / Ctrl+K) ═══ -->
+<dialog id="cmdk" class="cmdk" role="dialog" aria-modal="true" aria-label="Paleta de comandos">
+  <div class="ck">
+    <div class="ck-field">
+      <svg class="i" aria-hidden="true"><use href="#i-search"/></svg>
+      <input id="ck-input" type="text" role="combobox" aria-expanded="true" aria-controls="ck-list" aria-autocomplete="list" aria-activedescendant="" aria-label="Buscar pantallas, estilos, colecciones, acciones o imágenes" placeholder="Buscar o ejecutar un comando…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
+      <button type="button" class="btn icon-btn ck-close" id="ck-close" aria-label="Cerrar la paleta"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg></button>
+    </div>
+    <div class="ck-list" id="ck-list" role="listbox" aria-label="Resultados"></div>
+    <p class="sr" id="ck-status" role="status" aria-live="polite"></p>
+    <div class="ck-foot" aria-hidden="true">
+      <span><kbd class="kbd">↑</kbd><kbd class="kbd">↓</kbd>navegar</span>
+      <span><kbd class="kbd">↵</kbd>abrir</span>
+      <span><kbd class="kbd">Esc</kbd>cerrar</span>
+      <span class="ck-foot-r"><kbd class="kbd" id="ck-foot-kbd">⌘K</kbd>abrir paleta</span>
+    </div>
+  </div>
+</dialog>
+
+
+<script src="/static/musa-scene.js"></script>
+<script type="module" src="/static/app.js"></script>
+</body>
+</html>

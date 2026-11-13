@@ -1,0 +1,18 @@
+styles: {}
+templates:
+  anuncio_producto:
+    description: "Foto de producto para anuncio"
+    prompt: "Professional product photo of {producto} on a {fondo} background, {estilo} lighting, commercial photography"
+    vars: [producto, fondo, estilo]
+  post_redes:
+    description: "Post cuadrado 1:1 para redes sociales"
+    prompt: "Generate an image (do not search the web): square 1:1 social media post about {tema}, {estilo} style, clean composition, space for text overlay"
+    vars: [tema, estilo]
+  banner_web:
+    description: "Banner horizontal 16:9 para web"
+    prompt: "Generate an image (do not search the web): wide 16:9 website hero banner for {producto}, {estilo} style, generous empty space on one side for headline text"
+    vars: [producto, estilo]
+  ficha_producto:
+    description: "Ficha de producto con fondo controlado"
+    prompt: "Generate an image (do not search the web): product sheet photo of {producto} on a {fondo} background, {luz} lighting, catalog look, no text"
+    vars: [producto, fondo, luz]
