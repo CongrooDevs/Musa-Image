@@ -6,7 +6,7 @@ from musa.state import StateStore
 
 class Side(Backend):
     def __init__(self, name):
-        self.name, self.calls, self.closed = name, [], False
+        self.name, self.calls, self.closed, self.edit_models = name, [], False, []
 
     async def status(self):
         return {"valid": True, "who": self.name}
@@ -23,6 +23,7 @@ class Side(Backend):
 
     async def edit(self, conversation_id, prompt, refs, *, model, **kw):
         self.calls.append(("edit", conversation_id))
+        self.edit_models.append(model)
         return GenerateResult("ok", None, conversation_id, [], self.name, 0.0, None)
 
     async def retry_download(self, conversation_id, image_index):
@@ -34,6 +35,12 @@ class Side(Backend):
     async def create_gem(self, name, instructions, description=""):
         self.calls.append(("create_gem", name))
         return "gem_1"
+
+    async def update_gem(self, gem_id, name, instructions, description=""):
+        self.calls.append(("update_gem", gem_id))
+
+    async def delete_gem(self, gem_id):
+        self.calls.append(("delete_gem", gem_id))
 
     async def gem_exists(self, gem_id):
         return True
@@ -98,3 +105,29 @@ async def test_aclose_closes_both(routed):
     r, g, c = routed
     await r.aclose()
     assert g.closed and c.closed
+
+
+async def test_gemini_conversation_edited_with_chatgpt_model_keeps_its_recorded_model(routed):
+    r, g, c = routed
+    await r.edit("c_gem", "x", [], model=CHATGPT_MODEL)
+    assert g.calls == [("edit", "c_gem")] and g.edit_models == ["gemini-flash"]
+    await r.edit("c_gpt", "x", [], model=CHATGPT_MODEL)
+    assert c.edit_models == [CHATGPT_MODEL]
+
+
+async def test_gem_updates_and_deletes_go_to_gemini(routed):
+    r, g, c = routed
+    await r.update_gem("gem_1", "n", "i")
+    await r.delete_gem("gem_1")
+    assert g.calls == [("update_gem", "gem_1"), ("delete_gem", "gem_1")] and c.calls == []
+
+
+async def test_list_models_survives_a_chatgpt_failure(routed):
+    r, g, c = routed
+
+    async def boom():
+        raise OSError("cookie journal vanished")
+    c.list_models = boom
+    models = await r.list_models()
+    assert [m["model_name"] for m in models] == ["gemini-m", CHATGPT_MODEL]
+    assert models[1]["available"] is False

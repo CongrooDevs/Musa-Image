@@ -217,14 +217,21 @@ class ChatGPTBrowser:
     async def _teardown(self) -> None:
         ctx, pw = self._ctx, self._pw
         self._pw = self._ctx = self._page = None
-        for close in (ctx.close if ctx else None, pw.stop if pw else None):
-            if close is not None:
-                try:
-                    await close()
-                except Exception:
-                    pass
-        if self._flock.is_locked:
-            await self._flock.release(force=True)
+        cancelled: BaseException | None = None
+        try:
+            for close in (ctx.close if ctx else None, pw.stop if pw else None):
+                if close is not None:
+                    try:
+                        await close()
+                    except asyncio.CancelledError as e:
+                        cancelled = e  # keep closing; re-raised once the lock is released
+                    except Exception:
+                        pass
+        finally:
+            if self._flock.is_locked:
+                await self._flock.release(force=True)
+        if cancelled is not None:
+            raise cancelled
 
     def _arm_idle(self) -> None:
         loop = asyncio.get_running_loop()
@@ -423,9 +430,12 @@ class ChatGPTWebBackend(Backend):
     def _store_quota(self, quota: dict | None) -> None:
         if not quota:
             return
-        tmp = self._quota_file.with_suffix(".tmp")
-        tmp.write_text(json.dumps({**quota, "checked_at": _now()}), encoding="utf-8")
-        os.replace(tmp, self._quota_file)
+        try:
+            tmp = self._quota_file.with_suffix(".tmp")
+            tmp.write_text(json.dumps({**quota, "checked_at": _now()}), encoding="utf-8")
+            os.replace(tmp, self._quota_file)
+        except OSError:
+            pass  # the cache must never fail a turn
 
     def _session_present(self) -> bool:
         return _auth.chatgpt_session_present(self.settings.chatgpt_profile_dir)
@@ -511,7 +521,10 @@ class ChatGPTWebBackend(Backend):
                     except Exception as e:
                         errors.append(f"{type(e).__name__}: {e}")  # kept with path=None for retry_download
                     entries.append(entry)
-                self._store_quota(await page.image_quota())
+                try:
+                    self._store_quota(await page.image_quota())
+                except Exception:
+                    pass  # best-effort refresh: the images are already saved and the quota spent
         except Exception as e:
             err = _map_exc(e)
             return GenerateResult("error", err.code, conv, [], str(err), self._clock() - t0,

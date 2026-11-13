@@ -592,7 +592,11 @@ class RoutedBackend(Backend):
         return st
 
     async def list_models(self) -> list[dict]:
-        return [*await self.gemini.list_models(), *await self.chatgpt.list_models()]
+        models = await self.gemini.list_models()
+        try:
+            return [*models, *await self.chatgpt.list_models()]
+        except Exception:
+            return [*models, {"model_name": CHATGPT_MODEL, "display_name": CHATGPT_LABEL, "available": False}]
 
     async def resolve_model_name(self, name: str) -> str:
         return name if name == CHATGPT_MODEL else await self.gemini.resolve_model_name(name)
@@ -602,7 +606,14 @@ class RoutedBackend(Backend):
         return await target.generate(prompt, refs, model=model, progress=progress, **kw)
 
     async def edit(self, conversation_id, prompt, refs, *, model, progress=None, **kw) -> GenerateResult:
-        return await self._for(conversation_id).edit(conversation_id, prompt, refs, model=model, progress=progress, **kw)
+        rec = self.state.conversation(conversation_id)
+        if rec is not None and rec.model == CHATGPT_MODEL:
+            target = self.chatgpt
+        else:
+            target = self.gemini
+            if model == CHATGPT_MODEL and rec is not None:
+                model = rec.model  # the composer's model must not re-label a Gemini conversation
+        return await target.edit(conversation_id, prompt, refs, model=model, progress=progress, **kw)
 
     async def retry_download(self, conversation_id, image_index) -> SavedImage:
         return await self._for(conversation_id).retry_download(conversation_id, image_index)
