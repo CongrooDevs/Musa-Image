@@ -1,0 +1,21 @@
+{
+  "name": "Musa — Galería & Generador",
+  "short_name": "Musa",
+  "description": "Estudio local de generación y organización de imágenes con IA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#121212",
+  "icons": [
+    {
+      "src": "/static/assets/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/assets/logo-128.jpg",
+      "sizes": "128x128",
+      "type": "image/jpeg"
+    }
+  ]
+}

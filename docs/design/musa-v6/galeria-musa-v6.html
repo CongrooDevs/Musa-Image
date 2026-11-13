@@ -1,0 +1,1418 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Musa · Galería de imágenes generadas</title>
+<style>
+  @font-face { font-family: 'Instrument Sans'; font-style: normal; font-weight: 400 700; font-display: swap; src: url(assets/fonts/InstrumentSans-latin.woff2) format('woff2'); }
+  @font-face { font-family: 'Instrument Sans'; font-style: italic; font-weight: 400 700; font-display: swap; src: url(assets/fonts/InstrumentSans-latin-italic.woff2) format('woff2'); }
+  :root {
+    /* tema claro crema — mismo papel que la pantalla de carga */
+    --stage:   oklch(92.5% 0.018 82);
+    --bg:      oklch(96.5% 0.014 85);
+    --surface: oklch(93.5% 0.015 82);
+    --raised:  oklch(90.5% 0.017 80);
+    --fg:      oklch(22% 0.012 60);
+    --muted:   oklch(47% 0.014 60);
+    --border:  oklch(87% 0.016 78);
+    --accent:  oklch(52% 0.15 42);
+    --ok:   oklch(58% 0.13 150);
+    --warn: oklch(72% 0.14 75);
+    --hover: oklch(22% 0.012 60 / .05);
+    --line: oklch(22% 0.012 60 / .16);
+    --line-strong: oklch(22% 0.012 60 / .4);
+    --cream: oklch(96.5% 0.014 85);
+    --ink: oklch(22% 0.012 60);
+    --ink-muted: oklch(46% 0.014 60);
+    --brand-a: oklch(86% 0.08 225);
+    --brand-b: oklch(64% 0.14 255);
+    --font: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --serif: 'Iowan Old Style', 'Charter', 'Palatino', Georgia, serif;
+    --mono: ui-monospace, 'SF Mono', Menlo, monospace;
+    --r-lg: 16px; --r: 12px; --r-sm: 9px;
+    --ease: cubic-bezier(.2,.8,.2,1);
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body { margin: 0; color: var(--fg); font: 14px/1.5 var(--font); -webkit-font-smoothing: antialiased;
+    background: radial-gradient(900px 520px at 18% -8%, oklch(100% 0 0 / .7), transparent 62%), var(--stage); }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  h1, h2, h3 { margin: 0; font-weight: 500; letter-spacing: -0.01em; text-wrap: balance; }
+  h1 { font-family: var(--serif); font-size: 23px; font-weight: 400; letter-spacing: -0.005em; line-height: 1.2; }
+  #page-title { min-width: 0; overflow-wrap: anywhere; }
+  h2 { font-size: 15px; }
+  h3 { font-size: 13.5px; }
+  p { margin: 0; text-wrap: pretty; }
+  img { display: block; max-width: 100%; }
+  .muted { color: var(--muted); }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .accent { color: var(--accent); }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  :focus-visible { outline: 2px solid var(--brand-b); outline-offset: 2px; }
+  .sr { position: absolute; left: -9999px; }
+
+  /* ─── escenario + ventana (shot de portafolio) ─── */
+  .stage { padding: 44px 44px 0; height: 100vh; }
+  .window { max-width: 1400px; height: 100%; margin: 0 auto; display: grid; grid-template-columns: 208px 1fr; background: var(--bg); border-radius: 20px 20px 0 0; overflow: hidden;
+    box-shadow: inset 0 1px 0 oklch(100% 0 0 / .9), 0 0 0 1px oklch(22% 0.012 60 / .07), 0 40px 100px oklch(40% 0.03 60 / .18); }
+
+  .sidebar { padding: 28px 14px 18px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+  .logo { display: flex; align-items: center; gap: 10px; padding: 0 10px 22px; border: 0; background: none; font-size: 14px; font-weight: 600; text-align: left; }
+  .logo-mark { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(150deg, var(--brand-a), var(--brand-b)); box-shadow: inset 0 1px 0 oklch(100% 0 0 / .5), 0 4px 14px oklch(64% 0.14 255 / .35); display: grid; place-items: center; }
+  .logo-mark::after { content: ''; width: 9px; height: 9px; border-radius: 3px; border: 1.8px solid oklch(98% 0.01 230); }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: var(--r-sm); background: transparent; border: 0; width: 100%; text-align: left; color: var(--muted); font-size: 13px; transition: background .15s ease, color .15s ease; }
+  .nav-item:hover { background: var(--surface); color: var(--fg); }
+  .nav-item[aria-current="page"] { background: var(--raised); color: var(--fg); }
+  .nav-item .count { margin-left: auto; font-size: 11px; font-family: var(--mono); color: var(--muted); }
+  .nav-sep { height: 1px; background: var(--border); margin: 12px 10px; }
+  .plan-mini { margin-top: auto; padding: 14px; border-radius: var(--r); background: var(--surface); }
+  .plan-mini .bar { height: 4px; background: var(--raised); border-radius: 4px; overflow: hidden; margin: 10px 0 6px; }
+  .plan-mini .bar i { display: block; height: 100%; width: 39%; background: var(--fg); border-radius: 4px; transition: width .6s var(--ease); }
+
+  .main { min-width: 0; overflow-y: auto; padding: 0 40px 0; display: flex; flex-direction: column; scrollbar-color: var(--raised) transparent; }
+  .main-head { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 12px; padding: 22px 0 18px; background: linear-gradient(var(--bg) 78%, oklch(96.5% 0.014 85 / 0)); }
+  .crumbs { display: flex; align-items: baseline; gap: 9px; min-width: 0; }
+  .crumbs .root { color: var(--muted); font-size: 15px; background: none; border: 0; padding: 0; }
+  .crumbs .root:hover { color: var(--fg); }
+  .crumbs .slash { color: var(--muted); font-size: 15px; }
+  .spacer { flex: 1; }
+  .search { display: flex; align-items: center; gap: 8px; background: var(--surface); border-radius: var(--r-sm); padding: 7px 12px; width: 220px; color: var(--muted); box-shadow: inset 0 0 0 1px var(--border); }
+  .search input { border: 0; background: transparent; outline: none; flex: 1; min-width: 0; font-size: 13px; color: var(--fg); }
+  .search input::placeholder { color: var(--muted); }
+  .search:focus-within { box-shadow: inset 0 0 0 1px var(--brand-b); }
+  .credit-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: transparent; font-size: 12.5px; transition: border-color .15s ease; }
+  .credit-pill:hover { border-color: var(--line-strong); background: var(--hover); }
+  .user { display: flex; align-items: center; gap: 9px; font-size: 12.5px; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(140deg, oklch(86% 0.08 70), oklch(66% 0.12 30)); flex: none; }
+
+  .screen { display: none; flex-direction: column; gap: 26px; animation: rise .45s var(--ease) both; }
+  .screen.active { display: flex; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .lead { color: var(--muted); max-width: 62ch; margin-top: -10px; }
+  .section-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .link { font-size: 12.5px; color: var(--muted); background: none; border: 0; padding: 0; text-decoration: none; }
+  .link:hover { color: var(--fg); }
+
+  /* ─── controles ─── */
+  /* botones limpios: sin relleno, solo contorno fino (como la referencia) */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 15px; border-radius: var(--r-sm); border: 1px solid var(--line); background: transparent; font-size: 13px; font-weight: 500; color: var(--fg); transition: border-color .15s ease, background .15s ease; }
+  .btn:hover { border-color: var(--line-strong); background: var(--hover); color: var(--fg); }
+  .btn:active { background: oklch(22% 0.012 60 / .09); }
+  .btn-primary { border-color: oklch(22% 0.012 60 / .72); }
+  .btn-primary:hover { border-color: var(--fg); background: oklch(22% 0.012 60 / .07); color: var(--fg); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-sm { padding: 7px 12px; font-size: 12.5px; }
+  .pills { display: flex; gap: 4px; flex-wrap: wrap; }
+  .pill { padding: 5px 12px; border-radius: 999px; border: 0; background: transparent; font-size: 12.5px; color: var(--muted); box-shadow: inset 0 0 0 1px transparent; }
+  .pill:hover { color: var(--fg); background: var(--surface); }
+  .pill[aria-pressed="true"] { color: var(--fg); box-shadow: inset 0 0 0 1px var(--fg); background: transparent; }
+  .pill .n { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-left: 6px; }
+  .tabs { display: flex; gap: 4px; }
+  .tabs button { padding: 5px 12px; border-radius: 999px; border: 0; background: transparent; color: var(--muted); font-size: 12.5px; }
+  .tabs button:hover { color: var(--fg); background: var(--surface); }
+  .tabs button[aria-selected="true"] { color: var(--fg); box-shadow: inset 0 0 0 1px var(--fg); background: transparent; }
+
+  /* ─── banner + panel lateral ─── */
+  .banner { position: relative; height: 210px; border-radius: var(--r-lg); overflow: hidden; background: var(--surface); flex: none; }
+  .banner img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 38%; }
+  .credit-chip { position: absolute; right: 12px; bottom: 12px; max-width: calc(100% - 24px); background: oklch(98% 0.01 85 / .8); backdrop-filter: blur(10px); color: var(--fg); border-radius: 8px; padding: 6px 10px; font-size: 11.5px; box-shadow: 0 4px 16px oklch(30% 0.02 60 / .18); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .detail { display: grid; grid-template-columns: minmax(0,1fr) 288px; gap: 28px; align-items: start; }
+  .col { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+  .panel { background: var(--surface); border-radius: var(--r-lg); padding: 18px 20px; }
+  .side { display: flex; flex-direction: column; gap: 14px; background: transparent; padding: 0; position: sticky; top: 76px; }
+  .side .desc { color: var(--muted); font-size: 12.5px; margin-top: 4px; }
+  .badges { display: flex; gap: 6px; flex-wrap: wrap; }
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 6px; font-size: 11.5px; background: var(--raised); color: var(--fg); }
+  .badge.ok { background: oklch(58% 0.13 150 / .13); color: oklch(40% 0.1 150); }
+  .badge.ok::before { content: '✓'; font-size: 10px; }
+  .mini-card { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-radius: var(--r); background: var(--surface); font-size: 13px; }
+  .mini-card + .mini-card { margin-top: -6px; }
+  .kv { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 9px 0; border-top: 1px solid var(--border); font-size: 12.5px; }
+  .kv span:first-child { color: var(--muted); }
+  .kv span:last-child { text-align: right; }
+  .kv-list { padding-top: 4px; }
+
+  /* ─── tarjetas de estilo (inicio + estilos) ─── */
+  .tool-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; }
+  .tool, .style-card { border: 0; padding: 0; background: none; text-align: left; display: flex; flex-direction: column; gap: 10px; color: var(--fg); }
+  .thumb { position: relative; border-radius: var(--r); overflow: hidden; background: var(--surface); aspect-ratio: 4 / 3; box-shadow: inset 0 0 0 1px var(--border); transition: box-shadow .2s ease, transform .3s var(--ease); }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s var(--ease); }
+  .tool:hover .thumb, .style-card:hover .thumb { transform: translateY(-2px); }
+  .tool:hover .thumb img, .style-card:hover .thumb img { transform: scale(1.05); }
+  .tool[aria-pressed="true"] .thumb, .style-card[aria-pressed="true"] .thumb { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--fg); }
+  .tool p, .style-card p { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .sel { position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; border-radius: 50%; background: var(--fg); color: var(--bg); display: grid; place-items: center; font-size: 11px; font-weight: 700; opacity: 0; transform: scale(.6); transition: opacity .2s ease, transform .25s var(--ease); }
+  [aria-pressed="true"] > .thumb .sel { opacity: 1; transform: none; }
+  .style-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 22px 16px; }
+  .style-card .thumb { aspect-ratio: 4 / 5; }
+  .style-card .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .style-card .fam { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+
+  /* ─── compositor fijo (dock) ─── */
+  .main > * { flex-shrink: 0; }
+  .dock { position: sticky; bottom: 0; z-index: 15; margin: auto -40px 0; padding: 26px 40px 22px; background: linear-gradient(oklch(96.5% 0.014 85 / 0), var(--bg) 30%); }
+  .dock-inner { position: relative; max-width: 780px; margin: 0 auto; }
+  .cmp { background: var(--surface); border-radius: 20px; border: 1px solid var(--border); }
+  .cbox { background: oklch(99.2% 0.006 85); border: 1px solid var(--line); border-radius: 19px; margin: -1px -1px 0; padding: 14px 12px 10px 16px; box-shadow: 0 6px 22px oklch(40% 0.03 60 / .08); transition: border-color .15s ease; }
+  .cbox:focus-within { border-color: var(--line-strong); }
+  .cbox textarea { width: 100%; border: 0; outline: none; resize: none; background: transparent; font-size: 15px; min-height: 46px; max-height: 140px; line-height: 1.5; color: var(--fg); display: block; }
+  .cbox textarea::placeholder { color: var(--muted); }
+  .crow { display: flex; align-items: center; gap: 2px; margin-top: 6px; flex-wrap: wrap; }
+  .ghost { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 9px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font-size: 13px; white-space: nowrap; transition: background .15s ease, color .15s ease; }
+  .ghost:hover { background: var(--hover); color: var(--fg); }
+  .ghost[aria-pressed="true"] { color: var(--fg); font-weight: 600; }
+  .ghost[aria-expanded="true"] { background: var(--hover); color: var(--fg); }
+  .ghost svg.i { width: 15px; height: 15px; }
+  .ghost.icon { width: 32px; padding: 0; justify-content: center; }
+  .ghost .chev { transition: transform .2s ease; }
+  .ghost[aria-expanded="true"] .chev { transform: rotate(180deg); }
+  .vsep { width: 1px; height: 18px; background: var(--border); margin: 0 6px; }
+  .stepper { display: inline-flex; align-items: center; border-radius: 9px; overflow: hidden; }
+  .stepper button { width: 26px; height: 32px; border: 0; background: transparent; font-size: 15px; }
+  .stepper span { min-width: 18px; text-align: center; font-family: var(--mono); font-size: 12px; color: var(--fg); }
+  .crow .stepper button { width: 26px; height: 32px; color: var(--muted); }
+  .crow .stepper button:hover { color: var(--fg); background: var(--hover); }
+  .crow .cost { font-family: var(--mono); font-size: 11.5px; color: var(--accent); margin: 0 8px 0 4px; }
+  .send { width: 34px; height: 34px; border-radius: 50%; border: 0; display: grid; place-items: center; background: var(--raised); color: var(--muted); transition: background .15s ease, color .15s ease, transform .15s ease; }
+  .send.ready { background: var(--fg); color: var(--bg); }
+  .send.ready:hover { background: oklch(34% 0.012 60); color: var(--bg); }
+  .send:active { transform: scale(.94); }
+  .send svg.i { width: 16px; height: 16px; stroke-width: 2; }
+  .ctray { display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 12px; font-size: 12.5px; color: var(--muted); }
+  .tray-btn { display: inline-flex; align-items: center; gap: 8px; border: 0; background: transparent; color: var(--muted); font-size: 12.5px; padding: 4px 8px; border-radius: 8px; }
+  .tray-btn:hover, .tray-btn[aria-expanded="true"] { color: var(--fg); background: var(--hover); }
+  .tray-btn .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); }
+  .tray-btn.live .dot { background: var(--accent); animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+  .tray-sel { border: 0; background: transparent; color: var(--fg); font: inherit; font-size: 12.5px; padding: 4px 6px; border-radius: 8px; cursor: pointer; }
+  .tray-sel:hover { background: var(--hover); }
+  .pop { position: absolute; bottom: calc(100% - 14px); z-index: 30; background: oklch(99.2% 0.006 85); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 22px 50px oklch(40% 0.03 60 / .18); padding: 6px; animation: rise .18s ease both; }
+  .pop[hidden] { display: none; }
+  .model-pop { right: 52px; width: 290px; }
+  .style-pop { width: 340px; max-height: 380px; overflow-y: auto; }
+  .ratio-pop { width: 320px; }
+  .attach-pop { width: 330px; }
+  .pop-sub { padding: 8px 10px 6px; font-size: 11.5px; color: var(--muted); }
+  /* selector de estilo */
+  .sopt { width: 100%; display: grid; grid-template-columns: 38px minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 6px 8px; border: 0; border-radius: 10px; background: transparent; color: var(--fg); text-align: left; }
+  .sopt:hover, .sopt:focus-visible { background: var(--surface); }
+  .sopt img { width: 38px; height: 38px; border-radius: 7px; object-fit: cover; }
+  .sopt b { display: block; font-size: 13.5px; font-weight: 500; }
+  .sopt small { display: block; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sopt .sc { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .sopt[aria-selected="true"] { background: var(--surface); }
+  .sopt[aria-selected="true"] .sc::after { content: '  ✓'; color: var(--fg); font-family: var(--font); font-weight: 600; }
+  .pop-foot { display: block; width: 100%; margin-top: 4px; padding: 9px 10px; border: 0; border-top: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12.5px; text-align: left; border-radius: 0 0 9px 9px; }
+  .pop-foot:hover { color: var(--fg); background: var(--surface); }
+  /* proporciones con icono */
+  .rico { display: inline-block; flex: none; border: 1.6px solid currentColor; border-radius: 2.5px; }
+  .rico-box { width: 22px; height: 22px; display: grid; place-items: center; flex: none; }
+  .ratio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 0 2px 4px; }
+  .ropt { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border: 0; border-radius: 9px; background: transparent; color: var(--fg); text-align: left; }
+  .ropt:hover:not(:disabled), .ropt:focus-visible { background: var(--surface); }
+  .ropt b { font-family: var(--mono); font-size: 12px; font-weight: 500; }
+  .ropt small { display: block; font-size: 11px; color: var(--muted); }
+  .ropt[aria-selected="true"] { background: var(--surface); box-shadow: inset 0 0 0 1px var(--line-strong); }
+  .ropt:disabled { opacity: .38; cursor: not-allowed; }
+  .pop-note { padding: 6px 10px 8px; font-size: 11.5px; color: var(--muted); }
+  /* referencias */
+  .ref-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 0 8px 8px; }
+  .ref-pick { aspect-ratio: 1; padding: 0; border: 0; border-radius: 8px; overflow: hidden; background: var(--surface); position: relative; }
+  .ref-pick img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s var(--ease); }
+  .ref-pick:hover img { transform: scale(1.06); }
+  .ref-pick[aria-pressed="true"]::after { content: '✓'; position: absolute; inset: 0; display: grid; place-items: center; background: oklch(22% 0.012 60 / .45); color: oklch(99% 0.006 85); font-weight: 700; }
+  .refs { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .refs:empty { display: none; }
+  .ref { position: relative; width: 58px; height: 58px; border-radius: 10px; overflow: hidden; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); animation: pop .3s var(--ease) both; }
+  .ref img { width: 100%; height: 100%; object-fit: cover; }
+  .ref .rx { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; border: 0; display: grid; place-items: center; background: oklch(99% 0.006 85 / .9); color: var(--fg); box-shadow: 0 1px 4px oklch(30% 0.02 60 / .25); }
+  .ref .rx:hover { background: oklch(100% 0 0); }
+  .ref .rx svg.i { width: 11px; height: 11px; stroke-width: 2.2; }
+  .ref-note { align-self: center; font-size: 11.5px; color: var(--muted); max-width: 22ch; line-height: 1.35; }
+  .cbox.drop { border-color: var(--fg); background: oklch(97% 0.012 85); }
+  #attach .badge-n { position: absolute; top: 2px; right: 2px; min-width: 15px; height: 15px; border-radius: 8px; background: var(--fg); color: var(--bg); font-size: 9.5px; font-weight: 600; display: grid; place-items: center; padding: 0 3px; }
+  #attach { position: relative; }
+  /* etiqueta de modelo en cada imagen */
+  .mtag { position: absolute; top: 8px; left: 8px; max-width: calc(100% - 52px); display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px 3px 7px; border-radius: 6px; background: oklch(98% 0.01 85 / .84); backdrop-filter: blur(8px); color: var(--fg); font-size: 11px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 1px 6px oklch(30% 0.02 60 / .14); pointer-events: none; }
+  .mtag i { width: 6px; height: 6px; border-radius: 50%; background: var(--c); flex: none; }
+  .queue-pop { left: 0; width: min(420px, 100%); max-height: 360px; overflow-y: auto; }
+  .pop-head { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 10px 6px; font-size: 12px; color: var(--muted); }
+  .opt { width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 0; border-radius: 9px; background: transparent; color: var(--fg); font-size: 13.5px; text-align: left; }
+  .opt:hover, .opt:focus-visible { background: var(--surface); }
+  .opt .prov { margin-left: auto; font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .opt[aria-selected="true"] .prov::after { content: '  ✓'; color: var(--fg); font-family: var(--font); font-weight: 600; }
+  .opt .mk { width: 16px; height: 16px; display: grid; place-items: center; flex: none; color: var(--muted); }
+  .opt .mk i { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--muted)); }
+  .opt-sep { height: 1px; background: var(--border); margin: 4px 8px; }
+
+  /* ─── pendientes ─── */
+  .job { display: grid; grid-template-columns: 40px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 9px 8px; border-radius: 10px; }
+  .job + .job { border-top: 1px solid var(--border); border-radius: 0; }
+  .job .jt { position: relative; overflow: hidden; width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(100deg, var(--surface) 30%, var(--raised) 50%, var(--surface) 70%) 0 0 / 300% 100%; animation: shimmer 1.3s linear infinite; }
+  .job.cola .jt { animation: none; background: var(--surface); }
+  .job .jp { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .job .jm { font-size: 11.5px; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .job .jbar { height: 2px; background: var(--border); border-radius: 2px; margin-top: 7px; overflow: hidden; }
+  .job .jbar i { display: block; height: 100%; background: var(--fg); border-radius: 2px; transition: width .25s linear; }
+  .job .jx { width: 28px; height: 28px; border-radius: 8px; border: 0; background: transparent; color: var(--muted); display: grid; place-items: center; }
+  .job .jx:hover { background: var(--hover); color: var(--fg); }
+  .job .jx svg.i { width: 13px; height: 13px; }
+  .q-empty { padding: 14px 10px 16px; font-size: 12.5px; color: var(--muted); }
+  .tile.pending { cursor: default; background: linear-gradient(100deg, var(--surface) 30%, var(--raised) 50%, var(--surface) 70%) 0 0 / 300% 100%; animation: shimmer 1.6s linear infinite; }
+  .tile.pending.cola { animation: none; background: var(--surface); }
+  .tile.pending:hover { transform: none; box-shadow: none; }
+  .tile.pending .lbl { opacity: 1; transform: none; }
+  .tile.pending .pend-bar { position: absolute; left: 0; bottom: 0; height: 2px; background: var(--fg); transition: width .25s linear; }
+  /* revelado: la obra del estilo aparece desenfocada y se va enfocando con el progreso */
+  .tile .dev, .jt .dev { position: absolute; inset: -18%; width: 136%; height: 136%; max-width: none; object-fit: cover; transition: filter .3s linear, opacity .3s linear; pointer-events: none; }
+  .tile.pending .pend-c { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: grid; gap: 1px; justify-items: center; padding: 10px 16px 9px; border-radius: 12px; background: oklch(98% 0.01 85 / .82); backdrop-filter: blur(8px); box-shadow: 0 4px 18px oklch(30% 0.02 60 / .14); text-align: center; white-space: nowrap; }
+  .tile.pending .pend-c b { font-family: var(--serif); font-size: 24px; font-weight: 400; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .tile.pending.cola .pend-c b { font-size: 17px; }
+  .tile.pending .pend-c small { font-size: 11px; color: var(--muted); }
+
+  /* ─── tiles ─── */
+  .tile { position: relative; border-radius: var(--r); overflow: hidden; background: var(--surface); cursor: pointer; transition: transform .3s var(--ease), box-shadow .3s ease; }
+  .tile:hover { transform: translateY(-2px); box-shadow: 0 16px 34px oklch(40% 0.03 60 / .2); }
+  .tile img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s var(--ease); }
+  .tile:hover img { transform: scale(1.04); }
+  .tile.natural img { height: auto; }
+  .tile .lbl { position: absolute; left: 8px; right: 8px; bottom: 8px; opacity: 0; transform: translateY(4px); transition: opacity .2s ease, transform .25s var(--ease); }
+  .tile:hover .lbl, .tile:focus-visible .lbl { opacity: 1; transform: none; }
+  .glass { display: inline-block; max-width: 100%; background: oklch(98% 0.01 85 / .82); backdrop-filter: blur(8px); color: var(--fg); border-radius: 7px; padding: 4px 9px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .save { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 8px; border: 0; background: oklch(98% 0.01 85 / .82); backdrop-filter: blur(8px); color: var(--fg); display: grid; place-items: center; opacity: 0; transition: opacity .2s ease, background .15s ease; }
+  .tile:hover .save, .tile:focus-within .save, .save.on { opacity: 1; }
+  .save:hover { background: oklch(100% 0 0 / .96); }
+  .save.on svg { fill: currentColor; }
+  .save svg.i { width: 14px; height: 14px; }
+  .strip, .grid-results { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+  .strip .tile, .grid-results .tile { aspect-ratio: 4 / 5; }
+  .grid-results .tile { animation: rise .5s var(--ease) backwards; }
+  .skeleton { border-radius: var(--r); aspect-ratio: 4 / 5; background: linear-gradient(100deg, var(--surface) 30%, var(--raised) 50%, var(--surface) 70%) 0 0 / 300% 100%; animation: shimmer 1.3s linear infinite; }
+  @keyframes shimmer { to { background-position: -150% 0; } }
+
+  /* ─── galería ─── */
+  .toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: space-between; }
+  .masonry { columns: 4 200px; column-gap: 12px; }
+  .masonry .tile { margin-bottom: 12px; break-inside: avoid; display: block; }
+  .chip-active { display: inline-flex; align-items: center; gap: 8px; padding: 3px 4px 3px 12px; border-radius: 999px; background: transparent; border: 1px solid var(--line); font-size: 12.5px; }
+  .chip-active button { width: 20px; height: 20px; border-radius: 50%; border: 0; background: transparent; color: var(--fg); display: grid; place-items: center; }
+  .chip-active button:hover { background: oklch(22% 0.012 60 / .09); }
+  .empty { border: 1px dashed oklch(72% 0.02 75); border-radius: var(--r-lg); padding: 44px; text-align: center; color: var(--muted); }
+
+  /* ─── colecciones ─── */
+  .coll-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
+  .coll { border: 0; padding: 0; text-align: left; background: var(--surface); border-radius: var(--r-lg); overflow: hidden; color: var(--fg); transition: transform .3s var(--ease), box-shadow .3s ease; }
+  .coll:hover { transform: translateY(-2px); box-shadow: 0 16px 34px oklch(40% 0.03 60 / .2); }
+  .stackbox { height: 168px; position: relative; background: var(--raised); overflow: hidden; }
+  .stackbox img { position: absolute; width: 92px; height: 116px; object-fit: cover; border-radius: 10px; border: 3px solid var(--surface); box-shadow: 0 8px 20px oklch(40% 0.03 60 / .22); transition: transform .45s var(--ease); }
+  .stackbox img:nth-child(1) { left: calc(50% - 88px); top: 30px; transform: rotate(-6deg); }
+  .stackbox img:nth-child(2) { left: calc(50% - 46px); top: 20px; z-index: 1; }
+  .stackbox img:nth-child(3) { left: calc(50% + 2px); top: 30px; transform: rotate(6deg); }
+  .coll:hover .stackbox img:nth-child(1) { transform: translate(-12px, 4px) rotate(-9deg); }
+  .coll:hover .stackbox img:nth-child(3) { transform: translate(12px, 4px) rotate(9deg); }
+  .coll .info { padding: 14px 16px 16px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .coll .info p { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .cnt { font-family: var(--mono); font-size: 11px; color: var(--muted); border: 1px solid var(--line); padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+  .coll-new { display: grid; place-items: center; min-height: 236px; border: 1px dashed oklch(72% 0.02 75); border-radius: var(--r-lg); background: transparent; color: var(--muted); font-size: 13px; }
+  .coll-new:hover { border-color: oklch(45% 0.02 70); color: var(--fg); background: var(--surface); }
+  .feed-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; font-size: 13px; }
+  .feed-row .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex: none; }
+  .feed-row time { margin-left: auto; color: var(--muted); font-size: 11.5px; }
+  .feed-row + .feed-row { border-top: 1px solid var(--border); }
+  #coll-detail-view [data-tab-panel] { animation: rise .3s var(--ease) both; }
+
+  /* ─── límites ─── */
+  .limits-top { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 14px; }
+  .ring-card { display: flex; align-items: center; gap: 20px; }
+  .ring { width: 104px; height: 104px; flex: none; }
+  .ring circle { fill: none; stroke-width: 9; }
+  .ring .track { stroke: var(--raised); }
+  .ring .val { stroke: var(--accent); stroke-linecap: round; transition: stroke-dasharray 1.1s var(--ease); transform: rotate(-90deg); transform-origin: 50% 50%; }
+  .ring text { font-family: var(--mono); font-size: 17px; fill: var(--fg); }
+  .big-num { font-family: var(--serif); font-size: 30px; letter-spacing: -0.01em; line-height: 1.05; }
+  .limits-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; }
+  .chart { display: grid; grid-template-columns: repeat(7, 1fr); gap: 14px; align-items: end; height: 190px; margin-top: 18px; }
+  .chart .b { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 8px; height: 100%; }
+  .chart .b i { width: 100%; border-radius: 8px; background: oklch(30% 0.012 60); height: 0; transition: height .9s var(--ease); }
+  .chart .b span { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  table.ds { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.ds th, table.ds td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--border); }
+  table.ds tr:last-child td { border-bottom: 0; }
+  table.ds th { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+  table.ds td.num, table.ds th.num { text-align: right; font-family: var(--mono); }
+  table.ds tbody tr:hover { background: var(--raised); }
+  .status { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--muted); }
+  .status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+  .status.warn::before { background: var(--warn); }
+  .bar-track { height: 6px; background: var(--raised); border-radius: 6px; overflow: hidden; margin-top: 14px; }
+  .bar-track i { display: block; height: 100%; border-radius: 6px; background: var(--warn); }
+
+  /* ─── diálogos & toast ─── */
+  dialog { border: 0; padding: 0; border-radius: 20px; background: var(--bg); color: var(--fg); width: min(860px, calc(100vw - 32px)); box-shadow: 0 0 0 1px oklch(22% 0.012 60 / .08), 0 30px 90px oklch(40% 0.03 60 / .28); }
+  dialog::backdrop { background: oklch(30% 0.02 60 / .32); backdrop-filter: blur(3px); }
+  dialog[open] { animation: rise .25s ease both; }
+  .dlg { display: grid; grid-template-columns: 1fr 300px; }
+  .dlg-art { background: var(--stage); display: grid; place-items: center; padding: 22px; min-height: 440px; }
+  .dlg-art img { max-height: 70vh; width: auto; height: auto; max-width: 100%; border-radius: 6px; box-shadow: 0 18px 40px oklch(30% 0.02 60 / .28); }
+  .dlg-info { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+  .pbox { background: var(--surface); border-radius: 12px; padding: 12px 14px 10px; }
+  .pbox .ptxt { font-size: 13px; line-height: 1.5; color: var(--fg); max-height: 7.5em; overflow-y: auto; }
+  .pbox .pact { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .pbox .ghost { height: 30px; margin-left: -8px; color: var(--fg); font-weight: 500; }
+  .pbox .ghost:hover { background: var(--raised); }
+  .pchk { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); cursor: pointer; }
+  .pchk input { accent-color: var(--fg); margin: 0; }
+  .credit { font-size: 11.5px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 12px; }
+  .dlg-list { display: flex; flex-direction: column; gap: 6px; }
+  .dlg-list button { text-align: left; padding: 9px 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: transparent; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--fg); }
+  .dlg-list button:hover { border-color: var(--line-strong); background: var(--hover); }
+  .dlg-list button[aria-pressed="true"] { border-color: var(--fg); }
+  .dlg-list button[aria-pressed="true"]::after { content: '✓'; font-weight: 600; }
+  .dlg-form { padding: 22px; display: flex; flex-direction: column; gap: 16px; width: min(420px, calc(100vw - 32px)); }
+  .input { width: 100%; padding: 10px 12px; border: 0; box-shadow: inset 0 0 0 1px var(--border); border-radius: var(--r-sm); background: var(--raised); color: var(--fg); outline: none; }
+  .input::placeholder { color: var(--muted); }
+  .input:focus { box-shadow: inset 0 0 0 1px var(--brand-b); }
+  .label { font-size: 12px; color: var(--muted); margin-bottom: 6px; display: block; }
+  .toast { position: fixed; top: 62px; left: 50%; transform: translate(-50%, -10px); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: 999px; font-size: 12.5px; opacity: 0; pointer-events: none; transition: opacity .25s ease, transform .25s ease; z-index: 300; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ─── pantalla de carga: papel crema, figuras clásicas, obras encima ─── */
+  .loader { position: fixed; inset: 0; z-index: 500; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 34px; padding: 48px 24px 104px; overflow: hidden;
+    background: var(--cream); color: var(--ink); transition: opacity .7s ease, transform .9s cubic-bezier(.7,0,.2,1); }
+  .loader.out { opacity: 0; transform: translateY(-2.5%); pointer-events: none; }
+  .loader[hidden] { display: none; }
+  .loader :focus-visible { outline-color: var(--ink); }
+  .ld-row { display: flex; align-items: flex-end; justify-content: center; gap: clamp(4px, 1.4vw, 22px); height: min(44vh, 400px); max-width: 100%; }
+  /* sin transform en .ld-fig: así el multiply del grabado se funde con el crema */
+  .ld-fig { position: relative; height: 100%; flex: none; }
+  .ld-fig > img { height: 100%; width: auto; mix-blend-mode: multiply; filter: sepia(.18) contrast(1.05); animation: rise .9s var(--ease) backwards;
+    -webkit-mask-image: linear-gradient(transparent 0, black 3%, black 94%, transparent 100%); mask-image: linear-gradient(transparent 0, black 3%, black 94%, transparent 100%); }
+  .ld-fig:nth-child(2) > img { animation-delay: .08s; } .ld-fig:nth-child(3) > img { animation-delay: .16s; }
+  .ld-fig:nth-child(4) > img { animation-delay: .24s; } .ld-fig:nth-child(5) > img { animation-delay: .32s; }
+  .ld-box { position: absolute; overflow: hidden; background: var(--tint, oklch(90% 0.04 150)); animation: pop .7s var(--ease) backwards; }
+  .ld-box img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .ld-box img.in { animation: wipe .6s cubic-bezier(.7,0,.2,1) both; }
+  @keyframes wipe { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+  @keyframes pop { from { opacity: 0; transform: scale(.85); } }
+  .ld-title { font-family: var(--serif); font-size: clamp(24px, 2.4vw, 31px); font-weight: 400; text-align: center; line-height: 1.18; max-width: 22ch; color: var(--ink); animation: rise .8s .3s var(--ease) both; }
+  .ld-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 200px)); gap: 40px; font-size: 12.5px; color: var(--ink-muted); animation: rise .8s .45s var(--ease) both; }
+  .ld-foot { position: absolute; left: 32px; right: 32px; bottom: 28px; display: flex; align-items: center; gap: 18px; font-size: 12px; color: var(--ink-muted); }
+  .ld-brand { display: flex; align-items: center; gap: 9px; color: var(--ink); font-weight: 600; font-size: 13px; }
+  .ld-brand .logo-mark { width: 22px; height: 22px; border-radius: 6px; }
+  .ld-brand .logo-mark::after { width: 7px; height: 7px; border-width: 1.6px; }
+  .ld-progress { width: 120px; height: 1px; background: oklch(22% 0.012 60 / .18); overflow: hidden; }
+  .ld-progress i { display: block; height: 100%; width: 0; background: var(--ink); }
+  .ld-credit { flex: 1; min-width: 0; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ld-skip { background: transparent; border: 1px solid oklch(22% 0.012 60 / .28); border-radius: var(--r-sm); color: var(--ink); font-size: 12px; padding: 6px 12px; transition: border-color .15s ease, background .15s ease; }
+  .ld-skip:hover { border-color: var(--ink); background: oklch(22% 0.012 60 / .05); }
+
+  @media (max-width: 1180px) {
+    .tool-row, .style-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .coll-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .strip, .grid-results { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .limits-top, .limits-grid, .detail { grid-template-columns: 1fr; }
+    .side { position: static; }
+    .search { width: 170px; }
+  }
+  @media (max-width: 1040px) { .ld-row { height: min(36vh, 300px); } }
+  @media (max-width: 860px) {
+    .stage { padding: 0; height: auto; }
+    .window { grid-template-columns: 1fr; border-radius: 0; height: auto; min-height: 100vh; }
+    .sidebar { flex-direction: row; align-items: center; overflow-x: auto; padding: 10px; position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--border); }
+    .logo { padding: 0 8px 0 4px; }
+    .logo span.word, .nav-sep, .plan-mini { display: none; }
+    .nav-item { width: auto; white-space: nowrap; }
+    .main { overflow: visible; padding: 0 16px 0; }
+    .window { overflow: visible; }
+    .dock { margin: 20px -16px 0; padding: 18px 12px 12px; }
+    .crow .vsep, #style-btn .lbl-txt { display: none; }
+    .style-pop, .ratio-pop, .attach-pop { left: 0 !important; width: 100%; }
+    .model-pop { right: 0; width: min(290px, 100%); }
+    .main-head { position: static; flex-wrap: wrap; }
+    .search, .user .name { display: none; }
+    .tool-row, .style-grid, .strip, .grid-results { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .coll-grid { grid-template-columns: 1fr; }
+    .dlg { grid-template-columns: 1fr; }
+    .dlg-art { min-height: 0; }
+    .ld-cols { grid-template-columns: 1fr; gap: 10px; text-align: center; }
+    .ld-row { height: 30vh; }
+    .ld-fig:nth-child(2), .ld-fig:nth-child(4) { display: none; }
+    .ld-foot { left: 16px; right: 16px; }
+    .ld-credit { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H10v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 15a8 8 0 1 1 16 0"/><path d="M12 15l4-4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+  <symbol id="i-reuse" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5"/><path d="M20 4v4.5h-4.5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5"/><path d="M4 20v-4.5h4.5"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7.5 10.5L12 15l4.5-4.5"/><path d="M5 20h14"/></symbol>
+</svg>
+
+<!-- ═══ PANTALLA DE CARGA ═══ -->
+<div class="loader" id="loader" role="status" aria-live="polite" aria-label="Cargando Musa" data-od-id="loader">
+  <div class="ld-row" id="ld-row" data-od-id="loader-figures"></div>
+  <h2 class="ld-title" id="ld-title" data-od-id="loader-title">Cada imagen empieza en la historia del arte.</h2>
+  <div class="ld-cols" data-od-id="loader-copy">
+    <p>Elige un estilo: postimpresionismo, ukiyo-e, barroco o neoplasticismo.</p>
+    <p>Escribe la escena y elige el modelo: Gemini o ChatGPT.</p>
+    <p>Guarda lo que funciona en colecciones por cliente o campaña.</p>
+  </div>
+  <div class="ld-foot">
+    <span class="ld-brand"><span class="logo-mark"></span>Musa</span>
+    <span class="ld-progress" aria-hidden="true"><i id="ld-bar"></i></span>
+    <span class="mono" id="ld-pct">0%</span>
+    <span class="ld-credit" id="ld-credit"></span>
+    <button class="ld-skip" id="ld-skip" data-od-id="loader-skip">Entrar ahora</button>
+  </div>
+</div>
+
+<div class="stage">
+<div class="window" data-od-id="app-window">
+  <aside class="sidebar" data-od-id="sidebar">
+    <button class="logo" id="logo" title="Ver pantalla de carga" data-od-id="logo"><span class="logo-mark"></span><span class="word">Musa</span></button>
+    <button class="nav-item" data-nav="inicio" data-od-id="nav-inicio"><svg class="i"><use href="#i-home"/></svg>Inicio</button>
+    <button class="nav-item" data-nav="estilos" data-od-id="nav-estilos"><svg class="i"><use href="#i-spark"/></svg>Estilos</button>
+    <button class="nav-item" data-nav="galeria" data-od-id="nav-galeria"><svg class="i"><use href="#i-grid"/></svg>Galería<span class="count" id="count-gal">12</span></button>
+    <button class="nav-item" data-nav="colecciones" data-od-id="nav-colecciones"><svg class="i"><use href="#i-folder"/></svg>Colecciones<span class="count" id="count-col">4</span></button>
+    <div class="nav-sep"></div>
+    <button class="nav-item" data-nav="limites" data-od-id="nav-limites"><svg class="i"><use href="#i-gauge"/></svg>Límites de uso</button>
+    <button class="nav-item" id="replay" data-od-id="nav-replay"><svg class="i"><use href="#i-play"/></svg>Pantalla de carga</button>
+    <div class="plan-mini" data-od-id="plan-mini">
+      <p style="font-size:12.5px;font-weight:500">Plan Pro</p>
+      <p class="muted" style="font-size:11.5px"><span class="mono" id="plan-used">612</span> de 1.000 créditos usados</p>
+      <div class="bar"><i id="plan-bar"></i></div>
+      <p class="muted" style="font-size:11.5px">Renovación 1 dic</p>
+    </div>
+  </aside>
+
+  <main class="main" id="main">
+    <div class="main-head" data-od-id="main-head">
+      <nav class="crumbs" aria-label="Ruta">
+        <button class="root" data-nav="inicio">Musa</button><span class="slash">/</span><h1 id="page-title">Inicio</h1>
+      </nav>
+      <span class="spacer"></span>
+      <label class="search"><svg class="i"><use href="#i-search"/></svg><input id="global-search" placeholder="Buscar en la galería" aria-label="Buscar en la galería"></label>
+      <button class="credit-pill" data-nav="limites" data-od-id="credit-pill"><span class="mono" id="credits">388</span><span class="muted">créditos</span></button>
+      <span class="user"><span class="avatar" aria-hidden="true"></span><span class="name">Mi estudio</span></span>
+    </div>
+
+    <!-- ═══ INICIO ═══ -->
+    <section class="screen" id="screen-inicio" data-od-id="screen-inicio" data-title="Inicio">
+      <div class="banner" data-od-id="hero-banner">
+        <img src="assets/arte/banner-jatte.jpg" width="2000" height="1331" alt="Fragmento de Tarde de domingo en la isla de La Grande Jatte, de Georges Seurat">
+        <span class="credit-chip">Georges Seurat · La Grande Jatte, 1884–1886</span>
+      </div>
+      <div class="detail">
+        <div class="col">
+          <div class="section-title"><h2>Empieza con un estilo</h2><button class="link" data-nav="estilos">Ver los 8 estilos</button></div>
+          <div class="tool-row" id="tool-row" data-od-id="starter-row"></div>
+
+          <div class="section-title"><h2>Recientes</h2><button class="link" data-nav="galeria">Ver galería</button></div>
+          <div class="strip" id="strip-recent" data-od-id="recent-strip"></div>
+        </div>
+
+        <aside class="side" data-od-id="pending-panel">
+          <div>
+            <h2>Pendientes</h2>
+            <p class="desc">Generaciones enviadas que aún no llegan a la galería. Se procesan dos a la vez.</p>
+          </div>
+          <div class="mini-card"><span class="mono" id="side-credits">388</span><span class="muted" style="font-size:12px">Créditos disponibles</span></div>
+          <div id="side-queue" data-od-id="pending-list"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ═══ ESTILOS ═══ -->
+    <section class="screen" id="screen-estilos" data-od-id="screen-estilos" data-title="Estilos">
+      <p class="lead">Cada estilo toma como referencia un movimiento y una obra de dominio público. Selecciona uno y vuelve a Inicio.</p>
+      <div class="pills" id="style-filter" role="group" aria-label="Familia de estilo"></div>
+      <div class="style-grid" id="style-grid" data-od-id="style-grid"></div>
+    </section>
+
+    <!-- ═══ GALERÍA ═══ -->
+    <section class="screen" id="screen-galeria" data-od-id="screen-galeria" data-title="Galería">
+      <p class="lead">Todas tus generaciones. Guarda cada imagen en una colección para organizarla.</p>
+      <div class="toolbar">
+        <div class="pills" id="gal-filter" role="group" aria-label="Filtro"></div>
+        <div id="coll-chip-wrap"></div>
+      </div>
+      <div class="masonry" id="masonry" data-od-id="gallery-grid"></div>
+    </section>
+
+    <!-- ═══ COLECCIONES ═══ -->
+    <section class="screen" id="screen-colecciones" data-od-id="screen-colecciones" data-title="Colecciones">
+      <div id="coll-list-view" style="display:flex;flex-direction:column;gap:22px">
+        <div class="section-title">
+          <p class="lead" style="margin:0">Agrupa imágenes por cliente, campaña o proyecto.</p>
+          <button class="btn" id="new-coll-btn" data-od-id="new-collection-cta"><svg class="i" style="width:14px;height:14px"><use href="#i-plus"/></svg>Nueva colección</button>
+        </div>
+        <div class="coll-grid" id="coll-grid" data-od-id="collections-grid"></div>
+      </div>
+      <div id="coll-detail-view" style="display:none;flex-direction:column;gap:22px" data-od-id="collection-detail"></div>
+    </section>
+
+    <!-- ═══ LÍMITES ═══ -->
+    <section class="screen" id="screen-limites" data-od-id="screen-limites" data-title="Límites de uso">
+      <div class="section-title">
+        <p class="lead" style="margin:0">Consumo del ciclo actual. Cada imagen descuenta créditos según el estilo.</p>
+        <span class="status" data-od-id="limits-status">Servicio operativo</span>
+      </div>
+      <div class="limits-top">
+        <div class="panel ring-card" data-od-id="limit-credits">
+          <svg class="ring" viewBox="0 0 120 120">
+            <circle class="track" cx="60" cy="60" r="50"/>
+            <circle class="val" id="ring-val" cx="60" cy="60" r="50" pathLength="100" stroke-dasharray="0 100"/>
+            <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" id="ring-txt">0%</text>
+          </svg>
+          <div>
+            <p class="muted" style="font-size:12.5px">Créditos disponibles</p>
+            <p class="big-num" style="margin-top:6px" id="lim-credits">388</p>
+            <p class="muted" style="font-size:12.5px;margin-top:4px">de 1.000 · se renuevan el 1 dic</p>
+          </div>
+        </div>
+        <div class="panel" data-od-id="limit-concurrency">
+          <p class="muted" style="font-size:12.5px">Generaciones simultáneas</p>
+          <p class="big-num" style="margin-top:12px">2 <span class="muted" style="font-size:15px">/ 4</span></p>
+          <p class="muted" style="font-size:12.5px;margin-top:10px">El plan Pro permite hasta 4 trabajos en paralelo.</p>
+        </div>
+        <div class="panel" data-od-id="limit-storage">
+          <p class="muted" style="font-size:12.5px">Almacenamiento</p>
+          <p class="big-num" style="margin-top:12px">3,1 <span class="muted" style="font-size:15px">/ 5 GB</span></p>
+          <div class="bar-track"><i style="width:62%"></i></div>
+          <p class="muted" style="font-size:12.5px;margin-top:10px">La papelera se vacía a los 30 días.</p>
+        </div>
+      </div>
+      <div class="limits-grid">
+        <div class="panel" data-od-id="usage-chart">
+          <div class="section-title"><h2>Imágenes por día</h2><span class="muted mono" style="font-size:11.5px">últimos 7 días</span></div>
+          <div class="chart" id="chart"></div>
+        </div>
+        <div class="panel side" style="position:static;padding:18px 20px;background:var(--surface)" data-od-id="plan-summary">
+          <p class="muted" style="font-size:12.5px">Plan actual</p>
+          <p class="big-num" style="font-size:24px">Pro · $24 / mes</p>
+          <p class="desc">1.000 créditos, 4 trabajos simultáneos y 5 GB de almacenamiento.</p>
+          <div><button class="btn btn-sm" data-od-id="upgrade-cta">Cambiar plan</button></div>
+        </div>
+      </div>
+      <div class="panel" style="padding:4px 8px" data-od-id="activity">
+        <table class="ds">
+          <thead><tr><th>Trabajo</th><th>Modelo</th><th>Estilo</th><th>Imágenes</th><th class="num">Créditos</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td>Zorro en bosque de cristal</td><td>Gemini 3 Pro Image</td><td>Impresionismo</td><td>4</td><td class="num">4</td><td><span class="status">Completado</span></td></tr>
+            <tr><td>Ciudad flotante</td><td>GPT Image 1</td><td>Ukiyo-e</td><td>2</td><td class="num">2</td><td><span class="status">Completado</span></td></tr>
+            <tr><td>Logo abstracto</td><td>GPT Image 1 mini</td><td>Neoplasticismo</td><td>6</td><td class="num">3</td><td><span class="status warn">Revisar</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═══ COMPOSITOR FIJO ═══ -->
+    <div class="dock" data-od-id="composer-dock">
+      <div class="dock-inner">
+        <div class="pop queue-pop" id="queue-pop" hidden data-od-id="queue-popover"></div>
+        <div class="pop model-pop" id="model-pop" role="listbox" aria-label="Modelo de imagen" hidden data-od-id="model-popover"></div>
+        <div class="pop style-pop" id="style-pop" role="listbox" aria-label="Estilo" hidden data-od-id="style-popover"></div>
+        <div class="pop ratio-pop" id="ratio-pop" role="listbox" aria-label="Proporción" hidden data-od-id="ratio-popover"></div>
+        <div class="pop attach-pop" id="attach-pop" hidden data-od-id="attach-popover"></div>
+        <input type="file" id="ref-file" accept="image/*" multiple hidden>
+        <div class="cmp" data-od-id="composer">
+          <div class="cbox">
+            <div class="refs" id="refs" data-od-id="reference-previews"></div>
+            <label for="prompt" class="sr">Describe la imagen</label>
+            <textarea id="prompt" rows="2" placeholder="Describe la imagen que quieres generar…" data-od-id="prompt-input">Un zorro explorando un bosque de cristal al amanecer, luz cálida entre la niebla</textarea>
+            <div class="crow">
+              <button class="ghost icon" id="attach" aria-haspopup="true" aria-expanded="false" aria-label="Añadir imagen de referencia" title="Añadir imagen de referencia" data-od-id="attach-btn"><svg class="i"><use href="#i-plus"/></svg></button>
+              <button class="ghost" id="style-btn" aria-haspopup="listbox" aria-expanded="false" data-od-id="style-selector" title="Estilo"><svg class="i"><use href="#i-spark"/></svg><span class="lbl-txt" id="style-chip-txt"></span><svg class="i chev"><use href="#i-chev"/></svg></button>
+              <span class="vsep"></span>
+              <button class="ghost" id="ratio-btn" aria-haspopup="listbox" aria-expanded="false" data-od-id="ratio-selector" title="Proporción"><span class="rico-box"><span class="rico" id="ratio-ico"></span></span><span class="mono" id="ratio-txt" style="font-size:12px">1:1</span><svg class="i chev"><use href="#i-chev"/></svg></button>
+              <span class="vsep"></span>
+              <div class="stepper" aria-label="Variaciones">
+                <button id="var-minus" aria-label="Menos variaciones">−</button>
+                <span id="var-n">4</span>
+                <button id="var-plus" aria-label="Más variaciones">+</button>
+              </div>
+              <span class="spacer"></span>
+              <button class="ghost" id="model-btn" aria-haspopup="listbox" aria-expanded="false" data-od-id="model-selector"><span id="model-txt">Auto</span><svg class="i chev"><use href="#i-chev"/></svg></button>
+              <span class="cost" id="cost">4 cr</span>
+              <button class="send ready" id="send" aria-label="Generar" data-od-id="generate-cta"><svg class="i"><use href="#i-send"/></svg></button>
+            </div>
+          </div>
+          <div class="ctray">
+            <button class="tray-btn" id="queue-btn" aria-expanded="false" aria-controls="queue-pop" data-od-id="queue-toggle"><span class="dot"></span><span id="queue-txt">Nada pendiente</span></button>
+            <span class="spacer"></span>
+            <label for="dest-coll">Guardar en</label>
+            <select class="tray-sel" id="dest-coll" data-od-id="dest-collection"></select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</div>
+
+<dialog id="detail-dialog" data-od-id="detail-dialog" aria-labelledby="dlg-title">
+  <div class="dlg">
+    <div class="dlg-art" id="dlg-art"></div>
+    <div class="dlg-info">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div style="min-width:0">
+          <h2 id="dlg-title" style="font-family:var(--serif);font-size:21px;font-weight:400;overflow-wrap:anywhere"></h2>
+          <p class="muted mono" id="dlg-meta" style="font-size:11.5px;margin-top:6px"></p>
+        </div>
+        <div style="display:flex;gap:2px;flex:none">
+          <button class="btn btn-sm" id="dlg-download" aria-label="Descargar imagen" title="Descargar imagen" style="padding:6px;border-color:transparent" data-od-id="download-image"><svg class="i"><use href="#i-download"/></svg></button>
+          <button class="btn btn-sm" id="dlg-x" aria-label="Cerrar" style="padding:6px;border-color:transparent"><svg class="i"><use href="#i-close"/></svg></button>
+        </div>
+      </div>
+      <div class="pbox" data-od-id="dialog-prompt">
+        <span class="label">Prompt</span>
+        <p class="ptxt" id="dlg-prompt"></p>
+        <div class="pact">
+          <button class="ghost" id="dlg-reuse" data-od-id="reuse-prompt"><svg class="i"><use href="#i-reuse"/></svg>Reutilizar prompt</button>
+          <label class="pchk" title="Aplica también el estilo, la proporción y el modelo de esta imagen"><input type="checkbox" id="dlg-reuse-all" checked>Con sus ajustes</label>
+        </div>
+      </div>
+      <div>
+        <span class="label">Colecciones</span>
+        <div class="dlg-list" id="dlg-colls" data-od-id="dialog-collections"></div>
+      </div>
+      <p class="credit" id="dlg-credit"></p>
+      <div style="display:flex;gap:8px;margin-top:auto">
+        <button class="btn" id="dlg-ref" style="flex:1" data-od-id="use-as-reference"><svg class="i" style="width:14px;height:14px"><use href="#i-plus"/></svg><span id="dlg-ref-txt">Usar como referencia</span></button>
+        <button class="btn btn-primary" id="dlg-done">Listo</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="coll-dialog" data-od-id="new-collection-dialog">
+  <form method="dialog" class="dlg-form" id="coll-form">
+    <h2 style="font-family:var(--serif);font-size:21px;font-weight:400">Nueva colección</h2>
+    <div>
+      <label class="label" for="coll-name">Nombre</label>
+      <input class="input" id="coll-name" required placeholder="Ej. Campaña otoño">
+    </div>
+    <div>
+      <label class="label" for="coll-desc">Descripción</label>
+      <input class="input" id="coll-desc" placeholder="Opcional">
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" value="cancel" formnovalidate>Cancelar</button>
+      <button class="btn btn-primary" value="ok" id="coll-submit">Crear</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function () {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+  // Obras de dominio público (Wikimedia Commons), copiadas en assets/arte/
+  const A = (f, w, h, by, work, year) => ({ src: 'assets/arte/' + f + '.jpg', w, h, by, work, year });
+  const ART = {
+    starry:     A('starry', 820, 649, 'Vincent van Gogh', 'La noche estrellada', '1889'),
+    sunflowers: A('sunflowers', 650, 820, 'Vincent van Gogh', 'Los girasoles', '1888'),
+    wave:       A('wave', 820, 551, 'Katsushika Hokusai', 'La gran ola de Kanagawa', 'c. 1831'),
+    redfuji:    A('redfuji', 820, 547, 'Katsushika Hokusai', 'Fuji rojo', 'c. 1831'),
+    lilies:     A('lilies', 820, 787, 'Claude Monet', 'Nenúfares', '1906'),
+    impression: A('impression', 820, 636, 'Claude Monet', 'Impresión, sol naciente', '1872'),
+    jatte:      A('jatte', 820, 546, 'Georges Seurat', 'Tarde de domingo en La Grande Jatte', '1884–1886'),
+    pearl:      A('pearl', 692, 820, 'Johannes Vermeer', 'La joven de la perla', 'c. 1665'),
+    milkmaid:   A('milkmaid', 731, 820, 'Johannes Vermeer', 'La lechera', 'c. 1658'),
+    venus:      A('venus', 820, 515, 'Sandro Botticelli', 'El nacimiento de Venus', 'c. 1485'),
+    monalisa:   A('monalisa', 550, 820, 'Leonardo da Vinci', 'La Gioconda', 'c. 1503–1519'),
+    wanderer:   A('wanderer', 640, 820, 'Caspar David Friedrich', 'El caminante sobre el mar de nubes', 'c. 1818'),
+    temeraire:  A('temeraire', 820, 609, 'J. M. W. Turner', 'El Temerario remolcado a su último atraque', '1839'),
+    kiss:       A('kiss', 817, 820, 'Gustav Klimt', 'El beso', '1907–1908'),
+    mondrian:   A('mondrian', 809, 820, 'Piet Mondrian', 'Composición II en rojo, azul y amarillo', '1930')
+  };
+  const STYLES = [
+    { id: 'post',    name: 'Postimpresionismo', fam: 'pintura', desc: 'Pincelada en espiral, color saturado', art: 'starry',   cost: 4, pool: ['starry', 'sunflowers'] },
+    { id: 'ukiyo',   name: 'Ukiyo-e',           fam: 'grabado', desc: 'Línea plana y bloques de tinta',      art: 'wave',     cost: 4, pool: ['wave', 'redfuji'] },
+    { id: 'impre',   name: 'Impresionismo',     fam: 'pintura', desc: 'Luz al aire libre, toque suelto',     art: 'lilies',   cost: 4, pool: ['lilies', 'impression', 'jatte'] },
+    { id: 'barroco', name: 'Barroco',           fam: 'pintura', desc: 'Claroscuro y luz de ventana',         art: 'pearl',    cost: 6, pool: ['pearl', 'milkmaid'] },
+    { id: 'renac',   name: 'Renacimiento',      fam: 'pintura', desc: 'Sfumato y composición clásica',       art: 'venus',    cost: 6, pool: ['venus', 'monalisa'] },
+    { id: 'roman',   name: 'Romanticismo',      fam: 'pintura', desc: 'Paisaje sublime, niebla y escala',    art: 'wanderer', cost: 4, pool: ['wanderer', 'temeraire'] },
+    { id: 'nouveau', name: 'Art Nouveau',       fam: 'diseno',  desc: 'Pan de oro y patrón ornamental',      art: 'kiss',     cost: 6, pool: ['kiss'] },
+    { id: 'neo',     name: 'Neoplasticismo',    fam: 'diseno',  desc: 'Retícula, primarios y negro',         art: 'mondrian', cost: 2, pool: ['mondrian'] }
+  ];
+  const FAMILIES = [['todas', 'Todos'], ['pintura', 'Pintura'], ['grabado', 'Grabado'], ['diseno', 'Diseño']];
+  let COLLS = [
+    { id: 'c1', name: 'Aurora · Propuesta', desc: 'Imágenes para la propuesta de marca', arts: ['starry', 'wanderer', 'lilies'] },
+    { id: 'c2', name: 'Campaña otoño',      desc: 'Piezas para redes sociales',           arts: ['wave', 'redfuji', 'impression'] },
+    { id: 'c3', name: 'Revista · Nº 4',     desc: 'Selección editorial',                   arts: ['pearl', 'kiss', 'milkmaid'] },
+    { id: 'c4', name: 'Moodboard',          desc: 'Referencias de color y luz',            arts: ['temeraire', 'impression', 'mondrian'] }
+  ];
+  let IMAGES = [
+    { id: 1,  title: 'Pueblo bajo remolinos',      style: 'post',    ratio: '4:5',  art: 'starry',     coll: ['c1'] },
+    { id: 2,  title: 'Ola frente al monte',        style: 'ukiyo',   ratio: '16:9', art: 'wave',       coll: ['c2'] },
+    { id: 3,  title: 'Muchacha con perla',         style: 'barroco', ratio: '4:5',  art: 'pearl',      coll: ['c3'] },
+    { id: 4,  title: 'Estanque al mediodía',       style: 'impre',   ratio: '1:1',  art: 'lilies',     coll: [] },
+    { id: 5,  title: 'Abrazo dorado',              style: 'nouveau', ratio: '1:1',  art: 'kiss',       coll: ['c3'] },
+    { id: 6,  title: 'Caminante en la niebla',     style: 'roman',   ratio: '4:5',  art: 'wanderer',   coll: ['c1'] },
+    { id: 7,  title: 'Retícula en rojo',           style: 'neo',     ratio: '1:1',  art: 'mondrian',   coll: [] },
+    { id: 8,  title: 'Montaña al amanecer',        style: 'ukiyo',   ratio: '16:9', art: 'redfuji',    coll: ['c2'] },
+    { id: 9,  title: 'Girasoles en jarrón',        style: 'post',    ratio: '4:5',  art: 'sunflowers', coll: [] },
+    { id: 10, title: 'Puerto con sol naciente',    style: 'impre',   ratio: '16:9', art: 'impression', coll: ['c4'] },
+    { id: 11, title: 'Lechera junto a la ventana', style: 'barroco', ratio: '4:5',  art: 'milkmaid',   coll: [] },
+    { id: 12, title: 'Velero al atardecer',        style: 'roman',   ratio: '16:9', art: 'temeraire',  coll: ['c4'] }
+  ];
+  const state = { screen: 'inicio', style: 'post', ratio: '1:1', n: 4, busy: false, galFilter: 'todas', galColl: null, search: '', family: 'todas', openColl: null, collTab: 'imgs', credits: 388 };
+  const styleOf = id => STYLES.find(s => s.id === id);
+  const collOf = id => COLLS.find(c => c.id === id);
+  const credit = a => `${a.by} · ${a.work}, ${a.year}`;
+  const artImg = (key, alt = '', extra = '') => { const a = ART[key]; return `<img src="${a.src}" width="${a.w}" height="${a.h}" alt="${esc(alt)}" loading="lazy" ${extra}>`; };
+
+  function tile(img, natural = false) {
+    const a = ART[img.art];
+    return `<div class="tile${natural ? ' natural' : ''}" tabindex="0" role="button" aria-label="Abrir ${esc(img.title)}" data-open="${img.id}" data-od-id="tile-${img.id}">
+      ${artImg(img.art, img.title + ' — muestra basada en ' + a.work + ', de ' + a.by)}
+      ${img.model ? `<span class="mtag" title="Generada con ${modelOf(img.model).name}"><i style="--c:${modelOf(img.model).c}"></i>${modelOf(img.model).short}</span>` : ''}
+      <button class="save ${img.coll.length ? 'on' : ''}" data-save="${img.id}" aria-label="Guardar en colección" data-od-id="save-${img.id}"><svg class="i"><use href="#i-bookmark"/></svg></button>
+      <div class="lbl"><span class="glass">${esc(img.title)}</span></div>
+    </div>`;
+  }
+  function toast(msg) {
+    const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  // ─── router ───
+  function show(name) {
+    if (!$('#screen-' + name)) name = 'inicio';
+    state.screen = name;
+    $$('.screen').forEach(s => s.classList.toggle('active', s.id === 'screen-' + name));
+    $$('.nav-item[data-nav]').forEach(b => b.setAttribute('aria-current', b.dataset.nav === name ? 'page' : 'false'));
+    $('#page-title').textContent = $('#screen-' + name).dataset.title;
+    if (name === 'limites') animateLimits();
+    try { localStorage.setItem('musa-screen', name); } catch (e) {}
+    if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
+    $('#main').scrollTo(0, 0); window.scrollTo(0, 0);
+  }
+  document.addEventListener('click', e => {
+    const n = e.target.closest('[data-nav]');
+    if (n) { e.preventDefault(); if (n.dataset.nav === 'colecciones') { state.openColl = null; renderColl(); } show(n.dataset.nav); }
+  });
+
+  // ─── inicio ───
+  function renderToolRow() {
+    $('#tool-row').innerHTML = STYLES.slice(0, 4).map(s => `
+      <button class="tool" data-start="${s.id}" data-od-id="starter-${s.id}" aria-pressed="${s.id === state.style}">
+        <span class="thumb">${artImg(s.art)}<span class="sel">✓</span></span>
+        <span><h3>${s.name}</h3><p>${s.desc}</p></span>
+      </button>`).join('');
+  }
+  $('#tool-row').addEventListener('click', e => {
+    const b = e.target.closest('[data-start]'); if (!b) return;
+    state.style = b.dataset.start; renderStyles(); renderToolRow();
+    $('#prompt').focus();
+    toast('Estilo: ' + styleOf(state.style).name);
+  });
+
+  // ─── estilos ───
+  function renderFamilies() {
+    $('#style-filter').innerHTML = FAMILIES.map(([v, l]) =>
+      `<button class="pill" aria-pressed="${state.family === v}" data-fam="${v}">${l}</button>`).join('');
+  }
+  function renderStyles() {
+    const list = STYLES.filter(s => state.family === 'todas' || s.fam === state.family);
+    $('#style-grid').innerHTML = list.map(s => {
+      const a = ART[s.art];
+      return `<button class="style-card" aria-pressed="${s.id === state.style}" data-style="${s.id}" data-od-id="style-${s.id}">
+        <span class="thumb">${artImg(s.art, a.work + ', de ' + a.by)}<span class="sel">✓</span></span>
+        <span><span class="row"><h3>${s.name}</h3><span class="fam">${s.cost} cr</span></span><p>${s.desc}</p><p style="margin-top:6px">${a.by}, ${a.year}</p></span>
+      </button>`; }).join('');
+    updateCost();
+  }
+  $('#style-filter').addEventListener('click', e => {
+    const b = e.target.closest('[data-fam]'); if (!b) return;
+    state.family = b.dataset.fam; renderFamilies(); renderStyles();
+  });
+  $('#style-grid').addEventListener('click', e => {
+    const b = e.target.closest('[data-style]'); if (!b) return;
+    state.style = b.dataset.style; renderStyles(); renderToolRow();
+    toast('Estilo seleccionado: ' + styleOf(state.style).name);
+  });
+
+  // ─── compositor ───
+  // Modelos de imagen disponibles (Google Gemini y OpenAI). mult = multiplicador de créditos.
+  const MODELS = [
+    { id: 'auto',     name: 'Auto',                   short: 'Auto',             prov: 'Recomendado', mult: 1, c: 'var(--muted)' },
+    { id: 'g3pro',    name: 'Gemini 3 Pro Image',     short: 'Gemini 3 Pro',     prov: 'Google',      mult: 2, c: 'oklch(62% 0.15 255)' },
+    { id: 'g25flash', name: 'Gemini 2.5 Flash Image', short: 'Gemini 2.5 Flash', prov: 'Google',      mult: 1, c: 'oklch(62% 0.15 255)' },
+    { id: 'gpt1',     name: 'GPT Image 1',            short: 'GPT Image 1',      prov: 'OpenAI',      mult: 2, c: 'oklch(30% 0.012 60)', ratios: ['1:1', '2:3', '3:2'] },
+    { id: 'gpt1mini', name: 'GPT Image 1 mini',       short: 'GPT Image 1 mini', prov: 'OpenAI',      mult: 1, c: 'oklch(30% 0.012 60)', ratios: ['1:1', '2:3', '3:2'] }
+  ];
+  // Proporciones: todas en Gemini; OpenAI solo 1:1, 2:3 y 3:2.
+  const RATIOS = [
+    { r: '1:1',  n: 'Cuadrado',       g: 'Cuadrado' },
+    { r: '4:5',  n: 'Retrato',        g: 'Vertical' }, { r: '3:4', n: 'Retrato clásico', g: 'Vertical' },
+    { r: '2:3',  n: 'Póster',         g: 'Vertical' }, { r: '9:16', n: 'Historia', g: 'Vertical' },
+    { r: '5:4',  n: 'Impreso',        g: 'Horizontal' }, { r: '4:3', n: 'Fotografía', g: 'Horizontal' },
+    { r: '3:2',  n: '35 mm',          g: 'Horizontal' }, { r: '16:9', n: 'Pantalla ancha', g: 'Horizontal' },
+    { r: '21:9', n: 'Panorámica',     g: 'Horizontal' }
+  ];
+  const ratioVal = r => { const [a, b] = r.split(':').map(Number); return a / b; };
+  const ratioOk = (r, m = state.model) => !modelOf(m).ratios || modelOf(m).ratios.includes(r);
+  const ricoStyle = (r, max = 14) => { const v = ratioVal(r); const w = v >= 1 ? max : Math.round(max * v), h = v >= 1 ? Math.round(max / v) : max; return `width:${Math.max(w, 5)}px;height:${Math.max(h, 5)}px`; };
+  const modelOf = id => MODELS.find(m => m.id === id) || MODELS[0];
+  state.model = 'auto'; state.dest = '';
+  const costNow = () => Math.ceil(styleOf(state.style).cost * state.n / 4 * modelOf(state.model).mult);
+  function updateCost() {
+    $('#cost').textContent = costNow() + ' cr';
+    $('#var-n').textContent = state.n;
+    $('#model-txt').textContent = modelOf(state.model).name;
+    $('#ratio-txt').textContent = state.ratio;
+    $('#ratio-ico').style.cssText = ricoStyle(state.ratio);
+    $('#style-chip-txt').textContent = styleOf(state.style).name;
+  }
+  function updateCredits() {
+    ['#credits', '#side-credits', '#lim-credits'].forEach(s => $(s).textContent = state.credits);
+    const used = 1000 - state.credits;
+    $('#plan-used').textContent = used;
+    $('#plan-bar').style.width = (used / 10) + '%';
+  }
+  $('#var-minus').addEventListener('click', () => { state.n = Math.max(1, state.n - 1); updateCost(); });
+  $('#var-plus').addEventListener('click', () => { state.n = Math.min(8, state.n + 1); updateCost(); });
+  const autosize = el => { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 140) + 'px'; };
+  $('#prompt').addEventListener('input', e => { autosize(e.target); $('#send').classList.toggle('ready', !!e.target.value.trim()); });
+
+  // selector de modelo (popover)
+  function renderModels() {
+    const row = m => `<button class="opt" role="option" aria-selected="${m.id === state.model}" data-model="${m.id}" data-od-id="model-${m.id}">
+      <span class="mk">${m.id === 'auto' ? '<svg class="i" style="width:15px;height:15px"><use href="#i-spark"/></svg>' : `<i style="--c:${m.c}"></i>`}</span>
+      ${m.name}<span class="prov">${m.prov} · ${m.mult}×</span></button>`;
+    $('#model-pop').innerHTML = `<div class="pop-head"><span>Modelo de imagen</span><span>créditos</span></div>` + row(MODELS[0]) + '<div class="opt-sep"></div>' + MODELS.slice(1).map(row).join('');
+  }
+  // selector de estilo
+  function renderStylePop() {
+    $('#style-pop').innerHTML = `<div class="pop-head"><span>Estilo</span><span>créditos / 4 img</span></div>` + STYLES.map(st => {
+      const a = ART[st.art];
+      return `<button class="sopt" role="option" aria-selected="${st.id === state.style}" data-pick-style="${st.id}" data-od-id="style-opt-${st.id}">
+        <img src="${a.src}" alt="" width="38" height="38"><span style="min-width:0"><b>${st.name}</b><small>${st.desc} · ${a.by}</small></span><span class="sc">${st.cost}</span></button>`; }).join('')
+      + `<button class="pop-foot" data-nav="estilos">Ver todos los estilos con sus obras de referencia</button>`;
+  }
+  $('#style-pop').addEventListener('click', e => {
+    const b = e.target.closest('[data-pick-style]'); if (!b) { if (e.target.closest('[data-nav]')) closePops(); return; }
+    state.style = b.dataset.pickStyle; renderStyles(); renderToolRow(); closePops(); $('#style-btn').focus();
+  });
+  // selector de proporción
+  function renderRatioPop() {
+    const groups = ['Cuadrado', 'Vertical', 'Horizontal'];
+    const lim = modelOf(state.model).ratios;
+    $('#ratio-pop').innerHTML = `<div class="pop-head"><span>Proporción</span><span>${RATIOS.length} formatos</span></div>` + groups.map(g => `
+      <div class="pop-sub">${g}</div><div class="ratio-grid">${RATIOS.filter(x => x.g === g).map(x => `
+        <button class="ropt" role="option" aria-selected="${x.r === state.ratio}" data-pick-ratio="${x.r}" ${ratioOk(x.r) ? '' : 'disabled title="No disponible con ' + modelOf(state.model).name + '"'} data-od-id="ratio-opt-${x.r.replace(':', '-')}">
+          <span class="rico-box"><span class="rico" style="${ricoStyle(x.r, 18)}"></span></span><span><b>${x.r}</b><small>${x.n}</small></span></button>`).join('')}</div>`).join('')
+      + (lim ? `<p class="pop-note">${modelOf(state.model).name} solo admite ${lim.join(', ')}.</p>` : '');
+  }
+  $('#ratio-pop').addEventListener('click', e => {
+    const b = e.target.closest('[data-pick-ratio]'); if (!b || b.disabled) return;
+    state.ratio = b.dataset.pickRatio; updateCost(); closePops(); $('#ratio-btn').focus();
+  });
+  // referencias (botón +)
+  state.refs = [];
+  const MAX_REFS = 3;
+  function renderRefs() {
+    $('#refs').innerHTML = state.refs.length ? state.refs.map((r, i) => `<div class="ref" title="${esc(r.name)}"><img src="${r.url}" alt="Referencia: ${esc(r.name)}"><button class="rx" data-unref="${i}" aria-label="Quitar referencia ${esc(r.name)}"><svg class="i"><use href="#i-close"/></svg></button></div>`).join('')
+      + `<span class="ref-note">${state.refs.length} de ${MAX_REFS} referencias · el modelo tomará su composición y color</span>` : '';
+    const n = state.refs.length;
+    $('#attach').innerHTML = `<svg class="i"><use href="#i-plus"/></svg>${n ? `<span class="badge-n">${n}</span>` : ''}`;
+  }
+  function addRef(ref) {
+    if (state.refs.length >= MAX_REFS) { toast(`Máximo ${MAX_REFS} referencias por generación`); return false; }
+    if (state.refs.some(r => r.url === ref.url)) return false;
+    state.refs.push(ref); renderRefs(); return true;
+  }
+  function addFiles(files) {
+    [...files].filter(f => f.type.startsWith('image/')).forEach(f => addRef({ url: URL.createObjectURL(f), name: f.name }));
+  }
+  function renderAttachPop() {
+    $('#attach-pop').innerHTML = `<div class="pop-head"><span>Imagen de referencia</span><span>${state.refs.length}/${MAX_REFS}</span></div>
+      <button class="opt" data-upload data-od-id="ref-upload"><span class="mk"><svg class="i" style="width:15px;height:15px"><use href="#i-upload"/></svg></span>Subir desde tu equipo<span class="prov">o arrastra aquí</span></button>
+      <div class="opt-sep"></div><div class="pop-sub">De tu galería</div>
+      <div class="ref-grid">${IMAGES.slice(0, 8).map(img => { const a = ART[img.art]; return `<button class="ref-pick" data-pick-ref="${img.id}" aria-pressed="${state.refs.some(r => r.url === a.src)}" aria-label="Usar ${esc(img.title)} como referencia"><img src="${a.src}" alt=""></button>`; }).join('')}</div>`;
+  }
+  $('#attach-pop').addEventListener('click', e => {
+    if (e.target.closest('[data-upload]')) { $('#ref-file').click(); return; }
+    const b = e.target.closest('[data-pick-ref]'); if (!b) return;
+    const img = IMAGES.find(i => i.id == b.dataset.pickRef), a = ART[img.art];
+    const at = state.refs.findIndex(r => r.url === a.src);
+    if (at > -1) { state.refs.splice(at, 1); renderRefs(); } else addRef({ url: a.src, name: img.title });
+    renderAttachPop();
+  });
+  $('#ref-file').addEventListener('change', e => { addFiles(e.target.files); e.target.value = ''; closePops(); });
+  $('#refs').addEventListener('click', e => {
+    const x = e.target.closest('[data-unref]'); if (!x) return;
+    state.refs.splice(+x.dataset.unref, 1); renderRefs(); $('#prompt').focus();
+  });
+  const cbox = $('.cbox');
+  cbox.addEventListener('dragover', e => { e.preventDefault(); cbox.classList.add('drop'); });
+  cbox.addEventListener('dragleave', e => { if (!cbox.contains(e.relatedTarget)) cbox.classList.remove('drop'); });
+  cbox.addEventListener('drop', e => { e.preventDefault(); cbox.classList.remove('drop'); addFiles(e.dataTransfer.files); });
+  $('#prompt').addEventListener('paste', e => { const f = [...(e.clipboardData?.files || [])]; if (f.length) { e.preventDefault(); addFiles(f); } });
+
+  // popovers del compositor
+  const POPS = {
+    attach: ['#attach', '#attach-pop', renderAttachPop],
+    style:  ['#style-btn', '#style-pop', renderStylePop],
+    ratio:  ['#ratio-btn', '#ratio-pop', renderRatioPop],
+    model:  ['#model-btn', '#model-pop', renderModels],
+    queue:  ['#queue-btn', '#queue-pop', () => {}]
+  };
+  function closePops(except) {
+    Object.entries(POPS).forEach(([k, [b, p]]) => { if (k !== except) { $(p).hidden = true; $(b).setAttribute('aria-expanded', 'false'); } });
+  }
+  Object.entries(POPS).forEach(([k, [b, p, render]]) => $(b).addEventListener('click', e => {
+    e.stopPropagation();
+    const pop = $(p), btn = $(b), open = pop.hidden;
+    closePops(k);
+    if (open) {
+      render(); pop.hidden = false;
+      if (k === 'attach' || k === 'style' || k === 'ratio') {
+        const host = $('.dock-inner').getBoundingClientRect(), r = btn.getBoundingClientRect();
+        pop.style.left = Math.max(0, Math.min(r.left - host.left - 6, host.width - pop.offsetWidth)) + 'px';
+      }
+      const sel = pop.querySelector('[aria-selected="true"]'); if (sel) sel.focus();
+    } else pop.hidden = true;
+    btn.setAttribute('aria-expanded', open);
+  }));
+  $('#model-pop').addEventListener('click', e => {
+    const b = e.target.closest('[data-model]'); if (!b) return;
+    state.model = b.dataset.model;
+    if (!ratioOk(state.ratio)) {
+      const allowed = modelOf(state.model).ratios, v = ratioVal(state.ratio);
+      state.ratio = allowed.reduce((a, c) => Math.abs(ratioVal(c) - v) < Math.abs(ratioVal(a) - v) ? c : a);
+      toast(`${modelOf(state.model).name} no admite ese formato · cambiado a ${state.ratio}`);
+    }
+    updateCost(); closePops(); $('#model-btn').focus();
+  });
+  // composedPath: sigue funcionando aunque el contenido del popover se re-renderice durante el clic
+  document.addEventListener('click', e => { if (!e.composedPath().some(n => n.classList && n.classList.contains('pop'))) closePops(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePops(); });
+  function renderDest() {
+    $('#dest-coll').innerHTML = '<option value="">Sin colección</option>' + COLLS.map(c => `<option value="${c.id}" ${state.dest === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
+  }
+  $('#dest-coll').addEventListener('change', e => { state.dest = e.target.value; });
+
+  // ─── cola de generación ───
+  const MAX_PAR = 2;
+  let JOBS = [], jobSeq = 1;
+  const RATIO_AR = new Proxy({}, { get: (_, r) => String(r).replace(':', ' / ') });
+  const short = (t, n = 38) => t.length > n ? t.slice(0, n - 1).trimEnd() + '…' : t;
+  const jobLabel = j => j.status === 'gen' ? `Generando · ${Math.round(j.p)}%` : `En cola · #${JOBS.filter(x => x.status === 'cola').indexOf(j) + 1}`;
+  function jobRow(j) {
+    return `<div class="job ${j.status}" data-od-id="job-${j.id}">
+      <span class="jt">${devImg(j)}</span>
+      <div style="min-width:0"><p class="jp">${esc(short(j.prompt, 60))}</p>
+        <p class="jm">${modelOf(j.model).name} · ${styleOf(j.style).name} · ${j.n} img · ${j.ratio}${j.refs ? ' · ' + j.refs + ' ref' : ''}</p>
+        ${j.status === 'gen' ? `<div class="jbar"><i data-job-p="${j.id}" style="width:${j.p}%"></i></div>` : `<p class="jm" data-job-t="${j.id}">${jobLabel(j)}</p>`}</div>
+      <button class="jx" data-cancel="${j.id}" aria-label="Cancelar generación" title="Cancelar"><svg class="i"><use href="#i-close"/></svg></button>
+    </div>`;
+  }
+  // revelado: desenfoque y opacidad según el progreso
+  const devStyle = j => j.status === 'gen'
+    ? `filter:blur(${(22 - j.p * 0.17).toFixed(1)}px) saturate(${(0.5 + j.p * 0.005).toFixed(2)});opacity:${(0.35 + j.p * 0.0045).toFixed(2)}`
+    : 'filter:blur(24px) grayscale(1);opacity:.22';
+  const devImg = j => `<img class="dev" src="${ART[styleOf(j.style).art].src}" alt="" data-job-dev="${j.id}" style="${devStyle(j)}">`;
+  const pctLabel = j => j.status === 'gen' ? Math.round(j.p) + '%' : 'En cola';
+  function pendingTile(j, natural) {
+    const m = modelOf(j.model);
+    return `<div class="tile pending ${j.status}" style="${natural ? 'aspect-ratio:' + RATIO_AR[j.ratio] : ''}" data-od-id="pending-${j.id}" role="status" aria-label="${esc(jobLabel(j) + ' · ' + short(j.prompt, 40))}">
+      ${devImg(j)}
+      <span class="mtag"><i style="--c:${m.c}"></i>${m.short}</span>
+      <div class="pend-c"><b data-job-pc="${j.id}">${pctLabel(j)}</b><small>${j.n} ${j.n === 1 ? 'imagen' : 'imágenes'} · ${j.ratio}</small></div>
+      <i class="pend-bar" data-job-p="${j.id}" style="width:${j.p}%"></i></div>`;
+  }
+  function renderPending() {
+    const g = JOBS.filter(j => j.status === 'gen').length, q = JOBS.length - g;
+    const list = JOBS.length ? JOBS.map(jobRow).join('') : '<p class="q-empty">Nada pendiente. Lo que envíes desde el compositor aparecerá aquí.</p>';
+    $('#queue-pop').innerHTML = `<div class="pop-head"><span>Pendientes de generación</span><span>${JOBS.length}</span></div>` + list;
+    $('#side-queue').innerHTML = list;
+    $('#queue-txt').textContent = JOBS.length ? `${g} generando${q ? ' · ' + q + ' en cola' : ''}` : 'Nada pendiente';
+    $('#queue-btn').classList.toggle('live', JOBS.length > 0);
+    renderRecent(); renderGallery();
+  }
+  function liveUpdate() {
+    JOBS.forEach(j => {
+      $$(`[data-job-p="${j.id}"]`).forEach(el => el.style.width = j.p + '%');
+      $$(`[data-job-t="${j.id}"]`).forEach(el => el.textContent = jobLabel(j));
+      $$(`[data-job-pc="${j.id}"]`).forEach(el => el.textContent = pctLabel(j));
+      $$(`[data-job-dev="${j.id}"]`).forEach(el => el.style.cssText = devStyle(j));
+    });
+  }
+  function pump() {
+    let changed = false;
+    while (JOBS.filter(j => j.status === 'gen').length < MAX_PAR) {
+      const next = JOBS.find(j => j.status === 'cola'); if (!next) break;
+      next.status = 'gen'; changed = true;
+    }
+    return changed;
+  }
+  function finish(j) {
+    JOBS = JOBS.filter(x => x !== j);
+    const s = styleOf(j.style), base = short(j.prompt.charAt(0).toUpperCase() + j.prompt.slice(1), 30);
+    const fresh = Array.from({ length: j.n }, (_, i) => ({
+      id: Date.now() + Math.random(), title: base + ' · ' + (i + 1), prompt: j.prompt,
+      style: j.style, ratio: j.ratio, model: j.model === 'auto' ? 'g25flash' : j.model, art: s.pool[i % s.pool.length], coll: j.dest ? [j.dest] : []
+    }));
+    IMAGES = [...fresh, ...IMAGES];
+    renderColl(); updateCounts();
+    toast(`Listo: ${j.n} imágenes de «${short(j.prompt, 28)}»`);
+  }
+  setInterval(() => {
+    let changed = pump();
+    JOBS.filter(j => j.status === 'gen').forEach(j => { j.p = Math.min(100, j.p + j.speed); if (j.p >= 100) { finish(j); changed = true; } });
+    if (pump()) changed = true;
+    changed ? renderPending() : liveUpdate();
+  }, 250);
+  function generate() {
+    const prompt = $('#prompt').value.trim();
+    if (!prompt) { toast('Escribe qué imagen quieres generar'); $('#prompt').focus(); return; }
+    const cost = costNow();
+    if (cost > state.credits) { toast('No tienes créditos suficientes'); return; }
+    state.credits -= cost; updateCredits();
+    JOBS.push({ id: 'j' + (jobSeq++), prompt, style: state.style, model: state.model, n: state.n, ratio: state.ratio, dest: state.dest, refs: state.refs.length, cost, status: 'cola', p: 0, speed: 1.2 + Math.random() * 1.2 });
+    pump(); renderPending();
+    $('#prompt').value = ''; autosize($('#prompt')); $('#send').classList.remove('ready');
+    state.refs = []; renderRefs();
+    toast(`Enviado a ${modelOf(state.model).name} · −${cost} créditos`);
+  }
+  document.addEventListener('click', e => {
+    const c = e.target.closest('[data-cancel]'); if (!c) return;
+    e.stopPropagation();
+    const j = JOBS.find(x => x.id === c.dataset.cancel); if (!j) return;
+    JOBS = JOBS.filter(x => x !== j); state.credits += j.cost; updateCredits();
+    pump(); renderPending(); toast('Generación cancelada · créditos devueltos');
+  });
+  $('#send').addEventListener('click', generate);
+  $('#prompt').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); generate(); } });
+  function renderRecent() {
+    const pend = JOBS.slice(0, 4).map(j => pendingTile(j, false));
+    $('#strip-recent').innerHTML = [...pend, ...IMAGES.slice(0, 4 - pend.length).map(i => tile(i))].join('');
+  }
+
+  // ─── galería ───
+  function renderGalFilters() {
+    const opts = [['todas', 'Todas', IMAGES.length], ['en', 'En colección', IMAGES.filter(i => i.coll.length).length], ['sin', 'Sin colección', IMAGES.filter(i => !i.coll.length).length]];
+    $('#gal-filter').innerHTML = opts.map(([v, l, n]) =>
+      `<button class="pill" aria-pressed="${state.galFilter === v}" data-gf="${v}">${l}<span class="n">${n}</span></button>`).join('');
+    const c = collOf(state.galColl);
+    $('#coll-chip-wrap').innerHTML = c ? `<span class="chip-active">Colección: ${esc(c.name)}<button data-clear-coll aria-label="Quitar filtro de colección"><svg class="i" style="width:11px;height:11px"><use href="#i-close"/></svg></button></span>` : '';
+  }
+  function galleryList() {
+    const q = state.search.trim().toLowerCase();
+    return IMAGES.filter(i =>
+      (state.galFilter === 'todas' || (state.galFilter === 'en' ? i.coll.length : !i.coll.length)) &&
+      (!state.galColl || i.coll.includes(state.galColl)) &&
+      (!q || i.title.toLowerCase().includes(q) || styleOf(i.style).name.toLowerCase().includes(q) || ART[i.art].by.toLowerCase().includes(q)));
+  }
+  function renderGallery() {
+    renderGalFilters();
+    const list = galleryList();
+    const showPend = state.galFilter === 'todas' && !state.galColl && !state.search.trim();
+    const pend = showPend ? JOBS.map(j => pendingTile(j, true)).join('') : '';
+    $('#masonry').innerHTML = (list.length || pend) ? pend + list.map(i => tile(i, true)).join('') : '<div class="empty">No hay imágenes con estos filtros.</div>';
+  }
+  $('#gal-filter').addEventListener('click', e => {
+    const b = e.target.closest('[data-gf]'); if (!b) return;
+    state.galFilter = b.dataset.gf; renderGallery();
+  });
+  $('#coll-chip-wrap').addEventListener('click', e => {
+    if (e.target.closest('[data-clear-coll]')) { state.galColl = null; renderGallery(); }
+  });
+  $('#global-search').addEventListener('input', e => {
+    state.search = e.target.value; renderGallery();
+    if (state.screen !== 'galeria' && e.target.value) show('galeria');
+  });
+
+  // ─── detalle de imagen ───
+  let current = null;
+  function openDetail(img) {
+    if (!img) return;
+    current = img;
+    const a = ART[img.art];
+    $('#dlg-title').textContent = img.title;
+    $('#dlg-meta').textContent = modelOf(img.model).name + ' · ' + styleOf(img.style).name + ' · ' + img.ratio;
+    $('#dlg-prompt').textContent = promptOf(img);
+    $('#dlg-art').innerHTML = `<img src="${a.src}" width="${a.w}" height="${a.h}" alt="${esc(img.title)}">`;
+    $('#dlg-credit').textContent = 'Imagen de muestra: ' + credit(a) + '. Dominio público.';
+    syncDlgRef();
+    renderDialogColls();
+    $('#detail-dialog').showModal();
+  }
+  function renderDialogColls() {
+    $('#dlg-colls').innerHTML = COLLS.map(c =>
+      `<button aria-pressed="${current.coll.includes(c.id)}" data-toggle="${c.id}" data-od-id="dlg-coll-${c.id}">${esc(c.name)}</button>`).join('');
+  }
+  $('#dlg-colls').addEventListener('click', e => {
+    const b = e.target.closest('[data-toggle]'); if (!b || !current) return;
+    const id = b.dataset.toggle;
+    current.coll = current.coll.includes(id) ? current.coll.filter(x => x !== id) : [...current.coll, id];
+    renderDialogColls(); renderRecent(); renderGallery(); renderColl(); updateCounts();
+    toast(current.coll.includes(id) ? 'Guardada en ' + collOf(id).name : 'Quitada de la colección');
+  });
+  $('#dlg-done').addEventListener('click', () => $('#detail-dialog').close());
+  // reutilizar el prompt (y opcionalmente estilo, proporción y modelo) en el compositor
+  function promptOf(img) { return img.prompt || img.title.charAt(0).toUpperCase() + img.title.slice(1).toLowerCase() + ', estilo ' + styleOf(img.style).name.toLowerCase() + ', luz suave'; }
+  $('#dlg-reuse').addEventListener('click', () => {
+    if (!current) return;
+    const pr = $('#prompt'), had = pr.value.trim() && pr.value.trim() !== promptOf(current);
+    pr.value = promptOf(current); autosize(pr); $('#send').classList.add('ready');
+    let note = 'Prompt listo en el compositor';
+    if ($('#dlg-reuse-all').checked) {
+      state.style = current.style;
+      if (current.model) state.model = current.model;
+      state.ratio = ratioOk(current.ratio) ? current.ratio : state.ratio;
+      renderStyles(); renderToolRow(); updateCost();
+      note = `Prompt y ajustes listos · ${styleOf(state.style).name} · ${state.ratio} · ${modelOf(state.model).short}`;
+    }
+    $('#detail-dialog').close();
+    pr.focus(); pr.setSelectionRange(pr.value.length, pr.value.length);
+    toast(had ? note + ' (reemplazó el texto anterior)' : note);
+  });
+  // usar la imagen abierta como referencia en el compositor
+  const isRef = img => state.refs.some(r => r.url === ART[img.art].src);
+  function syncDlgRef() {
+    const on = isRef(current), full = !on && state.refs.length >= MAX_REFS;
+    $('#dlg-ref-txt').textContent = on ? 'Quitar de referencias' : full ? `Máximo ${MAX_REFS} referencias` : 'Usar como referencia';
+    $('#dlg-ref').querySelector('use').setAttribute('href', on ? '#i-close' : '#i-plus');
+    $('#dlg-ref').disabled = full;
+  }
+  $('#dlg-ref').addEventListener('click', () => {
+    if (!current) return;
+    if (isRef(current)) {
+      state.refs = state.refs.filter(r => r.url !== ART[current.art].src); renderRefs(); syncDlgRef();
+      toast('Quitada de las referencias');
+      return;
+    }
+    if (addRef({ url: ART[current.art].src, name: current.title })) {
+      $('#detail-dialog').close();
+      const pr = $('#prompt'); pr.focus(); pr.setSelectionRange(pr.value.length, pr.value.length);
+      toast(`Referencia añadida · ${state.refs.length} de ${MAX_REFS}`);
+    }
+  });
+  $('#dlg-x').addEventListener('click', () => $('#detail-dialog').close());
+  $('#detail-dialog').addEventListener('click', e => { if (e.target === $('#detail-dialog')) $('#detail-dialog').close(); });
+  const slug = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 64) || 'musa';
+  $('#dlg-download').addEventListener('click', () => {
+    if (!current) return;
+    const a = ART[current.art], link = document.createElement('a');
+    link.href = a.src; link.download = 'musa-' + slug(current.title) + '.jpg';
+    document.body.appendChild(link); link.click(); link.remove();
+    toast('Descarga iniciada · ' + current.title);
+  });
+  document.addEventListener('click', e => {
+    const sv = e.target.closest('[data-save]');
+    if (sv) { e.stopPropagation(); openDetail(IMAGES.find(i => i.id == sv.dataset.save)); return; }
+    const t = e.target.closest('[data-open]');
+    if (t) openDetail(IMAGES.find(i => i.id == t.dataset.open));
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.matches('.tile[data-open]')) openDetail(IMAGES.find(i => i.id == e.target.dataset.open));
+  });
+
+  // ─── colecciones ───
+  function coversOf(c) {
+    const m = IMAGES.filter(i => i.coll.includes(c.id)).map(i => i.art);
+    return [...new Set([...m, ...c.arts])].slice(0, 3);
+  }
+  function renderColl() {
+    const listView = $('#coll-list-view'), detail = $('#coll-detail-view');
+    if (state.openColl && collOf(state.openColl)) {
+      listView.style.display = 'none'; detail.style.display = 'flex';
+      renderCollDetail(collOf(state.openColl));
+      if (state.screen === 'colecciones') $('#page-title').textContent = collOf(state.openColl).name;
+      return;
+    }
+    state.openColl = null;
+    listView.style.display = 'flex'; detail.style.display = 'none';
+    if (state.screen === 'colecciones') $('#page-title').textContent = 'Colecciones';
+    $('#coll-grid').innerHTML = COLLS.map(c => {
+      const members = IMAGES.filter(i => i.coll.includes(c.id));
+      return `<button class="coll" data-coll="${c.id}" data-od-id="coll-${c.id}" aria-label="Abrir ${esc(c.name)}">
+        <div class="stackbox">${coversOf(c).map(k => artImg(k)).join('')}</div>
+        <div class="info"><div><h3>${esc(c.name)}</h3><p>${esc(c.desc)}</p></div><span class="cnt">${members.length}</span></div>
+      </button>`;
+    }).join('') + `<button class="coll-new" id="new-coll-card" data-od-id="new-collection-card">+ Nueva colección</button>`;
+  }
+  function renderCollDetail(c) {
+    const members = IMAGES.filter(i => i.coll.includes(c.id));
+    const coverKey = coversOf(c)[0], cover = ART[coverKey];
+    const tab = state.collTab === 'act' ? 'act' : 'imgs';
+    const times = ['Hace 2 horas', 'Ayer', 'Hace 3 días'];
+    const feed = [
+      ...members.slice(0, 3).map((m, i) => [`«${m.title}» añadida a la colección`, times[i]]),
+      ['Colección creada', 'Hace 1 semana']
+    ];
+    $('#coll-detail-view').innerHTML = `
+      <div class="banner" data-od-id="collection-banner">${artImg(coverKey, cover.work + ', de ' + cover.by)}<span class="credit-chip">${esc(credit(cover))}</span></div>
+      <div class="detail">
+        <div class="col">
+          <div class="tabs" role="tablist">
+            <button role="tab" id="tab-imgs" aria-selected="${tab === 'imgs'}" aria-controls="panel-imgs" data-detail-tab="imgs" data-od-id="tab-imagenes">Imágenes</button>
+            <button role="tab" id="tab-act" aria-selected="${tab === 'act'}" aria-controls="panel-act" data-detail-tab="act" data-od-id="tab-actividad">Actividad</button>
+          </div>
+          <div id="panel-imgs" role="tabpanel" aria-labelledby="tab-imgs" data-tab-panel="imgs" ${tab === 'imgs' ? '' : 'hidden'}>
+            ${members.length ? `<div class="grid-results">${members.map(i => tile(i)).join('')}</div>`
+              : `<div class="empty">Esta colección aún no tiene imágenes. Guarda imágenes desde la galería.</div>`}
+          </div>
+          <div id="panel-act" role="tabpanel" aria-labelledby="tab-act" data-tab-panel="act" data-od-id="collection-feed" ${tab === 'act' ? '' : 'hidden'}>
+            ${feed.map(([t, w]) => `<div class="feed-row"><span class="dot"></span><span>${esc(t)}</span><time>${w}</time></div>`).join('')}
+          </div>
+        </div>
+        <aside class="side" data-od-id="collection-info">
+          <div><h2>${esc(c.name)}</h2><p class="desc">${esc(c.desc)}</p></div>
+          <div class="badges"><span class="badge ok">Pública</span><span class="badge">Creada abr 2026</span></div>
+          <div class="mini-card"><span class="mono">${members.length}</span><span class="muted" style="font-size:12px">Imágenes</span></div>
+          <div class="kv-list">
+            <div class="kv"><span>Estilos</span><span class="mono">${new Set(members.map(m => m.style)).size}</span></div>
+            <div class="kv"><span>Última actualización</span><span>Hoy</span></div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" data-go-gal="${c.id}">Añadir imágenes</button>
+            <button class="btn btn-sm" data-back-coll>Volver</button>
+          </div>
+        </aside>
+      </div>`;
+  }
+  $('#screen-colecciones').addEventListener('click', e => {
+    const tab = e.target.closest('[data-detail-tab]');
+    if (tab && state.openColl) { state.collTab = tab.dataset.detailTab; renderCollDetail(collOf(state.openColl)); return; }
+    if (e.target.closest('#new-coll-card')) { openNewColl(); return; }
+    if (e.target.closest('[data-back-coll]')) { state.openColl = null; renderColl(); return; }
+    const go = e.target.closest('[data-go-gal]');
+    if (go) { state.galColl = go.dataset.goGal; state.galFilter = 'todas'; show('galeria'); renderGallery(); return; }
+    const c = e.target.closest('[data-coll]');
+    if (c) { state.openColl = c.dataset.coll; state.collTab = 'imgs'; renderColl(); $('#main').scrollTo(0, 0); }
+  });
+  function openNewColl() { $('#coll-form').reset(); $('#coll-dialog').showModal(); $('#coll-name').focus(); }
+  $('#new-coll-btn').addEventListener('click', openNewColl);
+  $('#coll-form').addEventListener('submit', e => {
+    if (e.submitter && e.submitter.value !== 'ok') return;
+    const name = $('#coll-name').value.trim();
+    if (!name) return;
+    COLLS.push({ id: 'c' + Date.now(), name, desc: $('#coll-desc').value.trim() || 'Sin descripción', arts: ['jatte', 'venus', 'monalisa'] });
+    renderColl(); updateCounts(); renderGallery(); renderDest();
+    toast('Colección creada: ' + name);
+  });
+  $('#coll-dialog').addEventListener('click', e => { if (e.target.id === 'coll-dialog') $('#coll-dialog').close(); });
+
+  // ─── límites ───
+  const USAGE = [{ d: 'Lun', v: 42 }, { d: 'Mar', v: 58 }, { d: 'Mié', v: 31 }, { d: 'Jue', v: 77 }, { d: 'Vie', v: 64 }, { d: 'Sáb', v: 22 }, { d: 'Dom', v: 35 }];
+  function renderChart() {
+    const max = Math.max(...USAGE.map(x => x.v));
+    $('#chart').innerHTML = USAGE.map(x => `<div class="b" title="${x.v} imágenes"><i data-h="${Math.round(x.v / max * 100)}"></i><span>${x.d}</span></div>`).join('');
+  }
+  function animateLimits() {
+    const pct = Math.round(state.credits / 10);
+    $('#ring-val').setAttribute('stroke-dasharray', '0 100');
+    requestAnimationFrame(() => requestAnimationFrame(() => $('#ring-val').setAttribute('stroke-dasharray', pct + ' 100')));
+    $('#ring-txt').textContent = pct + '%';
+    $$('#chart i').forEach((i, idx) => { i.style.height = '0'; setTimeout(() => i.style.height = i.dataset.h + '%', 150 + idx * 70); });
+  }
+  function updateCounts() {
+    $('#count-gal').textContent = IMAGES.length;
+    $('#count-col').textContent = COLLS.length;
+  }
+
+  // ─── pantalla de carga ───
+  // Figuras: láminas «Dessein» de la Encyclopédie (Diderot y d'Alembert, 1762–1772), dominio público.
+  // Los cuadros se posicionan en % de cada figura.
+  const FIGS = [
+    { f: 'hygieia',  w: 330, alt: 'Estatua de Higía',               box: { l: -6, t: 5,  w: 112, h: 28 }, tint: 'oklch(88% 0.07 150)' },
+    { f: 'apollo',   w: 510, alt: 'Apolo Pitio',                     box: { l: 44, t: 55, w: 42,  h: 36 }, tint: 'oklch(90% 0.08 90)' },
+    { f: 'hercules', w: 450, alt: 'Hércules Farnesio',               box: { l: 14, t: 22, w: 66,  h: 40 }, tint: 'oklch(86% 0.07 40)' },
+    { f: 'antinous', w: 378, alt: 'Antínoo' },
+    { f: 'juno',     w: 336, alt: 'Figura drapeada con corona',      box: { l: 8,  t: 0,  w: 84,  h: 23 }, tint: 'oklch(84% 0.08 260)' }
+  ];
+  const FIG_CREDIT = "Figuras: Encyclopédie de Diderot y d'Alembert";
+  const LOOP = ['wave', 'starry', 'pearl', 'kiss', 'mondrian', 'lilies', 'venus', 'wanderer', 'redfuji', 'sunflowers', 'monalisa', 'impression', 'milkmaid', 'temeraire', 'jatte'];
+  let ldTimers = [], ldRaf = 0, ldIdx = 0;
+  function setBox(box, key, animate) {
+    const a = ART[key], img = new Image();
+    img.src = a.src; img.alt = ''; if (animate) img.className = 'in';
+    box.appendChild(img);
+    img.addEventListener('animationend', () => { while (box.children.length > 1) box.firstElementChild.remove(); img.className = ''; });
+    if (!animate) while (box.children.length > 1) box.firstElementChild.remove();
+    $('#ld-credit').textContent = credit(a) + '  ·  ' + FIG_CREDIT;
+  }
+  function runLoader() {
+    const ld = $('#loader'), row = $('#ld-row');
+    ldTimers.forEach(clearTimeout); ldTimers = []; cancelAnimationFrame(ldRaf);
+    ld.hidden = false; ld.classList.remove('out');
+    $('#ld-title').textContent = 'Cada imagen empieza en la historia del arte.';
+    row.innerHTML = FIGS.map(g => `<div class="ld-fig" style="aspect-ratio:${g.w}/900"><img src="assets/figuras/${g.f}.jpg" width="${g.w}" height="900" alt="${g.alt}"></div>`).join('');
+    const boxes = FIGS.map((g, i) => [g, row.children[i]]).filter(([g]) => g.box).map(([g, fig], i) => {
+      const b = document.createElement('div'), p = g.box;
+      b.className = 'ld-box';
+      b.style.cssText = `left:${p.l}%;top:${p.t}%;width:${p.w}%;height:${p.h}%;--tint:${g.tint};animation-delay:${500 + i * 160}ms`;
+      fig.appendChild(b); setBox(b, LOOP[i], false);
+      return b;
+    });
+    ldIdx = boxes.length;
+    const tick = n => {
+      setBox(boxes[n % boxes.length], LOOP[ldIdx++ % LOOP.length], true);
+      ldTimers.push(setTimeout(() => tick(n + 1), 680));
+    };
+    ldTimers.push(setTimeout(() => tick(0), 1100));
+    const dur = matchMedia('(prefers-reduced-motion: reduce)').matches ? 1200 : 4600, t0 = performance.now();
+    const step = now => {
+      const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 2.2);
+      $('#ld-bar').style.width = (e * 100) + '%';
+      $('#ld-pct').textContent = Math.round(e * 100) + '%';
+      if (p < 1) ldRaf = requestAnimationFrame(step);
+      else { $('#ld-title').textContent = 'Tu estudio está listo.'; ldTimers.push(setTimeout(closeLoader, 650)); }
+    };
+    ldRaf = requestAnimationFrame(step);
+  }
+  function closeLoader() {
+    const ld = $('#loader');
+    ldTimers.forEach(clearTimeout); ldTimers = []; cancelAnimationFrame(ldRaf);
+    ld.classList.add('out');
+    ldTimers.push(setTimeout(() => { ld.hidden = true; }, 800));
+  }
+  $('#ld-skip').addEventListener('click', closeLoader);
+  $('#logo').addEventListener('click', runLoader);
+  $('#replay').addEventListener('click', runLoader);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#loader').hidden) closeLoader(); });
+
+  // ─── init ───
+  renderFamilies(); renderStyles(); renderToolRow();
+  ['g3pro', 'gpt1', 'g25flash', 'gpt1mini'].forEach((m, k) => IMAGES.forEach((im, i) => { if (i % 4 === k) im.model = m; }));
+  JOBS = [
+    { id: 'j' + (jobSeq++), prompt: 'Retrato de una violonchelista junto a la ventana, luz de tarde', style: 'barroco', model: 'g3pro', n: 4, ratio: '4:5', dest: 'c3', cost: 12, status: 'gen', p: 34, speed: 0.9 },
+    { id: 'j' + (jobSeq++), prompt: 'Ola gigante sobre una ciudad costera contemporánea', style: 'ukiyo', model: 'gpt1', n: 2, ratio: '16:9', dest: '', cost: 4, status: 'gen', p: 8, speed: 1.1 },
+    { id: 'j' + (jobSeq++), prompt: 'Bodegón de frutas tropicales con pincelada en espiral', style: 'post', model: 'g25flash', n: 4, ratio: '1:1', dest: 'c4', cost: 4, status: 'cola', p: 0, speed: 1.4 }
+  ];
+  renderDest(); renderColl(); renderChart(); updateCounts(); updateCredits(); renderPending();
+  const start = (location.hash || '').replace('#', '') || (() => { try { return localStorage.getItem('musa-screen'); } catch (e) { return null; } })() || 'inicio';
+  show(start);
+  window.addEventListener('hashchange', () => show(location.hash.replace('#', '')));
+  runLoader();
+})();
+</script>
+</body>
+</html>
