@@ -5,7 +5,7 @@ const path = require("path");
 const vm = require("vm");
 
 const root = path.resolve(__dirname, "..", "..");
-const src = fs.readFileSync(path.join(root, "src/gemini_image_api/web/musa-scene.js"), "utf8");
+const src = fs.readFileSync(path.join(root, "src/musa/web/musa-scene.js"), "utf8");
 const ctx = vm.createContext({});
 vm.runInContext(src, ctx, { filename: "musa-scene.js" });
 const M = ctx.MusaScene._math;

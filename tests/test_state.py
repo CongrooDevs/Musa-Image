@@ -1,7 +1,7 @@
 import json
 from dataclasses import asdict
 from datetime import datetime, timezone
-from gemini_image_api.state import StateStore, GenerationRecord, display_prompt
+from musa.state import StateStore, GenerationRecord, display_prompt
 
 def rec(cid="c_1", **kw):
     base = dict(id="g_1", ts=datetime.now(timezone.utc).isoformat(), type="generate", conversation_id=cid,
@@ -210,7 +210,7 @@ def test_list_since_compares_datetimes_across_zones(settings):
 
 def test_list_since_invalid_raises_invalid_query(settings):
     import pytest
-    from gemini_image_api.errors import GIAError
+    from musa.errors import GIAError
     with pytest.raises(GIAError) as ei:
         StateStore(settings.state_dir).list(since="not-a-date")
     assert ei.value.code == "invalid_query"

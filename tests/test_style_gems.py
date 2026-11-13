@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from gemini_image_api.style_gems import StyleGemStore, default_instructions, gem_name
-from gemini_image_api.styles import Style
+from musa.style_gems import StyleGemStore, default_instructions, gem_name
+from musa.styles import Style
 
 
 def _style(**kw) -> Style:

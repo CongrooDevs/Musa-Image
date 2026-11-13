@@ -1,9 +1,9 @@
 import pytest
 from pathlib import Path
 
-from gemini_image_api.gallery import image_index, query_images
-from gemini_image_api.library import LibraryStore
-from gemini_image_api.state import StateStore, GenerationRecord
+from musa.gallery import image_index, query_images
+from musa.library import LibraryStore
+from musa.state import StateStore, GenerationRecord
 
 
 def _img(settings, name):

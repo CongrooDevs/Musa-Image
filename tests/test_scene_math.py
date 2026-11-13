@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from gemini_image_api import scene_math as m
+from musa import scene_math as m
 
 FIXTURE = Path(__file__).parent / "fixtures" / "scene_golden.json"
 CASES = json.loads(FIXTURE.read_text())["cases"]

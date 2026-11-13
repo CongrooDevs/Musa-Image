@@ -1,8 +1,8 @@
 import re
 from pathlib import Path
 import pytest
-from gemini_image_api.config import Settings
-from gemini_image_api.auth import read_cookie_jar
+from musa.config import Settings
+from musa.auth import read_cookie_jar
 
 FIXTURES_DIR = Path(__file__).resolve().parent.parent / "fixtures"
 

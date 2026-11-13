@@ -6,15 +6,15 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from gemini_image_api.client import Backend, GenerateResult
-from gemini_image_api.errors import GIAError
-from gemini_image_api.jobs import MODELS, JobQueue, model_entries
-from gemini_image_api.library import LibraryStore
-from gemini_image_api.service import ImageService
-from gemini_image_api.state import GenerationRecord, StateStore
-from gemini_image_api.storage import SavedImage
-from gemini_image_api.style_store import UserStyleStore
-from gemini_image_api.uploads import UploadStore
+from musa.client import Backend, GenerateResult
+from musa.errors import GIAError
+from musa.jobs import MODELS, JobQueue, model_entries
+from musa.library import LibraryStore
+from musa.service import ImageService
+from musa.state import GenerationRecord, StateStore
+from musa.storage import SavedImage
+from musa.style_store import UserStyleStore
+from musa.uploads import UploadStore
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 32
 

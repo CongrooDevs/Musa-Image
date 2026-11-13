@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock, patch
-from gemini_image_api.upstream.client import GeminiClient
-from gemini_image_api.upstream.types import AccountStatus, UpstreamModel, UpstreamGem
+from musa.upstream.client import GeminiClient
+from musa.upstream.types import AccountStatus, UpstreamModel, UpstreamGem
 
 @pytest.mark.asyncio
 async def test_native_client_lifecycle_and_models():
@@ -85,7 +85,7 @@ async def test_native_client_generate_content_parses_real_stream():
 @pytest.mark.asyncio
 async def test_generate_content_stream_429_raises_temporarily_blocked():
     from contextlib import asynccontextmanager
-    from gemini_image_api.upstream.exceptions import TemporarilyBlockedError
+    from musa.upstream.exceptions import TemporarilyBlockedError
 
     client = GeminiClient(secure_1psid="mock_psid")
     client.session.snlm0e = "mock_snlm0e"

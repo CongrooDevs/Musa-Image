@@ -11,7 +11,7 @@ from .errors import GIAError, INVALID_REF, REF_NOT_ALLOWED, SSRF_BLOCKED, TIMEOU
 MAGIC = [(b"\x89PNG\r\n\x1a\n", "png"), (b"\xff\xd8\xff", "jpeg"), (b"GIF87a", "gif"), (b"GIF89a", "gif")]
 MAX_REDIRECTS = 3
 # Some hosts (e.g. Wikimedia) reject the default python-httpx User-Agent with 403.
-USER_AGENT = "gemini-image-api/0.1 (local image reference fetcher)"
+USER_AGENT = "musa/0.1 (local image reference fetcher)"
 
 def sniff_image_format(data: bytes) -> str | None:
     head = data[:512].lstrip().lower()

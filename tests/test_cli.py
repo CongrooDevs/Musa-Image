@@ -5,11 +5,11 @@ import pytest
 import yaml
 from typer.testing import CliRunner
 
-from gemini_image_api import cli
-from gemini_image_api.client import Backend, GenerateResult
-from gemini_image_api.errors import GIAError
-from gemini_image_api.state import GenerationRecord, StateStore
-from gemini_image_api.storage import SavedImage
+from musa import cli
+from musa.client import Backend, GenerateResult
+from musa.errors import GIAError
+from musa.state import GenerationRecord, StateStore
+from musa.storage import SavedImage
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
 runner = CliRunner()
@@ -87,7 +87,7 @@ def test_mcp_config():
     r = runner.invoke(cli.app, ["mcp-config"])
     assert r.exit_code == 0
     cfg = json.loads(r.output)
-    assert "mcpServers" in cfg and "gemini-image-api" in cfg["mcpServers"]
+    assert "mcpServers" in cfg and "musa" in cfg["mcpServers"]
 
 
 def test_edit(settings, tmp_path):
@@ -157,19 +157,19 @@ def test_gen_copy_to_outside_is_path_not_allowed(settings, monkeypatch, tmp_path
 def test_mcp_config_from_checkout_uses_project_and_absolute_uv(monkeypatch, tmp_path):
     monkeypatch.setattr(cli.shutil, "which", lambda n: f"/abs/{n}")
     repo = tmp_path / "repo"; repo.mkdir()
-    (repo / "pyproject.toml").write_text('[project]\nname = "gemini-image-api"\n')
-    cfg = cli.mcp_config_dict(repo)["mcpServers"]["gemini-image-api"]
+    (repo / "pyproject.toml").write_text('[project]\nname = "musa"\n')
+    cfg = cli.mcp_config_dict(repo)["mcpServers"]["musa"]
     assert cfg == {"command": "/abs/uv", "args": ["run", "--project", str(repo), "musa-mcp"]}
 
 
 def test_mcp_config_installed_uses_musa_mcp(monkeypatch):
     monkeypatch.setattr(cli.shutil, "which", lambda n: f"/abs/{n}")
-    assert cli.mcp_config_dict(None)["mcpServers"]["gemini-image-api"] == {"command": "/abs/musa-mcp"}
+    assert cli.mcp_config_dict(None)["mcpServers"]["musa"] == {"command": "/abs/musa-mcp"}
 
 
-def _fake_checkout(tmp_path, pkg_parent="src", pyproject='[project]\nname = "gemini-image-api"\n'):
+def _fake_checkout(tmp_path, pkg_parent="src", pyproject='[project]\nname = "musa"\n'):
     repo = tmp_path / "repo"
-    pkg = repo / pkg_parent / "gemini_image_api"
+    pkg = repo / pkg_parent / "musa"
     pkg.mkdir(parents=True)
     (repo / "pyproject.toml").write_text(pyproject)
     return repo, pkg / "cli.py"
@@ -187,9 +187,9 @@ def test_checkout_root_rejects_non_src_layout(tmp_path):
 
 def test_checkout_root_compares_project_name_exactly(tmp_path):
     # the old substring check accepted this: the string appears, but not as [project].name
-    _, f = _fake_checkout(tmp_path, pyproject='[project]\nname = "other"\n[tool.x]\nname = "gemini-image-api"\n')
+    _, f = _fake_checkout(tmp_path, pyproject='[project]\nname = "other"\n[tool.x]\nname = "musa"\n')
     assert cli._checkout_root(f) is None
-    _, f2 = _fake_checkout(tmp_path / "b", pyproject='[project]\nname = "gemini-image-api-fork"\n')
+    _, f2 = _fake_checkout(tmp_path / "b", pyproject='[project]\nname = "musa-fork"\n')
     assert cli._checkout_root(f2) is None
 
 
@@ -197,7 +197,7 @@ def test_checkout_root_tolerates_non_table_project_and_bad_encoding(tmp_path):
     _, f = _fake_checkout(tmp_path / "a", pyproject='project = "x"\n')
     assert cli._checkout_root(f) is None
     repo, f2 = _fake_checkout(tmp_path / "b")
-    (repo / "pyproject.toml").write_bytes(b'[project]\nname = "gemini-image-api"\n# \xff\xfe\n')
+    (repo / "pyproject.toml").write_bytes(b'[project]\nname = "musa"\n# \xff\xfe\n')
     assert cli._checkout_root(f2) is None
 
 
@@ -466,7 +466,7 @@ def test_fav_and_rm_image(settings, tmp_path):
 
 
 def test_styles_edit_validates_style_before_resolving_image(settings, tmp_path, monkeypatch):
-    import gemini_image_api.mcp_server as ms
+    import musa.mcp_server as ms
     settings.styles_file = _styles(tmp_path)
     called = []
 

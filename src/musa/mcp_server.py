@@ -144,7 +144,7 @@ def _progress_cb(ctx: Context | None):
 
 
 def create_server(backend: Backend, settings: Settings) -> FastMCP:
-    mcp = FastMCP("gemini-image-api", instructions=INSTRUCTIONS)
+    mcp = FastMCP("musa", instructions=INSTRUCTIONS)
     svc = ImageService(backend, settings, StateStore(settings.state_dir),
                        LibraryStore(settings.state_dir), UserStyleStore(settings.state_dir))
     compositions = CompositionManager(svc, svc.compositions, DirectRunner(svc))

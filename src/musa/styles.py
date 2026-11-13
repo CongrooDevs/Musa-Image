@@ -9,7 +9,7 @@ from .errors import GIAError, INVALID_ASPECT, UNKNOWN_STYLE, TEMPLATE_MISSING_VA
 
 log = logging.getLogger(__name__)
 
-PACKAGE_ROOT = Path(str(resources.files("gemini_image_api")))
+PACKAGE_ROOT = Path(str(resources.files("musa")))
 
 ASPECT_HINTS = {
     "1:1": "square 1:1 aspect ratio",
@@ -33,7 +33,7 @@ def resolve_styles_path(settings) -> Path:
     user = Path.home() / ".config" / "gemini-image-api" / "styles.yaml"
     if user.exists():
         return user
-    return Path(str(resources.files("gemini_image_api") / "styles.yaml"))
+    return Path(str(resources.files("musa") / "styles.yaml"))
 
 
 @dataclass(frozen=True)
@@ -93,7 +93,7 @@ class StyleCatalog:
 def load_catalog(settings) -> StyleCatalog:
     """Built-in (or configured) styles file plus the user's own styles, if present."""
     base_path = resolve_styles_path(settings)
-    packaged = Path(str(resources.files("gemini_image_api") / "styles.yaml"))
+    packaged = Path(str(resources.files("musa") / "styles.yaml"))
     ref_base = PACKAGE_ROOT if base_path == packaged else base_path.parent
     catalog = StyleCatalog.load(base_path, ref_base=ref_base, source="builtin")
     user = Path(settings.state_dir) / "styles" / "styles.yaml"

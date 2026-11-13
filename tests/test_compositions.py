@@ -7,13 +7,13 @@ from types import SimpleNamespace
 
 import pytest
 
-from gemini_image_api.compositions import (CompositionManager, CompositionStore, DirectRunner,
+from musa.compositions import (CompositionManager, CompositionStore, DirectRunner,
                                            background_edit_prompt, background_ref_prompt, master_prompt,
                                            piece_prompt)
-from gemini_image_api.errors import GIAError
-from gemini_image_api.jobs import Job
-from gemini_image_api.animations import AnimationStore
-from gemini_image_api.library import LibraryStore
+from musa.errors import GIAError
+from musa.jobs import Job
+from musa.animations import AnimationStore
+from musa.library import LibraryStore
 from sprite_synth import composition_set
 
 PIECES = ["Hermes", "Tarro"]
@@ -598,7 +598,7 @@ async def test_index_is_cached_until_state_or_library_change(svc, store):
     state_file = svc.library.file   # any file whose mtime we control
     svc.state = types.SimpleNamespace(file=state_file, conversation=lambda cid: True)
     svc.settings = types.SimpleNamespace(output_root=svc.dir)
-    from gemini_image_api import compositions as cm
+    from musa import compositions as cm
     real = cm.image_index
     cm.image_index = lambda *a: calls.append(1) or {}
     try:

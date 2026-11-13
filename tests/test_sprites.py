@@ -4,8 +4,8 @@ import pytest
 from PIL import Image, ImageDraw
 from sprite_synth import grid_lines, jump_sheet, walk_sheet, white_char_sheet
 
-from gemini_image_api import sprites
-from gemini_image_api.errors import INVALID_ANIMATION, GIAError
+from musa import sprites
+from musa.errors import INVALID_ANIMATION, GIAError
 
 GREEN = (0, 255, 0)
 

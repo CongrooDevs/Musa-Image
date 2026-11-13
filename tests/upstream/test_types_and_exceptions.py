@@ -1,8 +1,8 @@
 import pytest
-from gemini_image_api.upstream.types import (
+from musa.upstream.types import (
     AccountStatus, UpstreamModel, UpstreamGem, UpstreamChatSession, UpstreamImage, UpstreamTurn
 )
-from gemini_image_api.upstream.exceptions import (
+from musa.upstream.exceptions import (
     GeminiError, AuthError, ImageGenerationError, ModelInvalidError,
     TemporarilyBlockedError, UsageLimitExceededError, TimeoutError, APIError
 )

@@ -12,12 +12,12 @@ from pathlib import Path
 import pytest
 import uvicorn
 
-from gemini_image_api.applauncher import app_info_path, port_free, running_app, serve_app
-from gemini_image_api.client import Backend
-from gemini_image_api.library import LibraryStore
-from gemini_image_api.service import ImageService
-from gemini_image_api.state import StateStore
-from gemini_image_api.style_store import UserStyleStore
+from musa.applauncher import app_info_path, port_free, running_app, serve_app
+from musa.client import Backend
+from musa.library import LibraryStore
+from musa.service import ImageService
+from musa.state import StateStore
+from musa.style_store import UserStyleStore
 
 REPO = Path(__file__).resolve().parents[1]
 

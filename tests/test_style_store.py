@@ -1,7 +1,7 @@
 import pytest
 import yaml
-from gemini_image_api.errors import GIAError
-from gemini_image_api.style_store import UserStyleStore
+from musa.errors import GIAError
+from musa.style_store import UserStyleStore
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
 

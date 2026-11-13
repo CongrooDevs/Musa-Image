@@ -3,9 +3,9 @@ import time
 import pytest
 from PIL import Image, ImageChops
 
-from gemini_image_api import scene_math as sm
-from gemini_image_api import scene_render as sr
-from gemini_image_api.errors import GIAError
+from musa import scene_math as sm
+from musa import scene_render as sr
+from musa.errors import GIAError
 
 
 def _solid(size, color):

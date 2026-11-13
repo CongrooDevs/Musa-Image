@@ -78,7 +78,7 @@ async def ensure_client(settings: Settings, client_cls, auto_close: bool = False
         cache_dir=settings.upstream_cache_dir,
     )
     await client.init(timeout=30, auto_close=auto_close, close_delay=900, auto_refresh=True)
-    res = client.list_models()  # sync in gemini-webapi 2.1.1; tolerate awaitables
+    res = client.list_models()  # sync in the upstream client; tolerate awaitables
     if inspect.isawaitable(res):
         res = await res
     names = _available_model_names(res or [])

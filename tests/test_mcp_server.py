@@ -6,11 +6,11 @@ import yaml
 from fastmcp import Client
 from fastmcp.exceptions import ToolError
 
-from gemini_image_api.client import Backend, GenerateResult
-from gemini_image_api.errors import AUTH_EXPIRED, UNKNOWN_CONVERSATION, GIAError
-from gemini_image_api.mcp_server import create_server
-from gemini_image_api.state import GenerationRecord, StateStore
-from gemini_image_api.storage import SavedImage
+from musa.client import Backend, GenerateResult
+from musa.errors import AUTH_EXPIRED, UNKNOWN_CONVERSATION, GIAError
+from musa.mcp_server import create_server
+from musa.state import GenerationRecord, StateStore
+from musa.storage import SavedImage
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
 
@@ -184,7 +184,7 @@ async def test_auth_login_generic_failure(server, monkeypatch):
     def boom(settings):
         raise RuntimeError("browser crashed")
 
-    monkeypatch.setattr("gemini_image_api.auth.login_guided", boom)
+    monkeypatch.setattr("musa.auth.login_guided", boom)
     async with Client(server) as c:
         res = await c.call_tool("auth_login", {})
     assert res.structured_content["code"] == "auth_failed"
@@ -323,7 +323,7 @@ async def test_collection_schema_and_instructions(server):
 
 
 async def test_auth_status_has_app_url_none(server, monkeypatch):
-    import gemini_image_api.mcp_server as ms
+    import musa.mcp_server as ms
     monkeypatch.setattr(ms, "running_app", lambda s: None)
     async with Client(server) as c:
         res = await c.call_tool("auth_status", {})
@@ -332,7 +332,7 @@ async def test_auth_status_has_app_url_none(server, monkeypatch):
 
 
 async def test_auth_status_has_app_url_when_running(server, monkeypatch):
-    import gemini_image_api.mcp_server as ms
+    import musa.mcp_server as ms
     monkeypatch.setattr(ms, "running_app",
                         lambda s: {"url": "http://127.0.0.1:8765/?key=k", "port": 8765, "pid": 1, "started": "t"})
     async with Client(server) as c:
@@ -409,7 +409,7 @@ async def test_generate_image_has_no_warning_key_by_default(server):
 
 
 async def test_style_gem_schema_and_instructions_mention_gems(server):
-    from gemini_image_api.mcp_server import INSTRUCTIONS
+    from musa.mcp_server import INSTRUCTIONS
     assert "style_gem" in INSTRUCTIONS and "list_style_gems" in INSTRUCTIONS
     async with Client(server) as c:
         tools = {t.name: t for t in await c.list_tools()}
@@ -427,7 +427,7 @@ NEW_TOOLS = {"create_style", "update_style", "delete_style", "describe_style", "
 
 
 async def test_tool_count_annotations_and_instructions(server):
-    from gemini_image_api.mcp_server import INSTRUCTIONS
+    from musa.mcp_server import INSTRUCTIONS
     async with Client(server) as c:
         tools = {t.name: t for t in await c.list_tools()}
     assert len(tools) == 37 and NEW_TOOLS <= set(tools)
@@ -576,7 +576,7 @@ async def test_generate_batch(server, backend):
 
 
 async def test_update_style_validates_before_resolving_image(server, monkeypatch):
-    import gemini_image_api.mcp_server as ms
+    import musa.mcp_server as ms
     called = []
 
     async def fake_resolve(svc, image):

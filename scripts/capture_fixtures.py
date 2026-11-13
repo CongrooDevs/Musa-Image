@@ -5,11 +5,11 @@ import os
 import sys
 from pathlib import Path
 from curl_cffi.requests import AsyncSession
-from gemini_image_api.config import Settings
-from gemini_image_api.auth import read_cookie_jar
-from gemini_image_api.client import GeminiWebBackend
-from gemini_image_api.state import StateStore
-from gemini_image_api.upstream.sanitizer import TrafficSanitizer
+from musa.config import Settings
+from musa.auth import read_cookie_jar
+from musa.client import GeminiWebBackend
+from musa.state import StateStore
+from musa.upstream.sanitizer import TrafficSanitizer
 
 FIXTURES_DIR = Path("tests/fixtures/upstream")
 

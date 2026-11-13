@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 import pytest
 from unittest.mock import patch, MagicMock
-from gemini_image_api.updates import check_update, run_update
+from musa.updates import check_update, run_update
 
 def test_check_update_cached(tmp_path):
     cache_file = tmp_path / "update_check.json"
@@ -26,7 +26,7 @@ def test_check_update_queries_github(tmp_path):
     }
 
     with patch("httpx.get", return_value=mock_resp), \
-         patch("gemini_image_api.updates.get_local_sha", return_value="old_sha_111111"):
+         patch("musa.updates.get_local_sha", return_value="old_sha_111111"):
         res = check_update(tmp_path, force=True)
         assert res["has_update"] is True
         assert res["latest_sha"] == "new_sha_999999"

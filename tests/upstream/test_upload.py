@@ -1,8 +1,8 @@
 import json
 import pytest
 from unittest.mock import AsyncMock, patch
-from gemini_image_api.upstream.upload import upload_reference_image
-from gemini_image_api.upstream.session import UpstreamSession
+from musa.upstream.upload import upload_reference_image
+from musa.upstream.session import UpstreamSession
 
 @pytest.mark.asyncio
 async def test_upload_reference_image_flow():

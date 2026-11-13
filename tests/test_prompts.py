@@ -4,8 +4,8 @@ import threading
 
 import pytest
 
-from gemini_image_api.errors import GIAError
-from gemini_image_api.prompts import PromptStore
+from musa.errors import GIAError
+from musa.prompts import PromptStore
 
 
 def test_create_and_list(tmp_path):

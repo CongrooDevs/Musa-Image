@@ -4,9 +4,9 @@ import sys
 
 import pytest
 
-from gemini_image_api import auth
-from gemini_image_api.auth import ensure_client, read_cookie_jar, save_cookie_jar_atomic
-from gemini_image_api.errors import GIAError
+from musa import auth
+from musa.auth import ensure_client, read_cookie_jar, save_cookie_jar_atomic
+from musa.errors import GIAError
 
 JAR = [{"name": "__Secure-1PSID", "value": "abc", "domain": ".google.com"},
        {"name": "SAPISID", "value": "x", "domain": ".google.com"},

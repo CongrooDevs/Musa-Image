@@ -8,13 +8,13 @@ from pathlib import Path
 import pytest
 from starlette.testclient import TestClient
 
-from gemini_image_api.webapp import create_app
-from gemini_image_api.client import Backend, GenerateResult
-from gemini_image_api.library import LibraryStore
-from gemini_image_api.service import ImageService
-from gemini_image_api.state import StateStore, GenerationRecord
-from gemini_image_api.storage import SavedImage
-from gemini_image_api.style_store import UserStyleStore
+from musa.webapp import create_app
+from musa.client import Backend, GenerateResult
+from musa.library import LibraryStore
+from musa.service import ImageService
+from musa.state import StateStore, GenerationRecord
+from musa.storage import SavedImage
+from musa.style_store import UserStyleStore
 
 PORT = 8765
 JPG = b"\xff\xd8\xff" + b"0" * 32
@@ -285,7 +285,7 @@ def test_delete_image_also_removes_thumb(env, settings):
 
 
 def test_upload_over_20mb_is_422(env):
-    from gemini_image_api.style_store import MAX_IMAGE_BYTES
+    from musa.style_store import MAX_IMAGE_BYTES
     c, *_ = env
     big = JPG + b"0" * MAX_IMAGE_BYTES  # valid jpeg magic, MAX+3 bytes total
     r = c.post("/api/styles", data={"name": "Gorda"}, files={"file": ("big.jpg", big, "image/jpeg")}, headers=M)
@@ -631,8 +631,8 @@ def test_sse_emits_jobs_event(env):
 
 
 def test_oversized_content_length_rejected_before_parsing(env):
-    from gemini_image_api.style_store import MAX_IMAGE_BYTES
-    from gemini_image_api.uploads import UploadStore
+    from musa.style_store import MAX_IMAGE_BYTES
+    from musa.uploads import UploadStore
     c, *_ = env
     big_up = str(UploadStore.MAX_BYTES + 1024 * 1024)
     r = c.post("/api/uploads", content=b"x", headers={**M, "content-length": big_up})
@@ -765,7 +765,7 @@ def test_put_style_json_multipart_builtin_and_sse(env):
 
 
 def test_put_style_oversized_multipart_is_422(env):
-    from gemini_image_api.style_store import MAX_IMAGE_BYTES
+    from musa.style_store import MAX_IMAGE_BYTES
     c, *_ = env
     sid = c.post("/api/styles", json={"name": "Propio", "description": "d"}, headers=M).json()["id"]
     big = JPG + b"0" * MAX_IMAGE_BYTES
@@ -832,8 +832,8 @@ def test_quota_estimate_counts_utc_window(env):
 
 def test_estimate_images_left_direct_mixed_offsets(settings):
     """_estimate_images_left sin cliente web: compara fechas, no texto."""
-    from gemini_image_api.state import StateStore, GenerationRecord
-    from gemini_image_api.webapp import _estimate_images_left
+    from musa.state import StateStore, GenerationRecord
+    from musa.webapp import _estimate_images_left
     st = StateStore(settings.state_dir)
     def rec(i, ts):
         st.append(GenerationRecord(id=f"g_{i:012x}", ts=ts, type="generate", conversation_id=f"c{i}",
@@ -911,7 +911,7 @@ def test_prompts_errors_have_six_fields(env):
     assert [r.json()["code"] for r in cases] == ["invalid_prompt"] * 4 + ["unknown_prompt"] * 3 + ["invalid_json"]
     for r in cases:
         assert set(r.json()) == ERR6 and r.json()["retryable"] is False
-    from gemini_image_api.webapp import WEB_NEXT_ACTION
+    from musa.webapp import WEB_NEXT_ACTION
     assert cases[0].json()["next_action"] == WEB_NEXT_ACTION["invalid_prompt"]
     assert cases[4].json()["next_action"] == WEB_NEXT_ACTION["unknown_prompt"]
 
@@ -1226,7 +1226,7 @@ def test_manifest_and_update_endpoints(search_env):
     assert data["display"] == "standalone"
 
     from unittest.mock import patch
-    with patch("gemini_image_api.updates.check_update", return_value={"has_update": True, "latest_sha": "abc"}):
+    with patch("musa.updates.check_update", return_value={"has_update": True, "latest_sha": "abc"}):
         r2 = c.get("/api/update")
         assert r2.status_code == 200
         assert r2.json() == {"has_update": True, "latest_sha": "abc"}
@@ -1495,7 +1495,7 @@ def test_sse_changed_includes_animations_mtime(anim):
 
 
 def test_delete_image_race_returns_404(anim, monkeypatch):
-    from gemini_image_api.errors import GIAError, INVALID_REF
+    from musa.errors import GIAError, INVALID_REF
     c, s = anim
 
     def gone(ref):
@@ -1551,7 +1551,7 @@ class CompBackend(FakeBackend):
         return GenerateResult("ok", None, cid, [img], "done", 1.0, ["c"], record_id=rid)
 
     def _maybe_fail(self, prompt):
-        from gemini_image_api.errors import GIAError
+        from musa.errors import GIAError
         for sub in list(self.fail_prompts):
             if sub in prompt:
                 raise GIAError(self.fail_prompts.pop(sub), "injected")
@@ -1969,7 +1969,7 @@ def test_composition_animation_patch_motion_and_validation(comp):
 
 
 def test_composition_frames_flow_scene_and_effective_rev(comp):
-    from gemini_image_api import scene_math as sm
+    from musa import scene_math as sm
     c, s, b = comp
     d = _flow(c)
     cid = d["id"]
@@ -2130,7 +2130,7 @@ def _index_scene(html: str) -> dict:
 
 def test_composition_export_package_with_animation_and_escaping(comp, settings):
     import zipfile
-    from gemini_image_api.styles import PACKAGE_ROOT
+    from musa.styles import PACKAGE_ROOT
     c, s, b = comp
     name = "</script><b>x"
     d = _create_comp(c, name=name, pieces=["Hermes", "Tarro", "Luz"])

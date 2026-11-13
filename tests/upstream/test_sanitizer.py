@@ -1,5 +1,5 @@
 import pytest
-from gemini_image_api.upstream.sanitizer import TrafficSanitizer
+from musa.upstream.sanitizer import TrafficSanitizer
 
 def test_traffic_sanitizer_redacts_sentinel_cookies():
     fake_jar = [
