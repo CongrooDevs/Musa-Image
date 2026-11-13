@@ -92,8 +92,8 @@ const fmtDate = ts => { try { return new Date(ts).toLocaleString("es-ES", { date
 function rememberItems(items) { for (const it of items) { state.itemsByKey.set(it.key, it); if (it.model) state.seenModels.add(it.model); } }
 // Mensajes de error en español, con la acción a seguir, por código de la API.
 const ERR_ES = {
-  auth_expired: "La sesión de Gemini ha caducado. Ejecuta «gia auth» en la terminal y vuelve a intentarlo.",
-  auth_failed: "No se pudo iniciar sesión en Gemini. Comprueba que Firefox está instalado y ejecuta «gia auth» de nuevo.",
+  auth_expired: "La sesión de Gemini ha caducado. Ejecuta «musa auth» en la terminal y vuelve a intentarlo.",
+  auth_failed: "No se pudo iniciar sesión en Gemini. Comprueba que Firefox está instalado y ejecuta «musa auth» de nuevo.",
   quota_guard: "Musa detuvo la generación antes de llegar al límite de Gemini. Espera a que se renueve la cuota.",
   usage_limit: "Has alcanzado el límite de uso de Gemini. Espera a que se renueve la ventana de 5 h.",
   temporarily_blocked: "Google ha bloqueado la cuenta temporalmente. Espera unos minutos antes de reintentar.",
@@ -2780,7 +2780,7 @@ function renderLimitsScreen(usage) {
   st.classList.remove("warn", "err");
   if (!q || q.available === false) {
     const noCookie = q && q.cookie_present === false;
-    st.textContent = noCookie ? "Sesión caducada · ejecuta «gia auth»" : "Sin datos de cuota";
+    st.textContent = noCookie ? "Sesión caducada · ejecuta «musa auth»" : "Sin datos de cuota";
     st.classList.add("warn");
   } else if (q.account_status === "AVAILABLE") {
     st.textContent = ACCOUNT_ES.AVAILABLE;
@@ -4280,7 +4280,7 @@ async function checkUpdates() {
         pill.hidden = false;
         pill.title = "Nueva versión disponible: " + (data.message || data.latest_sha);
         pill.addEventListener("click", () => {
-          alert("Hay una nueva versión disponible de Musa.\n\nPara actualizar, ejecuta en tu terminal:\n  gia update");
+          alert("Hay una nueva versión disponible de Musa.\n\nPara actualizar, ejecuta en tu terminal:\n  musa update");
         });
       }
     }

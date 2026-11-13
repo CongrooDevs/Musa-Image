@@ -159,12 +159,12 @@ def test_mcp_config_from_checkout_uses_project_and_absolute_uv(monkeypatch, tmp_
     repo = tmp_path / "repo"; repo.mkdir()
     (repo / "pyproject.toml").write_text('[project]\nname = "gemini-image-api"\n')
     cfg = cli.mcp_config_dict(repo)["mcpServers"]["gemini-image-api"]
-    assert cfg == {"command": "/abs/uv", "args": ["run", "--project", str(repo), "gia-mcp"]}
+    assert cfg == {"command": "/abs/uv", "args": ["run", "--project", str(repo), "musa-mcp"]}
 
 
-def test_mcp_config_installed_uses_gia_mcp(monkeypatch):
+def test_mcp_config_installed_uses_musa_mcp(monkeypatch):
     monkeypatch.setattr(cli.shutil, "which", lambda n: f"/abs/{n}")
-    assert cli.mcp_config_dict(None)["mcpServers"]["gemini-image-api"] == {"command": "/abs/gia-mcp"}
+    assert cli.mcp_config_dict(None)["mcpServers"]["gemini-image-api"] == {"command": "/abs/musa-mcp"}
 
 
 def _fake_checkout(tmp_path, pkg_parent="src", pyproject='[project]\nname = "gemini-image-api"\n'):

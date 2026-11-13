@@ -4,9 +4,9 @@ from gemini_image_api.errors import (GIAError, AUTH_EXPIRED, UNKNOWN_STYLE,
 
 
 def test_error_carries_code_and_details():
-    err = GIAError(AUTH_EXPIRED, "sesion expirada", hint="run gia auth")
+    err = GIAError(AUTH_EXPIRED, "sesion expirada", hint="run musa auth")
     assert err.code == "auth_expired"
-    assert err.details == {"hint": "run gia auth"}
+    assert err.details == {"hint": "run musa auth"}
     assert "sesion expirada" in str(err)
 
 def test_unknown_style_code():

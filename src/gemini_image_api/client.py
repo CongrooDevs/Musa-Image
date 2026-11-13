@@ -98,7 +98,7 @@ def _map_exc(e: Exception) -> GIAError:
     if isinstance(e, GIAError):
         return e
     if isinstance(e, AuthError):
-        return GIAError(AUTH_EXPIRED, f"upstream auth: {e}", hint="run: gia auth")
+        return GIAError(AUTH_EXPIRED, f"upstream auth: {e}", hint="run: musa auth")
     if isinstance(e, UsageLimitExceededError):
         return GIAError(USAGE_LIMIT, f"usage limit reached: {e}")
     if isinstance(e, TemporarilyBlockedError):
