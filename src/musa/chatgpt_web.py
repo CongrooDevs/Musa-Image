@@ -323,16 +323,17 @@ class ChatGPTPage:
         return base64.b64decode(got["b64"])
 
     async def attach(self, paths: list[Path]) -> None:
-        """Attach every reference in one go, then wait for one finished 200 POST to process_upload_stream per
-        file. The send button is not used: it is only reachable through its localized aria-label."""
+        """Attach every reference in one go, then wait for one 200 POST to process_upload_stream per file. The
+        response is a long-lived stream, so its headers are the signal (finished() never resolves). The send
+        button is not used: it is only reachable through its localized aria-label."""
         if not paths:
             return
-        finished: list[asyncio.Future] = []
+        finished: list[object] = []
 
         def on_response(resp) -> None:
             if (resp.request.method == "POST" and resp.status == 200
                     and resp.url.split("?", 1)[0].endswith(UPLOAD_PATH)):
-                finished.append(asyncio.ensure_future(resp.finished()))
+                finished.append(resp)
 
         self._page.on("response", on_response)
         try:
@@ -357,12 +358,11 @@ class ChatGPTPage:
                 await target.set_input_files(batch)
             deadline = self._clock() + self._upload_timeout_s
             while True:
-                done = [f for f in finished if f.done() and f.exception() is None and f.result() is None]
-                if len(done) >= len(paths):
+                if len(finished) >= len(paths):
                     return
                 if self._clock() >= deadline:
                     raise GIAError(UPSTREAM_ERROR, "the reference upload did not finish",
-                                   expected=len(paths), finished=len(done))
+                                   expected=len(paths), finished=len(finished))
                 await self._sleep(0.25)
         finally:
             self._page.remove_listener("response", on_response)
