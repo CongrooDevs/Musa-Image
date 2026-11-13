@@ -28,10 +28,10 @@ Musa genera y edita imágenes también con **ChatGPT**, usando la sesión web de
   - `list_models`: los modelos de Gemini más `{"model_name": "chatgpt-web", "display_name": "ChatGPT (web)", "available": <hay sesión>}`. Si Gemini falla, se propaga el error, como hoy (el webapp ya tiene una lista de reserva).
   - `resolve_model_name("chatgpt-web")` devuelve `"chatgpt-web"`; los demás nombres van a Gemini.
   - Gems (`create/update/delete_gem`, `gem_exists`): siempre Gemini.
-  - `status()`: el de Gemini más `"chatgpt": {"session": bool, "image_gen": {"remaining", "reset_after"} | None}`.
+  - `status()`: el de Gemini más `"chatgpt": {"session": bool, "image_gen": {"remaining", "reset_after", "checked_at"} | None}`. **Nunca lanza Chrome**, porque la webapp consulta `status()` cada 60 s: `session` sale de la base de cookies (§6, leída de una copia) e `image_gen` es la última cuota guardada en `state_dir/chatgpt_quota.json`, que se escribe en cada llamada a ChatGPT.
   - `quota()`: la de Gemini, sin cambios (la usa el quota guard del servicio). ChatGPT controla su propia cuota en §5.
   - `aclose()`: cierra los dos.
-- **Gem con ChatGPT:** si `generate`/`edit` de ChatGPT recibe `gem_id`, no lo usa y devuelve `warning = {"code": "gem_missing", …}` con el mensaje «ChatGPT no usa Gems; el estilo se aplicó solo como texto». El servicio ya envía el `append` y la imagen del estilo.
+- **Gem con ChatGPT:** si `generate`/`edit` de ChatGPT recibe `gem_id`, no lo usa y devuelve `warning = {"code": "gem_ignored", …}` con el mensaje «ChatGPT no usa Gems; el estilo se aplicó solo como texto». El servicio ya envía el `append` y la imagen del estilo. **No se usa `gem_missing`:** `service.py:263-266` borra la entrada del Gem del estilo cuando recibe `GEM_MISSING` con su `gem_id`. `gem_ignored` es un código de aviso, no de error (los 29 códigos de error no cambian).
 - **`jobs.py`:** `MODEL_LABELS["chatgpt-web"] = "ChatGPT (web)"`.
 - **`config.py`:**
   - `chrome_path: str | None = None` (`GIA_CHROME_PATH`); por defecto `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`.
@@ -93,7 +93,7 @@ Musa genera y edita imágenes también con **ChatGPT**, usando la sesión web de
 
 ### 5.2 `retry_download` y `delete_conversation`
 
-- **`retry_download(conv, i)`:** busca la entrada `i`. Con su `image_id` (el `file_id`) repite el paso 8. Si ese `file_id` ya no sirve, vuelve a leer la conversación y toma la imagen de salida número `i`.
+- **`retry_download(conv, i)`:** busca la entrada `i` y, con su `image_id` (el `file_id`), repite el paso 8. No hay alternativa por índice: entre ediciones, el número `i` de una conversación no identifica una imagen de forma unívoca. Si el `file_id` ya no sirve, el error es `upstream_error`.
 - **`delete_conversation(conv)`:** `PATCH /backend-api/conversation/<id>` con `{"is_visible": false}` y luego agrega el registro `type="delete"`, como en Gemini. **Sin probar:** lo comprueba la tarea de verificación.
 
 ### 5.3 Cuota
@@ -142,6 +142,7 @@ De `limits_progress` se usa la entrada con `feature_name == "image_gen"`, de la 
 
 - **Webapp:** el selector de modelo ya se arma con `list_models()`, así que «ChatGPT (web)» aparece solo.
   - La cuota de la cabecera sigue siendo la de Gemini.
+  - Los textos de `ERR_ES` que nombraban a Gemini o a Firefox (`auth_expired`, `auth_failed`, `usage_limit`, `temporarily_blocked`, `no_image`, `timeout`) pasan a ser neutrales respecto al proveedor, y se añade `gem_ignored`.
   - No hay UI nueva de inicio de sesión: se usa `musa auth --chatgpt` o la tool `auth_login`.
 - **MCP / CLI:** `generate_image(model="chatgpt-web")` y `musa gen --model chatgpt-web`. Las ediciones no necesitan `model`.
 - **README:** una sección «ChatGPT (web)» con: el riesgo frente a los Términos de uso, `musa auth --chatgpt`, que hace falta Google Chrome, que las conversaciones quedan en el historial de ChatGPT, y que la cuota es la que muestre `auth_status`.
@@ -168,13 +169,13 @@ Son 5 ejecuciones, no una prueba de fiabilidad.
   - La normalización de la cuota y `usage_limit` cuando `remaining == 0`.
   - El mapeo de errores de §7.
   - El contador de subidas: no envía hasta tener N `process_upload_stream`; con 90 s → `upstream_error`.
-  - `retry_download` con `file_id` y con la alternativa por índice.
+  - `retry_download` con el `file_id` guardado tras una descarga fallida.
   - El registro: `model`, `chat_metadata`, `image_id`.
 - `RoutedBackend`:
   - El reparto por `model` y por `rec.model`.
   - `list_models` agrega `chatgpt-web`.
   - Los Gems van siempre a Gemini.
-  - `gem_id` con ChatGPT → aviso `gem_missing`.
+  - `gem_id` con ChatGPT → aviso `gem_ignored`.
 - `login_chatgpt` con `launcher`/`closer` falsos y un `Cookies` SQLite de prueba:
   - Lee siempre una copia.
   - Espera a que el proceso termine antes de confirmar.
