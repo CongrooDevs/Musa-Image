@@ -195,6 +195,33 @@ Son 5 ejecuciones, no una prueba de fiabilidad.
 
 Si falla el paso 1 o el 4, se corrige el diseño antes de dar el trabajo por terminado. Si el paso 4 quedó pendiente, el paso 4 de §5.1 (la subida de varias referencias) sigue marcado como «sin verificar».
 
+## 9.1 Resultado de la verificación real y pendientes (2026-11-13)
+
+**Verificado en vivo** (cuenta Free), una ejecución cada uno:
+- Generar: ok, 27 s.
+- Editar en la misma conversación: ok, 24 s, cambió solo el color.
+- `delete_conversation`: la conversación deja de aparecer en `GET /backend-api/conversations`.
+- 2 referencias: ok, 31 s, tras dos correcciones (`9e318f2`, el input de cámara; `e5ea530`, la señal de subida). La imagen usa ambas referencias: el gato de la primera sostiene la taza de la segunda.
+- En headless, `navigator.webdriver` es `false` y las marcas no contienen `Headless`.
+
+**Pendientes**, aplazados por las revisiones de tareas y la revisión final:
+- **Señal de subida:** solo exige la respuesta 200 de `process_upload_stream`, no el `PUT …oaiusercontent… 201` ni el botón Enviar habilitado. Funcionó en la única prueba viva; si ChatGPT procesa más lento, el prompt podría enviarse antes de que termine el procesado.
+- **`attach` sin input `multiple`:** la ruta de una llamada por archivo no está probada en vivo. `set_input_files` reemplaza la selección del input; que la página acumule un adjunto por llamada es una suposición. Además vuelve a localizar el input con `nth(i)`, y trata `accept=""` como no-imagen.
+- **Tool de imagen fallida:** acaba en `timeout` tras `gen_timeout_s`, no en `no_image`.
+- **Fallo tras el envío:** un timeout o bloqueo después de enviar no guarda registro, así que esa conversación de ChatGPT no se puede editar ni recuperar. Gemini se comporta igual.
+- **Sin Gemini disponible:** si Gemini falla en `list_models`, la webapp cae a la lista fija, que no incluye `chatgpt-web`. Afecta a quien solo usa ChatGPT.
+- **Cuota mostrada:** los resultados de ChatGPT llevan adjunta la cuota de Gemini (`service._run`), y obtenerla arranca el cliente de Gemini.
+- **Temporizador de inactividad:** si ya disparó, el siguiente uso puede ir seguido de un cierre y un relanzamiento innecesarios. `aclose` cancela el temporizador antes de tomar el lock.
+- **`_close_chrome`:** tras SIGKILL vuelve sin esperar a que el proceso termine.
+- **Filtros laxos:** `pgrep` compara por regex y prefijo. El filtro de la cookie (`LIKE '%chatgpt.com'`, con `_` como comodín) es más amplio de lo previsto. `is_blocking_response` acepta cualquier POST cuya ruta contenga `conversation`.
+- **Rendimiento:** `JS_API` vuelve a pedir `/api/auth/session` en cada llamada (dos peticiones por sondeo), y cada edición lee `state.conversation()` dos veces (servicio y router).
+- **Calidad de código y tests:**
+  - `refs_meta` duplica a `GeminiWebBackend._refs_meta`.
+  - El test de mensajes de razonamiento usa `multimodal_text` en vez de `content_type: "thoughts"` real.
+  - El test de cierre por inactividad depende del tiempo real.
+  - En `auth.py` se repiten `mkdir`/`chmod` tras `ensure_dirs`, y los imports de `tests/test_auth.py` no están ordenados.
+  - En `RoutedBackend.edit`, `rec.model` puede ser `None` en registros antiguos.
+
 ## 10. Fuera de alcance
 
 - Canal Codex OAuth (requiere Plus; se puede retomar).
