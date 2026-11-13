@@ -337,14 +337,24 @@ class ChatGPTPage:
         self._page.on("response", on_response)
         try:
             inputs = self._page.locator("input[type='file']")
-            target = None
+            target, multiple = None, False
             for i in range(await inputs.count()):
-                if "image" in (await inputs.nth(i).get_attribute("accept") or ""):
-                    target = inputs.nth(i)
+                cand = inputs.nth(i)
+                if await cand.get_attribute("capture") is not None:
+                    continue  # the camera input
+                accept = await cand.get_attribute("accept")
+                if accept is not None and "image" not in accept:
+                    continue
+                is_multiple = await cand.get_attribute("multiple") is not None
+                if target is None or (is_multiple and not multiple):
+                    target, multiple = cand, is_multiple
+                if multiple:
                     break
             if target is None:
                 raise GIAError(UPSTREAM_ERROR, "the ChatGPT page has no image upload input")
-            await target.set_input_files([str(p) for p in paths])
+            files = [str(p) for p in paths]
+            for batch in ([files] if multiple else [[f] for f in files]):
+                await target.set_input_files(batch)
             deadline = self._clock() + self._upload_timeout_s
             while True:
                 done = [f for f in finished if f.done() and f.exception() is None and f.result() is None]
