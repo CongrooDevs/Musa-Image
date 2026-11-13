@@ -572,10 +572,72 @@ class GeminiWebBackend(Backend):
             raise _map_exc(e) from e
 
 
+class RoutedBackend(Backend):
+    """Gemini plus ChatGPT (web). New generations route by model; anything about an existing conversation
+    routes by the model it was generated with. Gems and the quota guard are Gemini's."""
+
+    def __init__(self, gemini: Backend, chatgpt: Backend, state: StateStore):
+        self.gemini, self.chatgpt, self.state = gemini, chatgpt, state
+
+    def _for(self, conversation_id) -> Backend:
+        rec = self.state.conversation(conversation_id)
+        return self.chatgpt if rec is not None and rec.model == CHATGPT_MODEL else self.gemini
+
+    async def status(self) -> dict:
+        st = await self.gemini.status()
+        try:
+            st["chatgpt"] = await self.chatgpt.status()
+        except Exception as e:
+            st["chatgpt"] = {"session": False, "image_gen": None, "error": f"{type(e).__name__}: {e}"}
+        return st
+
+    async def list_models(self) -> list[dict]:
+        return [*await self.gemini.list_models(), *await self.chatgpt.list_models()]
+
+    async def resolve_model_name(self, name: str) -> str:
+        return name if name == CHATGPT_MODEL else await self.gemini.resolve_model_name(name)
+
+    async def generate(self, prompt, refs, *, model, progress=None, **kw) -> GenerateResult:
+        target = self.chatgpt if model == CHATGPT_MODEL else self.gemini
+        return await target.generate(prompt, refs, model=model, progress=progress, **kw)
+
+    async def edit(self, conversation_id, prompt, refs, *, model, progress=None, **kw) -> GenerateResult:
+        return await self._for(conversation_id).edit(conversation_id, prompt, refs, model=model, progress=progress, **kw)
+
+    async def retry_download(self, conversation_id, image_index) -> SavedImage:
+        return await self._for(conversation_id).retry_download(conversation_id, image_index)
+
+    async def delete_conversation(self, conversation_id) -> None:
+        await self._for(conversation_id).delete_conversation(conversation_id)
+
+    async def create_gem(self, name: str, instructions: str, description: str = "") -> str:
+        return await self.gemini.create_gem(name, instructions, description=description)
+
+    async def update_gem(self, gem_id: str, name: str, instructions: str, description: str = "") -> None:
+        await self.gemini.update_gem(gem_id, name, instructions, description=description)
+
+    async def delete_gem(self, gem_id: str) -> None:
+        await self.gemini.delete_gem(gem_id)
+
+    async def gem_exists(self, gem_id: str) -> bool:
+        return await self.gemini.gem_exists(gem_id)
+
+    async def quota(self) -> dict | None:
+        return await self.gemini.quota()
+
+    async def aclose(self) -> None:
+        try:
+            await self.chatgpt.aclose()
+        finally:
+            await self.gemini.aclose()
+
+
 def build_backend(settings=None, state=None, client_cls=None, auto_close=False) -> Backend:
     from .config import load_settings
     settings = settings or load_settings()
     state = state or StateStore(settings.state_dir)
     _set_upstream_log_level("WARNING")  # upstream DEBUG logs print the cookie-cache path (contains the PSID)
     add_upstream_file_sink(settings.state_dir)  # set_log_level drops all loguru sinks; re-add ours
-    return GeminiWebBackend(settings, state, client_cls=client_cls, auto_close=auto_close)
+    from .chatgpt_web import ChatGPTWebBackend  # local import: chatgpt_web imports this module
+    return RoutedBackend(GeminiWebBackend(settings, state, client_cls=client_cls, auto_close=auto_close),
+                         ChatGPTWebBackend(settings, state), state)

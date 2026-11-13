@@ -33,7 +33,7 @@ AUTO_MODEL = "auto"
 # Static fallback, used only when the account's live model list is unavailable.
 MODELS = [(AUTO_MODEL, "Auto"), ("gemini-flash", "Flash"), ("gemini-pro", "Pro")]
 MODEL_LABELS = {"gemini-flash": "Flash", "gemini-flash-lite": "Flash Lite", "gemini-pro": "Pro",
-                "gemini-carbon": "Carbon", "gemini-4-hydrogen": "Hydrogen"}
+                "gemini-carbon": "Carbon", "gemini-4-hydrogen": "Hydrogen", "chatgpt-web": "ChatGPT (web)"}
 
 
 def model_entries(raw: list[dict] | None) -> list[dict]:

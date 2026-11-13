@@ -15,7 +15,7 @@ from pathlib import Path
 from PIL import Image
 
 from .animations import AnimationStore
-from .client import Backend, GenerateResult, GEM_MISSING
+from .client import CHATGPT_MODEL, Backend, GenerateResult, GEM_MISSING
 from .config import Settings
 from .errors import (AUTH_EXPIRED, AUTH_FAILED, INVALID_ANIMATION, QUOTA_GUARD,
                      TEMPORARILY_BLOCKED, UNKNOWN_ANIMATION, UPSTREAM_ERROR, USAGE_LIMIT,
@@ -183,7 +183,11 @@ class ImageService:
                 **preview}
 
 
-    async def _guard(self) -> None:
+    async def _guard(self, provider_model: str | None = None) -> None:
+        """Gemini's quota guard (5h/weekly %). ChatGPT calls skip it: they never spend Gemini quota, and the
+        ChatGPT backend refuses the turn itself when image_gen.remaining is 0."""
+        if provider_model == CHATGPT_MODEL:
+            return
         stop = float(self.settings.quota_stop_pct or 0)
         if stop <= 0:
             return
@@ -224,7 +228,7 @@ class ImageService:
         return {"id": coll.id, "name": coll.name}
 
     async def _run(self, call, *, prompt, refs, uploads, style, style_text, template, template_vars, aspect_hint,
-                   copy_to, collection=None) -> ServiceResult:
+                   copy_to, collection=None, provider_model: str | None = None) -> ServiceResult:
         if collection is not None and not collection.strip():
             raise GIAError(INVALID_COLLECTION, "collection name is empty")
         catalog = self.catalog() if (style or template) else StyleCatalog()
@@ -243,7 +247,7 @@ class ImageService:
                            f"maximum {self.settings.max_refs} refs per call (style reference included)",
                            max_refs=self.settings.max_refs, got=total_refs)
         target = check_copy_dest(copy_to, self.settings) if copy_to else None
-        await self._guard()
+        await self._guard(provider_model)
         with tempfile.TemporaryDirectory() as td:
             resolved = await resolve_refs(user_refs, self.settings, Path(td),
                                           lookup=self.state.generation, is_deleted=self.library.is_deleted)
@@ -288,7 +292,8 @@ class ImageService:
                 style=style, style_text=style_text, aspect_hint=aspect_hint, slug_source=shown,
                 gem_id=gem_id),
             prompt=prompt, refs=refs, uploads=uploads, style=style, style_text=style_text, template=template,
-            template_vars=template_vars, aspect_hint=aspect_hint, copy_to=copy_to, collection=collection)
+            template_vars=template_vars, aspect_hint=aspect_hint, copy_to=copy_to, collection=collection,
+            provider_model=model)
         if settings is not None:
             await self._animate_result(sr, settings)
         return sr
@@ -299,6 +304,8 @@ class ImageService:
                    display_prompt=None) -> ServiceResult:
         model = model or self.settings.default_model
         shown = display_prompt or prompt
+        conv = self.state.conversation(conversation_id)
+        provider_model = conv.model if conv is not None else model  # an edit follows its conversation's provider
         head = self._head_animation(conversation_id)
         if head is not None:
             prompt = prompt + edit_suffix(head)
@@ -308,7 +315,8 @@ class ImageService:
                 subdir=subdir, style=style, style_text=style_text, aspect_hint=aspect_hint,
                 slug_source=shown, gem_id=gem_id),
             prompt=prompt, refs=refs, uploads=uploads, style=style, style_text=style_text, template=template,
-            template_vars=template_vars, aspect_hint=aspect_hint, copy_to=copy_to, collection=collection)
+            template_vars=template_vars, aspect_hint=aspect_hint, copy_to=copy_to, collection=collection,
+            provider_model=provider_model)
         if head is not None:
             await self._animate_result(sr, {k: head[k] for k in _SETTINGS_FIELDS})
         return sr
