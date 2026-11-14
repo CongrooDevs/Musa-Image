@@ -100,7 +100,8 @@ async def ensure_client(settings: Settings, client_cls, auto_close: bool = False
 LOGIN_TIMEOUT_S = 300
 LOGIN_POLL_S = 2.0
 GEMINI_URL = "https://gemini.google.com/app"
-FIREFOX_CANDIDATES = ("/Applications/Firefox.app/Contents/MacOS/firefox", "firefox")
+FIREFOX_CANDIDATES = ("/Applications/Firefox.app/Contents/MacOS/firefox", "firefox",
+                      r"C:\Program Files\Mozilla Firefox\firefox.exe", r"C:\Program Files (x86)\Mozilla Firefox\firefox.exe")
 
 
 def find_firefox(settings: Settings) -> str:
@@ -146,6 +147,15 @@ def _launch_firefox(firefox: str, profile_dir: Path) -> None:
 def _close_firefox(profile_dir: Path) -> None:
     """Stop every Firefox bound to this profile. Firefox relaunches itself on a fresh profile, so
     the process we spawned exits immediately and the real browser is a detached child."""
+    if os.name == "nt":
+        needle = str(profile_dir).replace("'", "''")
+        ps = ("Get-CimInstance Win32_Process -Filter \"Name='firefox.exe'\" | "
+              f"Where-Object {{ $_.CommandLine -like '*{needle}*' }} | "
+              "ForEach-Object { $_.ProcessId }")
+        found = subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True, text=True)
+        for pid in found.stdout.split():
+            subprocess.run(["taskkill", "/PID", pid, "/T", "/F"], capture_output=True)
+        return
     found = subprocess.run(["pgrep", "-f", "--", f"-profile {profile_dir}"], capture_output=True, text=True)
     for pid in found.stdout.split():
         try:

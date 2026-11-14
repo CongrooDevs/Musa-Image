@@ -577,6 +577,9 @@ async def reveal_image(request: Request):
     e = ctx.entry(gen, i)
     if e is None:
         return _not_found(gen, i)
+    if sys.platform == "win32":
+        subprocess.run(["explorer", f"/select,{e.path}"], check=False)
+        return JSONResponse({"ok": True})
     if sys.platform != "darwin":
         return _err(501, "not_supported", "reveal is only available on macOS")
     subprocess.run(["open", "-R", str(e.path)], check=False)
