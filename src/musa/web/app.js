@@ -3105,12 +3105,15 @@ function connectEvents() {
     document.body.append(a); a.click(); a.remove();
     toast("Descarga iniciada.");
   });
+  // Finder en macOS, Explorador en Windows (el servidor es local: misma máquina que el navegador)
+  const revealIn = /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent) ? "el Finder" : "el Explorador";
+  $("#dlg-reveal").lastChild.textContent = `Mostrar en ${revealIn}`;
   $("#dlg-reveal").addEventListener("click", async () => {
     if (!detailItem) return;
     try {
       const r = await doFetch(`/api/images/${detailItem.gen_id}/${detailItem.index}/reveal`, { method: "POST", credentials: "same-origin" });
       if (!r.ok) { toast(errMsg(await parseBody(r)), "err"); return; }
-      toast("Mostrando en el Finder…");
+      toast(`Mostrando en ${revealIn}…`);
     } catch (e) { toast(errMsg(e), "err"); }
   });
   $("#dlg-style").addEventListener("click", () => detailItem && openStyleDialog({ fromKey: detailItem.key }));

@@ -2304,3 +2304,21 @@ def test_composition_frames_ficha_without_rev_does_not_500(comp):
     assert z.status_code == 200   # the sheet cannot be resolved without a rev: exported as a static layer
     with zipfile.ZipFile(io.BytesIO(z.content)) as zf:
         assert json.loads(zf.read("scene.json"))["layers"][1]["animation"] == {"type": "static"}
+
+
+def test_reveal_on_windows_opens_explorer(env, monkeypatch):
+    from musa import webapp
+    c, *_ = env
+    cmds = []
+    monkeypatch.setattr(webapp.sys, "platform", "win32")
+    monkeypatch.setattr(webapp.subprocess, "run", lambda cmd, **kw: cmds.append(cmd))
+    r = c.post("/api/images/g_00000000000a/0/reveal", headers=M)
+    assert r.status_code == 200 and r.json() == {"ok": True}
+    assert cmds[0].startswith('explorer /select,"') and cmds[0].endswith('a.jpg"')
+
+
+def test_reveal_on_linux_still_unsupported(env, monkeypatch):
+    from musa import webapp
+    c, *_ = env
+    monkeypatch.setattr(webapp.sys, "platform", "linux")
+    assert c.post("/api/images/g_00000000000a/0/reveal", headers=M).status_code == 501

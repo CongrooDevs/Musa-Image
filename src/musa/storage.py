@@ -78,7 +78,7 @@ def save_image(data: bytes, *, output_root: Path, project: str | None, subdir: s
         else:
             path.write_bytes(data)
     if write_sidecar:
-        path.with_suffix(".json").write_text(json.dumps(meta, ensure_ascii=False, indent=2))
+        path.with_suffix(".json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
     nbytes = path.stat().st_size  # real size on disk (PNGs are re-encoded with metadata)
     return SavedImage(path=path, width=w, height=h, nbytes=nbytes, format=fmt, full_size=True,
                       thumbnail=make_thumbnail(data, thumb_size))

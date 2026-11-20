@@ -330,6 +330,7 @@ def test_find_chrome_missing(settings):
 
 
 def test_close_chrome_waits_until_every_process_exits(monkeypatch, tmp_path):
+    monkeypatch.setattr(auth.os, "name", "posix")  # POSIX branch; Windows: test_windows_support.py
     seen = iter([[11, 12], [11, 12], [12], []])
     kills = []
     monkeypatch.setattr(auth, "_profile_pids", lambda p: next(seen))
@@ -339,7 +340,9 @@ def test_close_chrome_waits_until_every_process_exits(monkeypatch, tmp_path):
     assert kills == [(11, signal.SIGTERM), (12, signal.SIGTERM)]
 
 
+@pytest.mark.skipif(not hasattr(signal, "SIGKILL"), reason="POSIX signals; Windows: test_windows_support.py")
 def test_close_chrome_kills_after_timeout(monkeypatch, tmp_path):
+    monkeypatch.setattr(auth.os, "name", "posix")
     kills = []
     monkeypatch.setattr(auth, "_profile_pids", lambda p: [11])
     monkeypatch.setattr(auth.os, "kill", lambda pid, sig: kills.append((pid, sig)))

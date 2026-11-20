@@ -26,7 +26,7 @@ Arquitectura: `agente MCP / CLI musa → capa de servicio (refs, estilos, almace
 
 ## Instalación
 
-Requisitos: **macOS/Linux**, [uv](https://docs.astral.sh/uv/) (instala Python 3.11+ por ti si hace falta) y **Firefox** (en macOS, `/Applications/Firefox.app`; en otro sitio, `GIA_FIREFOX_PATH`). `musa auth` abre Firefox como un navegador normal con un perfil propio en `<state_dir>/firefox-profile`: Google rechaza el inicio de sesión en navegadores automatizados ("This browser or app may not be secure"), y Chromium no sirve por las cookies de sesión ligadas al dispositivo.
+Requisitos: **macOS, Linux o Windows**, [uv](https://docs.astral.sh/uv/) (instala Python 3.11+ por ti si hace falta) y **Firefox** (en macOS, `/Applications/Firefox.app`; en Windows, la ruta de instalación estándar; en otro sitio, `GIA_FIREFOX_PATH`). `musa auth` abre Firefox como un navegador normal con un perfil propio en `<state_dir>/firefox-profile`: Google rechaza el inicio de sesión en navegadores automatizados ("This browser or app may not be secure"), y Chromium no sirve por las cookies de sesión ligadas al dispositivo.
 
 ### Para usarlo (recomendado)
 
@@ -74,8 +74,8 @@ Musa también genera y edita con **tu sesión web de ChatGPT** (vale una cuenta 
 
 > ⚠️ **Términos de uso:** los Términos de OpenAI prohíben extraer contenido generado de forma automática o programática. Este canal automatiza chatgpt.com y descarga las imágenes. El riesgo sobre tu cuenta es tuyo.
 
-- **Requisito:** Google Chrome (en macOS, `/Applications/Google Chrome.app`; en otro sitio, `GIA_CHROME_PATH`).
-- **Inicio de sesión:** `musa auth --chatgpt` (o `auth_login(provider="chatgpt")`) abre Chrome **sin automatizar** con un perfil propio en `<state_dir>/chatgpt-chrome-profile`. Inicia sesión y Chrome se cierra solo al detectar la cookie.
+- **Requisito:** Google Chrome (en macOS, `/Applications/Google Chrome.app`; en Windows, la ruta de instalación estándar; en otro sitio, `GIA_CHROME_PATH`).
+- **Inicio de sesión:** `musa auth --chatgpt` (o `auth_login(provider="chatgpt")`) abre Chrome **sin automatizar** con un perfil propio en `<state_dir>/chatgpt-chrome-profile`. Inicia sesión y Chrome se cierra solo al detectar la cookie. En Windows, Chrome bloquea su archivo de cookies mientras está abierto: tras iniciar sesión, **cierra Chrome** y Musa comprueba la sesión.
 - **Generación:** Musa abre ese perfil en Chrome **headless**, sin puerto de depuración, y lo cierra tras 2 min sin uso. Solo un proceso puede usar el perfil a la vez: si Musa y musa-mcp coinciden, el segundo espera.
 - **Historial:** las conversaciones quedan en tu barra lateral de ChatGPT. `musa delete` / `delete_conversation` las oculta.
 - **Cuota:** `musa auth --status --chatgpt` muestra `image_gen.remaining` y `reset_after` según la última llamada. Musa no supone ningún límite fijo.
@@ -238,7 +238,7 @@ Pantallas:
 - **Colecciones**: tarjetas con portadas (hasta 3) y detalle de colección (banner, pestañas Imágenes/Actividad y panel lateral); creación, renombrado y borrado (borrar la colección conserva las imágenes).
 - **Límites de uso**: datos reales de tu cuenta de Gemini (ver más abajo).
 
-En el **panel de detalle** de cada imagen: editarla (ver «Editar una imagen»), marcar/desmarcar favorita, copiar su referencia (`gen:<id>[#index]`), descargar, revelar en el Finder (solo macOS), crear un estilo nuevo a partir de ella, añadirla/quitarla de colecciones y **borrarla: el borrado elimina el archivo del disco** (y su miniatura) y la marca como borrada en la galería; no se puede deshacer. Desde el agente, `delete_image` hace lo mismo (solo local; la copia en Gemini no se toca).
+En el **panel de detalle** de cada imagen: editarla (ver «Editar una imagen»), marcar/desmarcar favorita, copiar su referencia (`gen:<id>[#index]`), descargar, revelar en el Finder (macOS) o en el Explorador (Windows), crear un estilo nuevo a partir de ella, añadirla/quitarla de colecciones y **borrarla: el borrado elimina el archivo del disco** (y su miniatura) y la marca como borrada en la galería; no se puede deshacer. Desde el agente, `delete_image` hace lo mismo (solo local; la copia en Gemini no se toca).
 
 **Prompts guardados** (ver también la API arriba): el botón «Prompts guardados» (icono de libro) del compositor abre un popover con buscador. Un clic en un prompt lo inserta: si el campo está vacío lo reemplaza y, si ya hay texto, lo añade al final; también se puede editar o borrar (con confirmación) cada uno. «Guardar el prompt actual…» guarda lo que hayas escrito, y el panel de detalle de una imagen tiene «Guardar prompt» para guardar el suyo.
 
@@ -399,7 +399,7 @@ Archivo opcional `~/.config/gemini-image-api/config.yaml`; las variables de ento
 | `GIA_GEN_TIMEOUT_S` | `300` | Timeout de generación |
 | `GIA_DOWNLOAD_TIMEOUT_S` | `60` | Timeout de descarga |
 | `GIA_MAX_REFS` | `10` | Máximo de imágenes de referencia |
-| `GIA_ALLOWED_REF_DIRS` | vacío (output_root + cwd si es utilizable) | Directorios permitidos para refs locales, separados por `:`. Vacío = `output_root` + el directorio de trabajo, solo si este no es `/` y es escribible |
+| `GIA_ALLOWED_REF_DIRS` | vacío (output_root + cwd si es utilizable) | Directorios permitidos para refs locales, separados por `:` (`;` en Windows). Vacío = `output_root` + el directorio de trabajo, solo si este no es `/` y es escribible |
 | `GIA_WRITE_SIDECAR` | `false` | Escribe un `.json` junto a cada imagen |
 | `GIA_DEFAULT_MODEL` | `gemini-flash` | Modelo de chat por defecto |
 | `GIA_STYLES_FILE` | ninguno | Archivo de estilos alternativo; si no se define se sigue el orden de búsqueda de la sección "Estilos y plantillas" |

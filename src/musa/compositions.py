@@ -23,6 +23,7 @@ from pathlib import Path
 from filelock import FileLock
 from PIL import Image
 
+from . import winproc
 from .errors import (GIAError, INVALID_COMPOSITION, INVALID_REF, UNKNOWN_COMPOSITION, UNKNOWN_STYLE,
                      UPSTREAM_ERROR, error_payload)
 from .gallery import image_index
@@ -446,6 +447,8 @@ def _render_layer(directory: Path, layer: dict, size, src: Path, master_path: Pa
 def _pid_alive(pid) -> bool:
     if not isinstance(pid, int) or isinstance(pid, bool) or pid <= 0:
         return False
+    if os.name == "nt":  # os.kill(pid, 0) would send CTRL_C_EVENT there
+        return winproc.pid_alive(pid)
     try:
         os.kill(pid, 0)
     except ProcessLookupError:

@@ -15,6 +15,7 @@ from pathlib import Path
 
 import uvicorn
 
+from . import winproc
 from .config import Settings
 from .library import LibraryStore
 from .service import ImageService
@@ -29,7 +30,7 @@ def app_info_path(settings: Settings) -> Path:
 def running_app(settings: Settings) -> dict | None:
     """Parsed app.json if its pid is alive and its port accepts TCP; otherwise None."""
     try:
-        info = json.loads(app_info_path(settings).read_text())
+        info = json.loads(app_info_path(settings).read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return None
     if not isinstance(info, dict):
@@ -37,10 +38,14 @@ def running_app(settings: Settings) -> dict | None:
     pid, port, url = info.get("pid"), info.get("port"), info.get("url")
     if not isinstance(pid, int) or not isinstance(port, int) or not isinstance(url, str) or not url:
         return None
-    try:
-        os.kill(pid, 0)
-    except OSError:
-        return None
+    if os.name == "nt":  # os.kill(pid, 0) would send CTRL_C_EVENT there
+        if not winproc.pid_alive(pid):
+            return None
+    else:
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return None
     try:
         with socket.create_connection(("127.0.0.1", port), timeout=0.3):
             pass
@@ -63,7 +68,7 @@ def _write_app_info(path: Path, info: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
     fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-    with os.fdopen(fd, "w") as f:
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
         json.dump(info, f)
     os.replace(tmp, path)
 
@@ -71,7 +76,7 @@ def _write_app_info(path: Path, info: dict) -> None:
 def _remove_app_info(path: Path) -> None:
     """Remove app.json only if it still belongs to this process."""
     try:
-        info = json.loads(path.read_text())
+        info = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return
     if not isinstance(info, dict):
