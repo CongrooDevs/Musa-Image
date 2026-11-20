@@ -24,10 +24,18 @@ class UpstreamSession:
         cookies: dict[str, str],
         proxy: str | None = None,
         impersonate: str = "chrome120",
+        cookie_jar: list[dict] | None = None,
     ):
         if not cookies.get("__Secure-1PSID"):
             raise AuthError("Missing __Secure-1PSID cookie")
-        self.cookies = dict(cookies)
+        # Full jar [{name, value, domain}]: Gemini needs its host-only OSID cookies too. The
+        # explicit `cookies` (PSID, possibly rotated PSIDTS) win over the jar's .google.com values.
+        self.host_cookies = [
+            (c["name"], c["value"], c.get("domain") or ".google.com") for c in (cookie_jar or [])
+            if not (c.get("domain", ".google.com") == ".google.com" and c["name"] in cookies)
+        ]
+        self.cookies = {n: v for n, v, d in self.host_cookies if d == ".google.com"}
+        self.cookies.update(cookies)
         self.proxy = proxy
         self.impersonate = impersonate
         self.snlm0e: str | None = None
@@ -39,6 +47,9 @@ class UpstreamSession:
             jar = Cookies()
             for k, v in self.cookies.items():
                 jar.set(k, v, domain=".google.com", secure=k.startswith("__Secure-"))
+            for k, v, d in self.host_cookies:
+                if d != ".google.com":
+                    jar.set(k, v, domain=d, secure=k.startswith("__Secure-"))
             self._session = AsyncSession(
                 impersonate=self.impersonate,
                 cookies=jar,
