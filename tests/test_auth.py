@@ -33,6 +33,7 @@ class FakeClient:
         self.secure_1psidts = secure_1psidts
         self.inited = False
         self.kw = {}
+        self.kw_init = kw
     async def init(self, **kw):
         self.inited = True
         self.kw.update(kw)
@@ -351,3 +352,101 @@ def test_close_chrome_kills_after_timeout(monkeypatch, tmp_path):
     monkeypatch.setattr(auth.time, "monotonic", lambda: next(ticks))
     auth._close_chrome(tmp_path, timeout_s=10)
     assert kills == [(11, signal.SIGTERM), (11, signal.SIGKILL)]
+def test_login_guided_stale_psid_does_not_end_wait(settings, monkeypatch):
+    """A half-finished earlier login leaves __Secure-1PSID in the profile: the wait must go on
+    until the sign-in completes (__Secure-1PSIDTS), not return the stale cookie at once."""
+    monkeypatch.setattr(builtins, "input", _no_input)
+    settings.firefox_path = sys.executable
+    profile = settings.firefox_profile_dir
+    con = _firefox_db(profile, [("__Secure-1PSID", "stale", ".google.com")])
+    sleeps = []
+
+    def fake_sleep(s):
+        sleeps.append(s)
+        if len(sleeps) == 3:  # the user finishes signing in
+            con.execute("DELETE FROM moz_cookies")
+            con.executemany("INSERT INTO moz_cookies VALUES (?, ?, ?)",
+                            [("__Secure-1PSID", "fresh", ".google.com"),
+                             ("__Secure-1PSIDTS", "ts", ".google.com")])
+            con.commit()
+
+    monkeypatch.setattr(auth.time, "sleep", fake_sleep)
+    try:
+        jar = auth.login_guided(settings, launcher=lambda f, p: None, closer=lambda p: None)
+    finally:
+        con.close()
+    assert len(sleeps) >= 3
+    assert {c["name"]: c["value"] for c in jar}["__Secure-1PSID"] == "fresh"
+
+
+def test_login_guided_new_psid_without_psidts_settles(settings, monkeypatch):
+    monkeypatch.setattr(builtins, "input", _no_input)
+    settings.firefox_path = sys.executable
+    profile = settings.firefox_profile_dir
+    conns = []
+    clock = [0.0]
+    monkeypatch.setattr(auth.time, "monotonic", lambda: clock[0])
+
+    def fake_sleep(s):
+        clock[0] += s
+        if not conns[0].execute("SELECT 1 FROM moz_cookies WHERE name='__Secure-1PSID'").fetchone():
+            conns[0].execute("INSERT INTO moz_cookies VALUES ('__Secure-1PSID', 'new', '.google.com')")
+            conns[0].commit()
+
+    monkeypatch.setattr(auth.time, "sleep", fake_sleep)
+    try:
+        jar = auth.login_guided(settings, launcher=lambda f, p: conns.append(_firefox_db(p, [])),
+                                closer=lambda p: None)
+    finally:
+        conns[0].close()
+    assert [c["value"] for c in jar if c["name"] == "__Secure-1PSID"] == ["new"]
+    assert clock[0] >= auth.LOGIN_SETTLE_S
+
+
+def test_login_guided_clears_rotated_cache(settings, monkeypatch):
+    monkeypatch.setattr(builtins, "input", _no_input)
+    monkeypatch.setattr(auth.time, "sleep", lambda s: None)
+    settings.firefox_path = sys.executable
+    settings.ensure_dirs()
+    old = settings.upstream_cache_dir / ".cached_cookies_old.json"
+    old.write_text("[]")
+    conns = []
+    try:
+        auth.login_guided(settings, launcher=lambda f, p: conns.append(_firefox_db(p, ROWS[:2])),
+                          closer=lambda p: None)
+    finally:
+        conns[0].close()
+    assert not old.exists()
+
+
+async def test_ensure_client_uses_rotated_psidts_of_same_session_only(settings):
+    settings.ensure_dirs()
+    save_cookie_jar_atomic(JAR + [{"name": "__Secure-1PSIDTS", "value": "old", "domain": ".google.com"}],
+                           settings.cookie_file)
+    other = settings.upstream_cache_dir / ".cached_cookies_otra.json"
+    other.write_text('[{"name": "__Secure-1PSIDTS", "value": "de-otra-cuenta"}]')
+    c = await ensure_client(settings, client_cls=FakeClient)
+    assert c.secure_1psidts == "old"
+    (settings.upstream_cache_dir / ".cached_cookies_abc.json").write_text(
+        '[{"name": "__Secure-1PSIDTS", "value": "rotada"}]')
+    c = await ensure_client(settings, client_cls=FakeClient)
+    assert c.secure_1psidts == "rotada"
+
+
+def test_read_firefox_cookies_includes_gemini_host_cookies(tmp_path):
+    """Gemini's host-only OSID cookies are required: without them every signed-in RPC is HTTP 400."""
+    con = _firefox_db(tmp_path / "p", ROWS + [("__Secure-OSID", "o", "gemini.google.com"),
+                                              ("OSID", "o2", "gemini.google.com")])
+    try:
+        jar = auth.read_firefox_cookies(tmp_path / "p")
+    finally:
+        con.close()
+    assert {(c["name"], c["domain"]) for c in jar} >= {("__Secure-OSID", "gemini.google.com"),
+                                                        ("OSID", "gemini.google.com")}
+
+
+async def test_ensure_client_passes_jar_with_gemini_cookies(settings):
+    jar = JAR + [{"name": "__Secure-OSID", "value": "o", "domain": "gemini.google.com"}]
+    save_cookie_jar_atomic(jar, settings.cookie_file)
+    c = await ensure_client(settings, client_cls=FakeClient)
+    assert c.kw_init["cookie_jar"] == [j for j in jar if j["domain"] != ".example.com"]

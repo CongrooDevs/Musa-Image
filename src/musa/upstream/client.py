@@ -31,12 +31,13 @@ class GeminiClient:
         secure_1psidts: str | None = None,
         proxy: str | None = None,
         cache_dir: Any = None,
+        cookie_jar: list[dict] | None = None,
         **kwargs,
     ):
         cookies = {"__Secure-1PSID": secure_1psid}
         if secure_1psidts:
             cookies["__Secure-1PSIDTS"] = secure_1psidts
-        self.session = UpstreamSession(cookies=cookies, proxy=proxy)
+        self.session = UpstreamSession(cookies=cookies, proxy=proxy, cookie_jar=cookie_jar)
         self.account_status = AccountStatus.AVAILABLE
         self._models = [
             UpstreamModel("gemini-flash", "Gemini 2.5 Flash", True),
@@ -88,7 +89,10 @@ class GeminiClient:
             raise
         except Exception as e:
             from loguru import logger
-            logger.debug(f"Failed to fetch dynamic models: {e}")
+            logger.warning(f"Failed to fetch dynamic models: {e}")
+            # Gemini answers a signed-out / half-finished session with HTTP 400 here; keeping the
+            # static list would report it as a valid account.
+            self._models = []
             return self._models
 
     async def _auto_rotate_loop(self, interval_s: float = 600) -> None:
@@ -115,6 +119,8 @@ class GeminiClient:
             raw = await self.session.post_batchexecute([("jSf9Qc", "[]", "generic")])
             data = get_rpc_result(raw, "jSf9Qc")
             if not isinstance(data, list) or len(data) < 2:
+                from loguru import logger
+                logger.warning(f"Usage info unavailable (RPC jSf9Qc returned {str(data)[:80]})")
                 return None
             tier_labels = {1: "FREE", 2: "PRO", 3: "ULTRA", 4: "PLUS", 6: "ULTRA"}
             tier_id = data[0] if len(data) > 0 and isinstance(data[0], int) else 2
@@ -145,7 +151,9 @@ class GeminiClient:
                         usage_info["weekly"] = metric_info
             self._usage_info = usage_info
             return usage_info
-        except Exception:
+        except Exception as e:
+            from loguru import logger
+            logger.warning(f"Failed to fetch usage info: {type(e).__name__}: {e}")
             return None
     async def close(self) -> None:
         """Closes the underlying HTTP session and stops background tasks."""

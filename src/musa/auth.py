@@ -42,6 +42,28 @@ def save_cookie_jar_atomic(jar: list[dict], path: Path) -> None:
     os.replace(tmp, p)
 
 
+def _rotated_psidts(settings: Settings, psid: str) -> str | None:
+    """__Secure-1PSIDTS rotated in the background for THIS session (the cache file is keyed by
+    the PSID value; files left over from another account or an older login are ignored)."""
+    cache_file = settings.upstream_cache_dir / f".cached_cookies_{psid}.json"
+    try:
+        data = json.loads(cache_file.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if isinstance(data, list):
+        for c in data:
+            if isinstance(c, dict) and c.get("name") == "__Secure-1PSIDTS" and c.get("value"):
+                return c["value"]
+    return None
+
+
+def clear_rotated_cookies(settings: Settings) -> None:
+    if settings.upstream_cache_dir.exists():
+        for f in settings.upstream_cache_dir.iterdir():
+            if f.is_file() and f.suffix in (".json", ".tmp"):
+                f.unlink(missing_ok=True)
+
+
 def _cookies_dict(jar: list[dict]) -> dict:
     return {c["name"]: c["value"] for c in jar if c.get("domain") == ".google.com"}
 
@@ -63,22 +85,14 @@ async def ensure_client(settings: Settings, client_cls, auto_close: bool = False
     cookies = _cookies_dict(jar)
     if not cookies.get("__Secure-1PSID"):
         raise GIAError(AUTH_EXPIRED, "no saved cookies found", hint="run: musa auth")
-    if not cookies.get("__Secure-1PSIDTS") and settings.upstream_cache_dir.exists():
-        cache_files = list(settings.upstream_cache_dir.glob("*.json")) + list(settings.upstream_cache_dir.glob(".*.json"))
-        for cache_file in cache_files:
-            try:
-                cached_data = json.loads(cache_file.read_text(encoding="utf-8"))
-                if isinstance(cached_data, list):
-                    for c in cached_data:
-                        if isinstance(c, dict) and c.get("name") == "__Secure-1PSIDTS" and c.get("value"):
-                            cookies["__Secure-1PSIDTS"] = c["value"]
-                            break
-            except Exception:
-                pass
+    rotated = _rotated_psidts(settings, cookies["__Secure-1PSID"])
+    if rotated:  # the background rotation is newer than whatever the login saved
+        cookies["__Secure-1PSIDTS"] = rotated
     client = client_cls(
         secure_1psid=cookies["__Secure-1PSID"],
         secure_1psidts=cookies.get("__Secure-1PSIDTS"),
         cache_dir=settings.upstream_cache_dir,
+        cookie_jar=[c for c in jar if c.get("domain") in COOKIE_HOSTS],
     )
     await client.init(timeout=30, auto_close=auto_close, close_delay=900, auto_refresh=True)
     res = client.list_models()  # sync in the upstream client; tolerate awaitables
@@ -92,8 +106,8 @@ async def ensure_client(settings: Settings, client_cls, auto_close: bool = False
             pass
         raise GIAError(
             AUTH_EXPIRED,
-            "session is in guest mode (only flash-lite available)",
-            hint="run: musa auth",
+            "Google treats the session as signed out (no account models)",
+            hint="run: musa auth, sign in and wait until Gemini loads",
         )
     return client
 
@@ -116,6 +130,11 @@ def find_firefox(settings: Settings) -> str:
     raise GIAError(AUTH_FAILED, "Firefox not found", hint="install Firefox or set GIA_FIREFOX_PATH")
 
 
+# gemini.google.com holds host-only OSID/__Secure-OSID: without them Gemini answers every
+# signed-in batchexecute call (models, quota) with HTTP 400.
+COOKIE_HOSTS = (".google.com", "gemini.google.com")
+
+
 def read_firefox_cookies(profile_dir: Path) -> list[dict]:
     """Read .google.com cookies from a Firefox profile, also while Firefox is running.
 
@@ -133,7 +152,7 @@ def read_firefox_cookies(profile_dir: Path) -> list[dict]:
         con = sqlite3.connect(Path(td) / "cookies.sqlite")
         try:
             rows = con.execute(
-                "SELECT name, value, host FROM moz_cookies WHERE host = '.google.com'").fetchall()
+                "SELECT name, value, host FROM moz_cookies WHERE host IN (?, ?)", COOKIE_HOSTS).fetchall()
         except sqlite3.DatabaseError:
             return []  # profile still initialising
         finally:
@@ -163,8 +182,17 @@ def _close_firefox(profile_dir: Path) -> None:
             pass
 
 
+LOGIN_SETTLE_S = 10.0  # extra wait once a NEW __Secure-1PSID shows up without __Secure-1PSIDTS
+
+
+def _cookie(cookies: list[dict], name: str) -> str | None:
+    return next((c["value"] for c in cookies if c["name"] == name), None)
+
+
 def _has_session(cookies: list[dict]) -> bool:
-    return any(c["name"] == "__Secure-1PSID" for c in cookies)
+    """A finished Google sign-in: __Secure-1PSID plus __Secure-1PSIDTS. With only __Secure-1PSID
+    the redirect chain may still be running, and Google treats the session as signed out."""
+    return bool(_cookie(cookies, "__Secure-1PSID") and _cookie(cookies, "__Secure-1PSIDTS"))
 
 
 def login_guided(settings: Settings, launcher=None, closer=None) -> list[dict]:
@@ -179,19 +207,32 @@ def login_guided(settings: Settings, launcher=None, closer=None) -> list[dict]:
     profile = settings.firefox_profile_dir
     profile.mkdir(parents=True, exist_ok=True)
     os.chmod(profile, 0o700)
+    # A stale __Secure-1PSID from an earlier (or half-finished) login must not end the wait at once.
+    old_psid = _cookie(read_firefox_cookies(profile), "__Secure-1PSID")
     (launcher or _launch_firefox)(find_firefox(settings), profile)
-    print("Sign in to Gemini in the Firefox window; it closes by itself once the session "
-          f"cookie is detected (timeout {LOGIN_TIMEOUT_S}s).", file=sys.stderr, flush=True)
+    print("Sign in to Gemini in the Firefox window and wait until Gemini loads; it closes by itself "
+          f"once the session is complete (timeout {LOGIN_TIMEOUT_S}s).", file=sys.stderr, flush=True)
     try:
         deadline = time.monotonic() + LOGIN_TIMEOUT_S
-        while not _has_session(read_firefox_cookies(profile)):
+        new_psid_since = None
+        while True:
+            jar = read_firefox_cookies(profile)
+            if _has_session(jar):
+                break
+            psid = _cookie(jar, "__Secure-1PSID")
+            if psid and psid != old_psid:
+                new_psid_since = new_psid_since or time.monotonic()
+                if time.monotonic() - new_psid_since >= LOGIN_SETTLE_S:
+                    break  # fresh sign-in; Google did not issue __Secure-1PSIDTS to this browser
             if time.monotonic() >= deadline:
-                raise GIAError(AUTH_EXPIRED, "login timeout", hint="run: musa auth")
+                raise GIAError(AUTH_EXPIRED, "login timeout: the Google session never completed",
+                               hint="run: musa auth, sign in and wait until Gemini loads")
             time.sleep(LOGIN_POLL_S)
-        time.sleep(LOGIN_POLL_S)  # let the companion cookies (__Secure-1PSIDTS, SIDCC...) land
+        time.sleep(LOGIN_POLL_S)  # let the companion cookies (SIDCC...) land
         jar = read_firefox_cookies(profile)
     finally:
         (closer or _close_firefox)(profile)
+    clear_rotated_cookies(settings)  # rotations of the previous session are now stale
     save_cookie_jar_atomic(jar, settings.cookie_file)
     return jar
 
