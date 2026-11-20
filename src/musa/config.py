@@ -62,7 +62,7 @@ class Settings(BaseSettings):
 
     def allowed_ref_dirs_list(self) -> list[Path]:
         if self.allowed_ref_dirs.strip():
-            return [Path(p).expanduser().resolve() for p in self.allowed_ref_dirs.split(":") if p.strip()]
+            return [Path(p).expanduser().resolve() for p in self.allowed_ref_dirs.split(os.pathsep) if p.strip()]
         dirs = [self.output_root.expanduser().resolve()]
         cwd = Path.cwd().resolve()
         if usable_cwd(cwd) and cwd not in dirs:
@@ -87,7 +87,7 @@ def usable_cwd(p: Path) -> bool:
     """The process cwd is only trusted as a ref/copy root if it is a real, writable project dir.
     MCP hosts may start servers with cwd="/" (e.g. Claude Desktop on macOS)."""
     p = p.resolve()
-    return p != Path("/") and os.access(p, os.W_OK)
+    return p != Path(p.anchor) and os.access(p, os.W_OK)  # anchor: "/" on POSIX, "C:\\" on Windows
 
 @lru_cache(maxsize=1)
 def load_settings() -> Settings:

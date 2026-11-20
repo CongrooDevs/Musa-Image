@@ -12,6 +12,7 @@ from pathlib import Path
 
 from filelock import FileLock, Timeout as LockTimeout
 
+from . import winproc
 from .config import Settings
 from .errors import AUTH_EXPIRED, AUTH_FAILED, TEMPORARILY_BLOCKED, GIAError
 
@@ -100,7 +101,11 @@ async def ensure_client(settings: Settings, client_cls, auto_close: bool = False
 LOGIN_TIMEOUT_S = 300
 LOGIN_POLL_S = 2.0
 GEMINI_URL = "https://gemini.google.com/app"
-FIREFOX_CANDIDATES = ("/Applications/Firefox.app/Contents/MacOS/firefox", "firefox")
+_LOCALAPPDATA = os.environ.get("LOCALAPPDATA", "")
+FIREFOX_CANDIDATES = ("/Applications/Firefox.app/Contents/MacOS/firefox", "firefox",
+                      r"C:\Program Files\Mozilla Firefox\firefox.exe",
+                      r"C:\Program Files (x86)\Mozilla Firefox\firefox.exe",
+                      *([str(Path(_LOCALAPPDATA) / "Mozilla Firefox" / "firefox.exe")] if _LOCALAPPDATA else []))
 
 
 def find_firefox(settings: Settings) -> str:
@@ -146,6 +151,10 @@ def _launch_firefox(firefox: str, profile_dir: Path) -> None:
 def _close_firefox(profile_dir: Path) -> None:
     """Stop every Firefox bound to this profile. Firefox relaunches itself on a fresh profile, so
     the process we spawned exits immediately and the real browser is a detached child."""
+    if os.name == "nt":
+        for pid in winproc.find_pids("firefox.exe", str(profile_dir)):
+            winproc.terminate(pid, force=True)  # cookies were already read; no session-restore prompt matters
+        return
     found = subprocess.run(["pgrep", "-f", "--", f"-profile {profile_dir}"], capture_output=True, text=True)
     for pid in found.stdout.split():
         try:
@@ -189,7 +198,11 @@ def login_guided(settings: Settings, launcher=None, closer=None) -> list[dict]:
 
 # -- ChatGPT (web) -------------------------------------------------------------
 CHROME_CANDIDATES = ("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-                     "google-chrome", "google-chrome-stable")
+                     "google-chrome", "google-chrome-stable",
+                     r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+                     r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+                     *([str(Path(_LOCALAPPDATA) / "Google" / "Chrome" / "Application" / "chrome.exe")]
+                       if _LOCALAPPDATA else []))
 CHATGPT_LOGIN_URL = "https://chatgpt.com/auth/login"
 CHATGPT_SESSION_COOKIE = "__Secure-next-auth.session-token"
 CHROME_CLOSE_TIMEOUT_S = 10.0
@@ -206,8 +219,11 @@ def find_chrome(settings: Settings) -> str:
 def chatgpt_session_present(profile_dir: Path) -> bool:
     """True when the profile's cookie store holds a ChatGPT session cookie (name only: values are encrypted).
 
-    Chrome may hold the live db open, so the db and its journal are copied and the copy is read."""
-    db = Path(profile_dir) / "Default" / "Cookies"
+    Chrome may hold the live db open, so the db and its journal are copied and the copy is read.
+    Chrome on Windows keeps it in Default/Network/Cookies and locks it while running (the copy fails until exit)."""
+    db = Path(profile_dir) / "Default" / "Network" / "Cookies"
+    if not db.exists():
+        db = Path(profile_dir) / "Default" / "Cookies"
     if not db.exists():
         return False
     with tempfile.TemporaryDirectory() as td:
@@ -241,6 +257,8 @@ def _launch_chrome(chrome: str, profile_dir: Path) -> None:
 
 
 def _profile_pids(profile_dir: Path) -> list[int]:
+    if os.name == "nt":
+        return winproc.find_pids("chrome.exe", str(profile_dir))
     found = subprocess.run(["pgrep", "-f", "--", f"--user-data-dir={profile_dir}"], capture_output=True, text=True)
     return [int(p) for p in found.stdout.split()]
 
@@ -248,18 +266,21 @@ def _profile_pids(profile_dir: Path) -> list[int]:
 def _close_chrome(profile_dir: Path, timeout_s: float = CHROME_CLOSE_TIMEOUT_S) -> None:
     """SIGTERM every Chrome process bound to this profile and wait until all exit (SIGKILL after timeout_s),
     so the cookie store is flushed before anyone reads it or opens the profile again."""
-    def signal_all(sig) -> None:
+    def signal_all(force: bool) -> None:
         for pid in _profile_pids(profile_dir):
+            if os.name == "nt":  # no SIGKILL there; taskkill without /F asks Chrome to close cleanly
+                winproc.terminate(pid, force=force)
+                continue
             try:
-                os.kill(pid, sig)
+                os.kill(pid, signal.SIGKILL if force else signal.SIGTERM)
             except ProcessLookupError:
                 pass
 
-    signal_all(signal.SIGTERM)
+    signal_all(force=False)
     deadline = time.monotonic() + timeout_s
     while _profile_pids(profile_dir):
         if time.monotonic() >= deadline:
-            signal_all(signal.SIGKILL)
+            signal_all(force=True)
             return
         time.sleep(0.2)
 
@@ -282,13 +303,25 @@ def login_chatgpt(settings: Settings, launcher=None, closer=None, session_check=
                        hint="retry when the current ChatGPT job ends") from None
     try:
         (launcher or _launch_chrome)(find_chrome(settings), profile)
-        print("Sign in to ChatGPT in the Chrome window; it closes by itself once the session cookie is "
-              f"detected (timeout {LOGIN_TIMEOUT_S}s).", file=sys.stderr, flush=True)
+        # Windows: Chrome locks its cookie db while open, so the session shows up once the user closes it.
+        wait_for_exit = os.name == "nt"
+        if wait_for_exit:
+            print("Sign in to ChatGPT in the Chrome window, then close Chrome "
+                  f"(timeout {LOGIN_TIMEOUT_S}s).", file=sys.stderr, flush=True)
+        else:
+            print("Sign in to ChatGPT in the Chrome window; it closes by itself once the session cookie is "
+                  f"detected (timeout {LOGIN_TIMEOUT_S}s).", file=sys.stderr, flush=True)
         try:
             deadline = time.monotonic() + LOGIN_TIMEOUT_S
+            chrome_seen = False
             while not check(profile):
                 if time.monotonic() >= deadline:
                     raise GIAError(AUTH_EXPIRED, "login timeout", hint="run: musa auth --chatgpt")
+                if wait_for_exit:
+                    running = bool(_profile_pids(profile))
+                    if chrome_seen and not running:
+                        break  # closed by the user: confirmed below
+                    chrome_seen = chrome_seen or running
                 time.sleep(LOGIN_POLL_S)
         finally:
             (closer or _close_chrome)(profile)

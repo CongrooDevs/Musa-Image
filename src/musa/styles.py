@@ -65,7 +65,7 @@ class StyleCatalog:
     def load(cls, path: Path, *, ref_base: Path | None = None, source: str = "builtin") -> "StyleCatalog":
         path = Path(path)
         base = Path(ref_base) if ref_base is not None else path.parent
-        data = yaml.safe_load(path.read_text()) or {}
+        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         styles = {}
         base_resolved = base.resolve()
         for sid, s in (data.get("styles") or {}).items():

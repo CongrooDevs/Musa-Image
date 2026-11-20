@@ -49,7 +49,7 @@ def test_allowlist_includes_writable_cwd(settings, monkeypatch, tmp_path):
 
 def test_env_override(monkeypatch, tmp_path):
     monkeypatch.setenv("GIA_GEN_TIMEOUT_S", "120")
-    monkeypatch.setenv("GIA_ALLOWED_REF_DIRS", f"{tmp_path}/a:{tmp_path}/b")
+    monkeypatch.setenv("GIA_ALLOWED_REF_DIRS", f"{tmp_path}/a{os.pathsep}{tmp_path}/b")
     s = Settings()
     assert s.gen_timeout_s == 120.0
     assert s.allowed_ref_dirs_list() == [tmp_path / "a", tmp_path / "b"]
